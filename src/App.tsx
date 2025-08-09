@@ -1,10 +1,12 @@
 import { useState } from 'react'
-import { Box, Container, Typography, Button, Paper, Alert } from '@mui/material'
+import { Box, Container, Typography, Button, Paper, Alert, Tab, Tabs } from '@mui/material'
 import { motion } from 'framer-motion'
 
 import { CircuitSimulator } from './game/circuitSimulator'
 import { loadLevel } from './utils/levelLoader'
 import { LevelLoader } from './components/LevelLoader'
+import { ThemeDemo } from './components/ThemeDemo'
+import { MainScreen, SettingsScreen, GameScreen } from './components/game'
 import type { Level } from './types'
 
 // Sample level data from Prometheus for testing
@@ -105,6 +107,9 @@ function App() {
   const [level, setLevel] = useState<Level | null>(null)
   const [gameState, setGameState] = useState(simulator.getGameState())
   const [simulationResult, setSimulationResult] = useState<any>(null)
+  const [currentTab, setCurrentTab] = useState(0)
+  const [currentScreen, setCurrentScreen] = useState<'main' | 'settings' | 'game'>('main')
+  const [testLevel, setTestLevel] = useState<Level | null>(null)
 
   const loadTestLevel = async () => {
     try {
@@ -146,114 +151,185 @@ function App() {
     setGameState(simulator.getGameState())
   }
 
-  return (
-    <Container maxWidth="lg">
-      <Box sx={{ py: 4 }}>
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <Typography variant="h3" component="h1" gutterBottom sx={{ 
-            textAlign: 'center',
-            background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent'
-          }}>
-            Ignit Game Engine Test
-          </Typography>
-        </motion.div>
-
-        <LevelLoader onLevelLoaded={handleLevelLoaded} />
-
-        <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
-          <Button variant="contained" onClick={loadTestLevel}>
-            Load Sample Level
-          </Button>
-          <Button variant="contained" onClick={loadRealPrometheusLevel}>
-            Load Prometheus Level
-          </Button>
-          <Button variant="outlined" onClick={loadOptimalSolution} disabled={!level}>
-            Load Optimal Solution
-          </Button>
-          <Button variant="outlined" onClick={runSimulation} disabled={!level}>
-            Run Simulation
-          </Button>
-        </Box>
-
-        {level && (
-          <Paper sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h5" gutterBottom>
-              Level Information
-            </Typography>
-            <Typography>ID: {level.metadata.level_id}</Typography>
-            <Typography>Difficulty: {level.metadata.difficulty}</Typography>
-            <Typography>Archetype: {level.metadata.primary_archetype}</Typography>
-            <Typography>Source: {level.circuit_definition.source.voltage}V, {level.circuit_definition.source.energy_output} EU</Typography>
-            <Typography>Targets: {level.circuit_definition.targets.length}</Typography>
-            <Typography>Available Components: {level.circuit_definition.available_components.length}</Typography>
-          </Paper>
-        )}
-
-        {gameState && (
-          <Paper sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h5" gutterBottom>
-              Game State
-            </Typography>
-            <Typography>Available Components: {gameState.availableComponents.length}</Typography>
-            <Typography>Placed Components: {gameState.placedComponents.length}</Typography>
-            <Typography>Targets: {gameState.targets.length}</Typography>
-            
-            <Box sx={{ mt: 2 }}>
-              <Typography variant="h6">Available Components:</Typography>
-              {gameState.availableComponents.map(comp => (
-                <Typography key={comp.id} variant="body2">
-                  • {comp.id} ({comp.type})
-                </Typography>
-              ))}
-            </Box>
-          </Paper>
-        )}
-
-        {simulationResult && (
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h5" gutterBottom>
-              Simulation Result
-            </Typography>
-            
-            <Alert severity={simulationResult.isComplete ? 'success' : 'warning'} sx={{ mb: 2 }}>
-              {simulationResult.message}
-            </Alert>
-
-            <Typography>Targets Lit: {simulationResult.targetsLit.length}/{level?.circuit_definition.targets.length || 0}</Typography>
-            <Typography>Energy Used: {simulationResult.totalEnergyUsed.toFixed(1)} EU</Typography>
-            <Typography>Final Score: {simulationResult.finalScore.toFixed(1)} EU</Typography>
-            <Typography>Valid: {simulationResult.isValid ? 'Yes' : 'No'}</Typography>
-            
-            {simulationResult.errors.length > 0 && (
-              <Box sx={{ mt: 2 }}>
-                <Typography variant="h6" color="error">Errors:</Typography>
-                {simulationResult.errors.map((error: string, index: number) => (
-                  <Typography key={index} color="error" variant="body2">
-                    • {error}
-                  </Typography>
-                ))}
-              </Box>
-            )}
-
-            <Box sx={{ mt: 2 }}>
-              <Typography variant="h6">Energy Distribution:</Typography>
-              {Object.entries(simulationResult.energyDistribution).map(([targetId, energy]) => (
-                <Typography key={targetId} variant="body2">
-                  • {targetId}: {(energy as number).toFixed(1)} EU
-                </Typography>
-              ))}
-            </Box>
-          </Paper>
-        )}
+  if (currentTab === 0) {
+    // Game tab - full screen without container
+    return (
+      <Box sx={{ 
+        minHeight: '100vh',
+        backgroundColor: 'background.default',
+      }}>
+        {currentScreen === 'main' ? (
+          <MainScreen
+            playerName="Hello Stranger"
+            levelsCompleted={7}
+            onPlayClick={async () => {
+              // Load test level for GameScreen
+              try {
+                const loadedLevel = await loadLevel(sampleLevelData)
+                setTestLevel(loadedLevel)
+                setCurrentScreen('game')
+              } catch (error) {
+                console.error('Failed to load test level:', error)
+              }
+            }}
+            onSettingsClick={() => setCurrentScreen('settings')}
+            onDevModeClick={() => setCurrentTab(1)}
+          />
+        ) : currentScreen === 'settings' ? (
+          <SettingsScreen
+            onBackClick={() => setCurrentScreen('main')}
+          />
+        ) : currentScreen === 'game' && testLevel ? (
+          <GameScreen
+            level={testLevel}
+            onBackToMain={() => setCurrentScreen('main')}
+            onNextLevel={() => console.log('Next level not implemented')}
+          />
+        ) : null}
       </Box>
-    </Container>
+    )
+  }
+
+  // Development tabs - with container and navigation
+  return (
+    <Box sx={{ 
+      minHeight: '100vh',
+      backgroundColor: 'background.default',
+    }}>
+      <Container maxWidth="lg">
+        <Box sx={{ py: 4 }}>
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <Typography variant="electronicTitle" sx={{ mb: 3 }}>
+              IGNIT GAME ENGINE
+            </Typography>
+          </motion.div>
+
+          <Tabs 
+            value={currentTab} 
+            onChange={(_, newValue) => {
+              setCurrentTab(newValue)
+              if (newValue === 0) {
+                setCurrentScreen('main') // Reset to main when going to Game tab
+              }
+            }}
+            sx={{ 
+              mb: 3,
+              '& .MuiTab-root': {
+                color: 'text.secondary',
+                '&.Mui-selected': {
+                  color: 'electronic.primary'
+                }
+              },
+              '& .MuiTabs-indicator': {
+                backgroundColor: 'electronic.primary'
+              }
+            }}
+          >
+            <Tab label="Game" />
+            <Tab label="Game Engine" />
+            <Tab label="Theme Demo" />
+          </Tabs>
+
+          {currentTab === 1 && (
+            <>
+              <LevelLoader onLevelLoaded={handleLevelLoaded} />
+
+              <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
+                <Button variant="electronicPrimary" onClick={loadTestLevel}>
+                  Load Sample Level
+                </Button>
+                <Button variant="electronicPrimary" onClick={loadRealPrometheusLevel}>
+                  Load Prometheus Level
+                </Button>
+                <Button variant="electronicSecondary" onClick={loadOptimalSolution} disabled={!level}>
+                  Load Optimal Solution
+                </Button>
+                <Button variant="electronicSecondary" onClick={runSimulation} disabled={!level}>
+                  Run Simulation
+                </Button>
+              </Box>
+
+              {level && (
+                <Paper variant="infoPanel" sx={{ p: 3, mb: 3 }}>
+                  <Typography variant="componentLabel" gutterBottom sx={{ fontSize: '16px' }}>
+                    Level Information
+                  </Typography>
+                  <Typography variant="circuitInfo">ID: {level.metadata.level_id}</Typography>
+                  <Typography variant="circuitInfo">Difficulty: {level.metadata.difficulty}</Typography>
+                  <Typography variant="circuitInfo">Archetype: {level.metadata.primary_archetype}</Typography>
+                  <Typography variant="circuitInfo">Source: {level.circuit_definition.source.voltage}V, {level.circuit_definition.source.energy_output} EU</Typography>
+                  <Typography variant="circuitInfo">Targets: {level.circuit_definition.targets.length}</Typography>
+                  <Typography variant="circuitInfo">Available Components: {level.circuit_definition.available_components.length}</Typography>
+                </Paper>
+              )}
+
+              {gameState && (
+                <Paper variant="componentCard" sx={{ p: 3, mb: 3 }}>
+                  <Typography variant="componentLabel" gutterBottom sx={{ fontSize: '16px' }}>
+                    Game State
+                  </Typography>
+                  <Typography variant="circuitInfo">Available Components: {gameState.availableComponents.length}</Typography>
+                  <Typography variant="circuitInfo">Placed Components: {gameState.placedComponents.length}</Typography>
+                  <Typography variant="circuitInfo">Targets: {gameState.targets.length}</Typography>
+                  
+                  <Box sx={{ mt: 2 }}>
+                    <Typography variant="componentLabel">Available Components:</Typography>
+                    {gameState.availableComponents.map(comp => (
+                      <Typography key={comp.id} variant="circuitInfo">
+                        • {comp.id} ({comp.type})
+                      </Typography>
+                    ))}
+                  </Box>
+                </Paper>
+              )}
+
+              {simulationResult && (
+                <Paper variant="circuitBoard" sx={{ p: 3 }}>
+                  <Typography variant="componentLabel" gutterBottom sx={{ fontSize: '16px' }}>
+                    Simulation Result
+                  </Typography>
+                  
+                  <Alert severity={simulationResult.isComplete ? 'success' : 'warning'} sx={{ mb: 2 }}>
+                    {simulationResult.message}
+                  </Alert>
+
+                  <Typography variant="energyValue">Targets Lit: {simulationResult.targetsLit.length}/{level?.circuit_definition.targets.length || 0}</Typography>
+                  <Typography variant="energyValue">Energy Used: {simulationResult.totalEnergyUsed.toFixed(1)} EU</Typography>
+                  <Typography variant="energyValue">Final Score: {simulationResult.finalScore.toFixed(1)} EU</Typography>
+                  <Typography variant="circuitInfo">Valid: {simulationResult.isValid ? 'Yes' : 'No'}</Typography>
+                  
+                  {simulationResult.errors.length > 0 && (
+                    <Box sx={{ mt: 2 }}>
+                      <Typography variant="componentLabel" color="error">Errors:</Typography>
+                      {simulationResult.errors.map((error: string, index: number) => (
+                        <Typography key={index} color="error" variant="circuitInfo">
+                          • {error}
+                        </Typography>
+                      ))}
+                    </Box>
+                  )}
+
+                  <Box sx={{ mt: 2 }}>
+                    <Typography variant="componentLabel">Energy Distribution:</Typography>
+                    {Object.entries(simulationResult.energyDistribution).map(([targetId, energy]) => (
+                      <Typography key={targetId} variant="circuitInfo">
+                        • {targetId}: {(energy as number).toFixed(1)} EU
+                      </Typography>
+                    ))}
+                  </Box>
+                </Paper>
+              )}
+            </>
+          )}
+
+          {currentTab === 2 && <ThemeDemo />}
+        </Box>
+      </Container>
+    </Box>
   )
 }
 
