@@ -1,0 +1,9 @@
+Category,Mutator Name,Icon,Description
+Physical,Overheat,🔥,"All resistors dissipate more heat (e.g., +20% energy loss), making efficiency paramount."
+,Interference,📡,"Even stable power sources gain a slight instability, making basic filtering a more common requirement."
+,Imperfect Parts,❔,"All components in the kit have a slight random deviation from their stated values (e.g., +/- 5%), forcing fine-tuning over pure calculation."
+Economic,Tight Budget,💰,The source provides very little extra energy beyond what's needed for the optimal solution. There is almost no room for error or inefficiency.
+,Expensive Parts,💸,"Every component used from the kit ""costs"" a small amount of EU, which is deducted from the source's total output. This encourages minimalism in design."
+Constraint,Inductor Embargo,🚫,"The level forbids the use of Inductors, forcing players to find alternative, less efficient ways to solve stabilization puzzles."
+,Component Shortage,📉,"Forbids the use of components of a certain type or value range (e.g., ""No resistors above 500Ω allowed"")."
+,Vintage Only,🕰️,"Only ""Imperfect Parts"" are available in the component kit, introducing unpredictability across the board."

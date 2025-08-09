@@ -1,0 +1,89 @@
+# PRD Ignit 3.0
+
+**Version:** 3.0
+**Status:** Pre-release MVP (Early Access)
+
+## **1. Define the Product**
+
+- **Product Name:** Ignit
+- **High-Level Summary:** Ignit is a minimalist puzzle game for the "Cognitive Health" market. It provides users with a series of engaging cognitive exercises based on the logic of electronic circuits, designed to train focus, systematic thinking, and problem-solving skills.
+- **Platform:** iOS & Android.
+- **Product Purpose & Pain Point Solved:** The primary goal of Ignit is to provide an elegant and effective tool for "brain gymnastics". The product solves the key problem of existing simulators: a high entry barrier and intimidating interface. We adapt this complex but highly rewarding discipline for beginners, ensuring a smooth onboarding and skill progression.
+- **Target Audience:**
+    - **"Conscious Enthusiasts":** Users seeking intellectual development and meditative focus in their gaming experiences.
+    - **Adults (30+):** An audience concerned with their cognitive health, looking for alternatives to traditional brain-training games.
+- **User Value Proposition:** Ignit's value lies in providing a unique experience where the player can immerse themselves in the process of **thinking** and achieve deep satisfaction from finding an elegant solution. The fact that they also learn the basics of electronics is a valuable bonus, not the primary goal.
+- **Monetization Model:** *Freemium*, built on the **"Monetization of Respect"** principle. Core gameplay is free. Monetization comes from optional enhancements:
+    - **Depth & Analytics:** Purchasing advanced widgets for the statistics screen (`The Mirror`), subscribing to *premium* puzzle packs.
+    - **Comfort:** Purchasing **"helping tools"**, additional **"save game"** slots.
+    - **Customization:** Purchasing cosmetic themes and component skins.
+- **Key Differentiators:**
+    1. Focus on **"cognitive exercise"**, not academic instruction.
+    2. Unique core mechanic: **"Sweet Spot + Supercapacitor"**.
+    3. Impeccable **UX** and accessibility for newcomers.
+
+## **2. Determine Goals**
+
+### **Goal 1: Player Engagement & Satisfaction**
+
+- **M (Measurable):**
+    - *Average App Store Rating:* **4.6+**.
+    - *Day 1 Retention:* **≥ 40%**.
+    - *Day 7 Retention:* **≥ 20%**.
+- **T (Time-bound):** Within **6 months** of global launch.
+
+### **Goal 2: Business & Monetization**
+
+- **M (Measurable):**
+    - *Conversion Rate* (to paying user): **3%**.
+    - *ARPU* (Average Revenue Per User): **$0.25**.
+- **T (Time-bound):** Within **12 months** of global launch.
+
+### **Goal 3: Product Roadmap**
+
+- **M (Measurable):**
+    - *MVP Launch:* "Lab" mode, powered by the "Prometheus" generator, is released to a closed group of testers to validate the quality of generated levels.
+    - *Post-launch Update:* "Main Campaign" with handcrafted levels is released as the first major update.
+- **T (Time-bound):**
+    - *MVP Release:* **Q4 2026**.
+    - *"Main Campaign" Release:* Within **6-9 months** post-MVP launch.
+
+## **3. Tech Stack Analysis**
+
+- **Tech Stack:** TypeScript, React, Vite, Material UI (with sx props), Framer Motion.
+- **Key Implementations:**
+    - **Simulation Engine:** The core physics engine will be implemented in **TypeScript**.
+    - **Game Canvas:** The interactive game board will use **HTML Canvas** with a **WebGL** library (e.g., `react-three-fiber`) to ensure high performance for rendering and visual effects.
+    - **UI & Animations:** The main UI will be built with **React, Material UI, and Framer Motion**. A hybrid approach of CSS animations and PNG sprites will be used for visual effects.
+    - **Level Generator "Prometheus":** This is a separate sub-product (e.g., a Node.js/Python script) that generates level data in a **JSON format**. The main application will consume these JSON files to render levels.
+
+## **4. Limit the Scope of Work**
+
+### **In-Scope for MVP (Pre-release / Early Access):**
+
+- **Core Feature:** The **"Lab"** mode, powered by the **"Prometheus"** level generator.
+- **Core Gameplay Loop:** A fully functional **"Energy Economy"** mechanic.
+- **UI/UX:** A functional **"grey-box"** prototype using standard **Material UI** components.
+- **Feedback Mechanism:** An in-game tool for players to report bugs and rate the quality of generated levels.
+
+### **Out-of-Scope for MVP:**
+
+- **"Main Campaign"** with handcrafted levels.
+- **Polished Visuals** and complex custom animations.
+- **Monetization** features (IAP store).
+- **Onboarding** and tutorials. The MVP is aimed at enthusiasts.
+
+## **5. Core Gameplay & Design Philosophy**
+
+- **Core Philosophy:** "Challenge Logic, Reward Elegance". The gameplay encourages experimentation and discovery.
+- **Core Mechanic:** The **"Energy Economy"** system, where the player's score is determined by the energy saved in the `Supercapacitor`.
+- **Level Architecture:** Levels are procedurally generated by "Prometheus" based on a combination of three key entities:
+    - **`Difficulty`**: A 5-level scale defining the overall challenge.
+    - **`Archetype`**: The core puzzle logic (e.g., `Stabilizer`, `Timed Charge`).
+    - **`Mutator`**: A global rule that alters the level's physics or constraints (e.g., `Overheat`, `Component Shortage`).
+- **Detailed Specifications:** All detailed information regarding component parameters, archetypes, mutators, and difficulty scaling is located in the supplementary design documents:
+    - `Game Design 3.md`
+    - `Ignit Levels - Components.csv`
+    - `Ignit Levels - Archetype Combination Matrix.csv`
+    - `Ignit Levels - Game Difficulty Scale.csv`
+    - `Ignit Levels - Game Mutators.csv`
