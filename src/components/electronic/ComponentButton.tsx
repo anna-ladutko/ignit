@@ -29,30 +29,39 @@ export const ComponentButton: React.FC<ComponentButtonProps> = ({
   const getDisplayName = () => {
     switch (type) {
       case ComponentType.RESISTOR:
-        return label || 'Резистор'
+        return label || 'Resistor'
       case ComponentType.CAPACITOR:
-        return label || 'Конденсатор'
+        return label || 'Capacitor'
       case ComponentType.INDUCTOR:
-        return label || 'Индуктивность'
+        return label || 'Inductor'
       case ComponentType.LED:
-        return label || 'Светодиод'
+        return label || 'LED'
       case ComponentType.VOLTAGE_SOURCE:
-        return label || 'Источник'
+        return label || 'Source'
       case ComponentType.SWITCH:
-        return label || 'Переключатель'
+        return label || 'Switch'
       case ComponentType.SUPERCAPACITOR:
-        return label || 'Суперконденсатор'
+        return label || 'Supercapacitor'
       default:
-        return label || 'Компонент'
+        return label || 'Component'
     }
   }
+
+  const handleClick = (event: React.MouseEvent | React.TouchEvent) => {
+    event.preventDefault();
+    if (onClick && !disabled) {
+      onClick();
+    }
+  };
 
   return (
     <Button
       variant="component"
-      onClick={onClick}
+      onClick={handleClick}
+      onTouchEnd={handleClick}
       disabled={disabled}
       sx={{
+        touchAction: 'manipulation', // Enable fast touch response
         ...sx,
         flexDirection: 'column',
         p: theme.spacing(1),

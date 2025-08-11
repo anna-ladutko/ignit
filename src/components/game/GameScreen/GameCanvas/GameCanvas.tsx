@@ -10,6 +10,7 @@ interface GameCanvasProps {
   gameState: GameScreenState
   onComponentPlace: (componentType: string, position: { x: number; y: number }) => void
   onComponentSelect: (componentId: string) => void
+  onComponentRemove: (componentId: string) => void
   onWireStart: (componentId: string, terminal: string, position: { x: number; y: number }) => void
   isSimulating: boolean
 }
@@ -18,6 +19,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   gameState,
   onComponentPlace,
   onComponentSelect,
+  onComponentRemove,
   onWireStart,
   isSimulating,
 }) => {
@@ -44,18 +46,35 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     return () => window.removeEventListener('resize', updateCanvasSize)
   }, [])
 
-  const handleCanvasClick = (event: React.MouseEvent) => {
+  const handleCanvasClick = (event: React.MouseEvent | React.TouchEvent) => {
+    console.log('Canvas clicked:', { event: event.type, gameState: { draggedComponent: gameState.draggedComponent, placedComponents: gameState.placedComponents.length } })
+    
     if (!canvasRef.current) return
 
     const rect = canvasRef.current.getBoundingClientRect()
+    
+    // Handle both mouse and touch events
+    let clientX: number, clientY: number
+    if ('touches' in event) {
+      // Touch event
+      const touch = event.touches[0] || event.changedTouches[0]
+      clientX = touch.clientX
+      clientY = touch.clientY
+    } else {
+      // Mouse event
+      clientX = event.clientX
+      clientY = event.clientY
+    }
+    
     const clickPos = {
-      x: event.clientX - rect.left - CANVAS_PADDING,
-      y: event.clientY - rect.top - CANVAS_PADDING,
+      x: clientX - rect.left - CANVAS_PADDING,
+      y: clientY - rect.top - CANVAS_PADDING,
     }
 
     const gridPos = pixelToGrid(clickPos)
+    const isValidPosition = isValidGridPosition(gridPos, canvasSize)
     
-    if (isValidGridPosition(gridPos, canvasSize)) {
+    if (isValidPosition) {
       const pixelPos = gridToPixel(gridPos)
       
       // Check if clicking on existing component
@@ -66,11 +85,29 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       })
 
       if (clickedComponent) {
+        // If we have a dragged component from the same source, this is a move operation
+        if (gameState.draggedComponent && gameState.draggedComponent.sourceId === clickedComponent.id) {
+          return
+        }
         onComponentSelect(clickedComponent.id)
       } else if (gameState.draggedComponent) {
-        // Place new component
+        // Place new component or move existing one
         onComponentPlace(gameState.draggedComponent.type as string, pixelPos)
+      } else {
+        // Clear selection when clicking on empty space
+        onComponentSelect('')
       }
+    } else {
+      // Click outside valid grid - if dragging a non-preinstalled component, remove it (return to palette)
+      if (gameState.draggedComponent && gameState.draggedComponent.sourceId) {
+        const draggedComponentData = gameState.placedComponents.find(pc => pc.id === gameState.draggedComponent!.sourceId)
+        // Only remove if it's not a preinstalled component
+        if (draggedComponentData && !draggedComponentData.isPreinstalled) {
+          onComponentRemove(gameState.draggedComponent.sourceId)
+        }
+      }
+      // Clear any active dragging
+      onComponentSelect('')
     }
   }
 
@@ -110,20 +147,33 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       sx={{
         width: '100%',
         height: '100%',
+        minHeight: '300px', // Ensure minimum touch area
         position: 'relative',
         backgroundColor: theme.palette.circuit.boardBackground,
-        border: `2px solid ${theme.palette.circuit.grid}`,
+        border: `1px solid ${theme.palette.circuit.grid}`,
         borderRadius: theme.mobile.cornerRadius,
         margin: theme.spacing(1),
         overflow: 'hidden',
-        cursor: isDragging ? 'grabbing' : 'default',
+        cursor: isDragging ? 'grabbing' : gameState.draggedComponent ? 'crosshair' : 'default',
         userSelect: 'none',
       }}
       onClick={handleCanvasClick}
+      onTouchEnd={(e) => {
+        handleCanvasClick(e);
+      }}
+      onTouchStart={(e) => {
+        // Don't prevent default here to avoid passive event listener errors
+      }}
       onMouseMove={handleMouseMove}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
+      style={{ 
+        touchAction: 'none',
+        WebkitTouchCallout: 'none',
+        WebkitUserSelect: 'none',
+        userSelect: 'none'
+      }} // Disable default touch actions
     >
       {/* Grid Layer - Background grid for placement */}
       <GridLayer
@@ -155,69 +205,6 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         onWireStart={onWireStart}
       />
 
-      {/* Level Source and Targets (Fixed positions) */}
-      {gameState.level && (
-        <>
-          {/* Source - Fixed at top-left area */}
-          <Box
-            sx={{
-              position: 'absolute',
-              left: CANVAS_PADDING + GRID_SIZE,
-              top: CANVAS_PADDING + GRID_SIZE,
-              width: GRID_SIZE,
-              height: GRID_SIZE,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: `${theme.palette.components.source.main}20`,
-              border: `2px solid ${theme.palette.components.source.main}`,
-              borderRadius: theme.mobile.cornerRadius / 2,
-              zIndex: theme.electronicZIndex.components,
-            }}
-          >
-            <Box
-              sx={{
-                color: theme.palette.components.source.main,
-                fontSize: '24px',
-                fontWeight: 700,
-              }}
-            >
-              ⚡
-            </Box>
-          </Box>
-
-          {/* Targets - Fixed positions based on level data */}
-          {gameState.level.circuit_definition.targets.map((target, index) => (
-            <Box
-              key={target.id}
-              sx={{
-                position: 'absolute',
-                right: CANVAS_PADDING + GRID_SIZE * (index + 1),
-                bottom: CANVAS_PADDING + GRID_SIZE,
-                width: GRID_SIZE,
-                height: GRID_SIZE,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: `${theme.palette.components.led.main}20`,
-                border: `2px solid ${theme.palette.components.led.main}`,
-                borderRadius: theme.mobile.cornerRadius / 2,
-                zIndex: theme.electronicZIndex.components,
-              }}
-            >
-              <Box
-                sx={{
-                  color: theme.palette.components.led.main,
-                  fontSize: '16px',
-                  fontWeight: 700,
-                }}
-              >
-                💡
-              </Box>
-            </Box>
-          ))}
-        </>
-      )}
 
       {/* Visual feedback for invalid drop areas */}
       {isDragging && (

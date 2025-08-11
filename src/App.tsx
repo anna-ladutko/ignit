@@ -7,6 +7,7 @@ import { loadLevel } from './utils/levelLoader'
 import { LevelLoader } from './components/LevelLoader'
 import { ThemeDemo } from './components/ThemeDemo'
 import { MainScreen, SettingsScreen, GameScreen } from './components/game'
+import { levelManager } from './services/LevelManager'
 import type { Level } from './types'
 
 // Sample level data from Prometheus for testing
@@ -163,13 +164,29 @@ function App() {
             playerName="Hello Stranger"
             levelsCompleted={7}
             onPlayClick={async () => {
-              // Load test level for GameScreen
+              // Load first level from Prometheus Studio export
               try {
-                const loadedLevel = await loadLevel(sampleLevelData)
-                setTestLevel(loadedLevel)
-                setCurrentScreen('game')
+                const firstLevel = await levelManager.loadLevelByOrder(1)
+                if (firstLevel) {
+                  setTestLevel(firstLevel)
+                  setCurrentScreen('game')
+                } else {
+                  // Fallback to sample level if no exported levels found
+                  console.warn('No exported levels found, using sample level')
+                  const loadedLevel = await loadLevel(sampleLevelData)
+                  setTestLevel(loadedLevel)
+                  setCurrentScreen('game')
+                }
               } catch (error) {
-                console.error('Failed to load test level:', error)
+                console.error('Failed to load first level:', error)
+                // Try fallback to sample level
+                try {
+                  const loadedLevel = await loadLevel(sampleLevelData)
+                  setTestLevel(loadedLevel)
+                  setCurrentScreen('game')
+                } catch (fallbackError) {
+                  console.error('Failed to load fallback level:', fallbackError)
+                }
               }
             }}
             onSettingsClick={() => setCurrentScreen('settings')}

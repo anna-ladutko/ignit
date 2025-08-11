@@ -26,12 +26,15 @@ export const ComponentsLayer: React.FC<ComponentsLayerProps> = ({
 }) => {
   const theme = useTheme()
 
+  console.log('ComponentsLayer rendering with components:', placedComponents.length, placedComponents)
+  
   return (
     <>
       {/* Placed Components */}
       {placedComponents.map((component) => {
         const isSelected = selectedComponent === component.id
         const isActive = isSimulating && Math.random() > 0.5 // TODO: Replace with actual simulation state
+        const isPreinstalled = component.isPreinstalled
 
         return (
           <motion.div
@@ -53,10 +56,20 @@ export const ComponentsLayer: React.FC<ComponentsLayerProps> = ({
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                cursor: 'pointer',
+                cursor: isPreinstalled ? 'move' : 'pointer', // Different cursor for preinstalled
                 zIndex: theme.electronicZIndex.components,
                 transform: `rotate(${component.rotation}deg)`,
                 transition: 'transform 0.2s ease',
+                // Different border style for preinstalled components
+                ...(isPreinstalled && {
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    inset: -2,
+                    border: `2px dashed ${theme.palette.electronic.primary}40`,
+                    borderRadius: theme.mobile.cornerRadius / 2,
+                  },
+                }),
                 ...(isSelected && {
                   '&::after': {
                     content: '""',
@@ -82,7 +95,15 @@ export const ComponentsLayer: React.FC<ComponentsLayerProps> = ({
                   },
                 }),
               }}
-              onClick={() => onComponentSelect(component.id)}
+              onClick={() => {
+                console.log('Component clicked:', { id: component.id, isPreinstalled: component.isPreinstalled, type: component.type })
+                onComponentSelect(component.id)
+              }}
+              onTouchEnd={(e) => {
+                e.preventDefault()
+                console.log('Component touched:', { id: component.id, isPreinstalled: component.isPreinstalled, type: component.type })
+                onComponentSelect(component.id)
+              }}
             >
               <ComponentIcon
                 type={component.type}
@@ -182,6 +203,68 @@ export const ComponentsLayer: React.FC<ComponentsLayerProps> = ({
                     {component.properties.resistance && `${component.properties.resistance}Ω`}
                     {component.properties.capacitance && `${component.properties.capacitance}μF`}
                     {component.properties.inductance && `${component.properties.inductance}mH`}
+                  </Box>
+                </Box>
+              )}
+
+              {/* Energy range for targets */}
+              {isPreinstalled && component.properties.energyRange && (
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    bottom: -20,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    backgroundColor: theme.palette.electronic.surface,
+                    border: `1px solid ${theme.palette.circuit.grid}`,
+                    borderRadius: theme.mobile.cornerRadius / 4,
+                    px: 0.5,
+                    py: 0.25,
+                    minWidth: 'max-content',
+                    zIndex: 1,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      fontSize: '8px',
+                      fontWeight: 600,
+                      color: theme.palette.electronic.primary,
+                      textAlign: 'center',
+                      lineHeight: 1,
+                    }}
+                  >
+                    {`${component.properties.energyRange[0]}-${component.properties.energyRange[1]} EU`}
+                  </Box>
+                </Box>
+              )}
+
+              {/* Voltage label for sources */}
+              {isPreinstalled && component.properties.voltage && (
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    bottom: -20,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    backgroundColor: theme.palette.electronic.surface,
+                    border: `1px solid ${theme.palette.circuit.grid}`,
+                    borderRadius: theme.mobile.cornerRadius / 4,
+                    px: 0.5,
+                    py: 0.25,
+                    minWidth: 'max-content',
+                    zIndex: 1,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      fontSize: '8px',
+                      fontWeight: 600,
+                      color: theme.palette.simulation.energyFlow,
+                      textAlign: 'center',
+                      lineHeight: 1,
+                    }}
+                  >
+                    {`${component.properties.voltage}V`}
                   </Box>
                 </Box>
               )}

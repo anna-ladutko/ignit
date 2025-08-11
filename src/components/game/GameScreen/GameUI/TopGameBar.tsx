@@ -21,31 +21,6 @@ export const TopGameBar: React.FC<TopGameBarProps> = ({
 }) => {
   const theme = useTheme()
 
-  const getStatusColor = () => {
-    switch (gameStatus) {
-      case 'complete':
-        return theme.palette.simulation.success
-      case 'failed':
-        return theme.palette.simulation.error
-      case 'loading':
-        return theme.palette.simulation.warning
-      default:
-        return theme.palette.electronic.primary
-    }
-  }
-
-  const getStatusText = () => {
-    switch (gameStatus) {
-      case 'complete':
-        return 'Level Complete!'
-      case 'failed':
-        return 'Circuit Failed'
-      case 'loading':
-        return 'Loading...'
-      default:
-        return 'Building Circuit'
-    }
-  }
 
   return (
     <Box
@@ -53,15 +28,16 @@ export const TopGameBar: React.FC<TopGameBarProps> = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        p: theme.spacing(2),
+        px: theme.spacing(2),
+        py: theme.spacing(1),
         background: theme.palette.gradients.backgroundModule1,
         borderBottom: `1px solid ${theme.palette.circuit.grid}`,
         boxShadow: theme.palette.customShadows.softShadow,
-        minHeight: theme.mobile.touchTarget + theme.spacing(2),
+        minHeight: theme.mobile.touchTarget,
       }}
     >
       {/* Left side - Back button and level info */}
-      <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <IconButton
           onClick={onBackClick}
           sx={{
@@ -78,93 +54,43 @@ export const TopGameBar: React.FC<TopGameBarProps> = ({
           <ArrowBackIcon />
         </IconButton>
 
-        <Box>
+        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
           <Typography
             variant="componentLabel"
             sx={{
               fontSize: '14px',
               fontWeight: 600,
               color: theme.palette.text.primary,
+              lineHeight: 1,
             }}
           >
-            {level?.metadata.level_id || 'Unknown Level'}
+            {level ? `lvl.${String(level.registryOrder || 1).padStart(4, '0')}` : 'lvl.0001'}
           </Typography>
           <Typography
             variant="componentValue"
             sx={{
-              fontSize: '11px',
-              color: getStatusColor(),
-              fontWeight: 500,
+              fontSize: '9px',
+              color: theme.palette.text.secondary,
+              opacity: 0.7,
+              fontFamily: 'monospace',
+              letterSpacing: '-0.5px',
+              wordBreak: 'break-all',
+              maxWidth: '140px',
+              lineHeight: 1,
+              mt: 0.25,
             }}
           >
-            {getStatusText()}
+            {level?.metadata.level_id || 'Unknown Level'}
           </Typography>
         </Box>
       </Box>
 
-      {/* Center - Level difficulty and archetype */}
-      {level && (
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-            flex: 1,
-            justifyContent: 'center',
-            px: 1,
-          }}
-        >
-          <Box
-            sx={{
-              px: 1.5,
-              py: 0.5,
-              backgroundColor: `${theme.palette.components.led.main}20`,
-              borderRadius: theme.mobile.cornerRadius / 2,
-              border: `1px solid ${theme.palette.components.led.main}40`,
-            }}
-          >
-            <Typography
-              variant="componentValue"
-              sx={{
-                fontSize: '10px',
-                fontWeight: 600,
-                color: theme.palette.components.led.main,
-                textTransform: 'uppercase',
-              }}
-            >
-              Lv.{level.metadata.difficulty}
-            </Typography>
-          </Box>
-          <Box
-            sx={{
-              px: 1.5,
-              py: 0.5,
-              backgroundColor: `${theme.palette.components.capacitor.main}20`,
-              borderRadius: theme.mobile.cornerRadius / 2,
-              border: `1px solid ${theme.palette.components.capacitor.main}40`,
-            }}
-          >
-            <Typography
-              variant="componentValue"
-              sx={{
-                fontSize: '10px',
-                fontWeight: 600,
-                color: theme.palette.components.capacitor.main,
-                textTransform: 'uppercase',
-              }}
-            >
-              {level.metadata.primary_archetype}
-            </Typography>
-          </Box>
-        </Box>
-      )}
 
       {/* Right side - Energy and score info */}
       <Box
         sx={{
           display: 'flex',
           alignItems: 'center',
-          flex: 1,
           justifyContent: 'flex-end',
           gap: 1.5,
         }}

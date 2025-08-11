@@ -44,10 +44,10 @@ export const themeIgnitElectronic = createTheme({
       error: '#FF4444',       // ошибки
     },
     
-    // Цвета компонентов (каждый тип свой цвет для легкой идентификации)
+    // Component colors (each type has its own color for easy identification)
     components: {
       resistor: { 
-        main: '#FF6B35',      // оранжевый для резисторов
+        main: '#FF6B35',      // orange for resistors
         active: '#FF8555', 
         disabled: '#CC4422' 
       },
@@ -62,12 +62,12 @@ export const themeIgnitElectronic = createTheme({
         disabled: '#88C6AF' 
       },
       led: { 
-        main: '#FFD93D',      // желтый для светодиодов
+        main: '#FFD93D',      // yellow for LEDs
         active: '#FFE55D', 
         disabled: '#CCB122' 
       },
       source: { 
-        main: '#6C5CE7',      // фиолетовый для источников
+        main: '#6C5CE7',      // purple for sources
         active: '#8B7ED8', 
         disabled: '#5544BB' 
       },
@@ -88,20 +88,20 @@ export const themeIgnitElectronic = createTheme({
       wire: '#00FF88',              // основной цвет проводов
       wireActive: '#33FF99',        // активированный провод
       wireError: '#FF4444',         // провод с ошибкой
-      connectionPoint: '#FFFFFF',    // точки соединения
-      connectionPointActive: '#00DDFF', // активная точка соединения
+      connectionPoint: '#FFFFFF',    // connection points
+      connectionPointActive: '#00DDFF', // active connection point
       grid: '#2A2F4A',              // сетка размещения
       gridActive: '#3A3F5A',        // активированная сетка
-      selection: '#00DDFF',         // выделение компонентов
+      selection: '#00DDFF',         // component selection
       selectionSecondary: '#0088FF', // вторичное выделение
       boardBackground: '#0F1425',   // фон игрового поля
     },
     
-    // Анимация симуляции
+    // Simulation animation
     simulation: {
-      energyFlow: '#00FF88',        // основное движение энергии
-      energyFlowHigh: '#88FF00',    // высокоэнергетический поток
-      energyFlowLow: '#00FFAA',     // низкоэнергетический поток
+      energyFlow: '#00FF88',        // main energy flow
+      energyFlowHigh: '#88FF00',    // high energy flow
+      energyFlowLow: '#00FFAA',     // low energy flow
       highVoltage: '#FF4444',       // высокое напряжение (опасность)
       lowVoltage: '#4ECDC4',        // низкое напряжение (безопасно)
       success: '#00FF88',           // успешное решение
@@ -152,9 +152,9 @@ export const themeIgnitElectronic = createTheme({
   // Мобильные размеры оптимизированные для Android
   mobile: {
     touchTarget: 44,          // минимальный размер касания (Google Material Design)
-    componentSize: 36,        // размер компонентов на поле
-    componentSizeSmall: 24,   // маленький размер
-    componentSizeLarge: 48,   // большой размер
+    componentSize: 36,        // component size on board
+    componentSizeSmall: 24,   // small size
+    componentSizeLarge: 48,   // large size
     wireThickness: 3,         // толщина проводов
     wireThicknessActive: 5,   // толщина активных проводов
     gridSpacing: 44,          // расстояние сетки (= touchTarget для точности)
@@ -163,7 +163,7 @@ export const themeIgnitElectronic = createTheme({
     animationDuration: 200,   // длительность анимаций в мс
   },
 
-  // Размеры компонентов
+  // Component sizes
   componentSizes: {
     icon: {
       small: 20,
@@ -203,7 +203,7 @@ export const themeIgnitElectronic = createTheme({
       textTransform: 'uppercase',
     },
     
-    // Метки компонентов
+    // Component labels
     componentLabel: {
       fontFamily: '"Inter", monospace', 
       fontSize: '12px',
@@ -212,7 +212,7 @@ export const themeIgnitElectronic = createTheme({
       letterSpacing: '0.01em',
     },
     
-    // Значения компонентов (сопротивление, емкость и т.д.)
+    // Component values (resistance, capacitance, etc.)
     componentValue: {
       fontFamily: '"Inter", monospace',
       fontSize: '10px', 
@@ -221,7 +221,7 @@ export const themeIgnitElectronic = createTheme({
       letterSpacing: '0.01em',
     },
     
-    // Значения энергии/напряжения
+    // Energy/voltage values
     energyValue: {
       fontFamily: '"Inter", monospace',
       fontSize: '14px',
@@ -259,7 +259,7 @@ export const themeIgnitElectronic = createTheme({
     borderRadius: 8, // меньший радиус для мобильных интерфейсов
   },
 
-  // Компоненты Material UI с кастомными стилями
+  // Material UI components with custom styles
   components: {
     // Кнопки с электронной темой
     MuiButton: {
@@ -328,7 +328,7 @@ export const themeIgnitElectronic = createTheme({
       ],
     },
 
-    // Карточки с разными вариантами
+    // Cards with different variants
     MuiCard: {
       variants: [
         {

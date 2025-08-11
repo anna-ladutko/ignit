@@ -13,6 +13,7 @@ export interface PlacedComponent {
   rotation: number // 0, 90, 180, 270 degrees
   properties: ComponentProperties
   originalComponentId?: string // Reference to level's available component
+  isPreinstalled?: boolean // True for sources and targets that come with the level
 }
 
 export interface ComponentProperties {
@@ -50,6 +51,7 @@ export interface GameScreenState {
   draggedComponent: {
     type: ComponentType[keyof ComponentType]
     sourceId?: string
+    componentId?: string // Add componentId to track specific component
   } | null
   isDrawingWire: boolean
   wireStartPoint: {

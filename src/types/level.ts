@@ -92,4 +92,5 @@ export interface Level {
   metadata: LevelMetadata
   circuit_definition: CircuitDefinition
   solution_data: SolutionData
+  registryOrder?: number  // Order number from level registry (1, 2, 3...)
 }

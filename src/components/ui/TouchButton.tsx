@@ -95,13 +95,23 @@ export const TouchButton: React.FC<TouchButtonProps> = ({
     }
   }
 
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement> | React.TouchEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    if (props.onClick && !props.disabled) {
+      props.onClick(event as React.MouseEvent<HTMLButtonElement>);
+    }
+  };
+
   return (
     <Button
       {...props}
+      onClick={handleClick}
+      onTouchEnd={handleClick}
       sx={{
         ...getSizeStyles(),
         ...getVariantStyles(),
         width: fullWidth ? '100%' : 'auto',
+        touchAction: 'manipulation',
         '&:active': {
           transform: 'scale(0.98)',
         },
