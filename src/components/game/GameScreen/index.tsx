@@ -3,12 +3,59 @@ import { Box, useTheme } from '@mui/material'
 import type { Level } from '../../../types'
 import { ComponentType } from '../../../types'
 import type { GameScreenState, PlacedComponent } from '../../../types/gameScreen'
+import { gridToPixel, STANDARD_CANVAS_SIZE } from '../../../types/gameScreen'
 import { TopGameBar } from './GameUI/TopGameBar'
 import { ComponentPalette } from './GameUI/ComponentPalette'
 import { GameCanvas } from './GameCanvas/GameCanvas'
 import { GameControls } from './GameUI/GameControls'
 import { CircuitSimulator } from '../../../game/circuitSimulator'
-// import { levelManager } from '../../../services/LevelManager'
+
+// Helper function to create preinstalled components (sources and targets)
+const createPreinstalledComponents = (level: Level): PlacedComponent[] => {
+  const components: PlacedComponent[] = []
+  
+  // Add source component - place in safe zone (100,100 - 400,400)
+  if (level.circuit_definition.source) {
+    const source = level.circuit_definition.source
+    const sourcePixelPos = gridToPixel({ row: 3, col: 3 }) // Safe zone: pixel (140,140)
+    
+    components.push({
+      id: source.id,
+      type: ComponentType.VOLTAGE_SOURCE,
+      position: sourcePixelPos,
+      rotation: 0,
+      originalComponentId: source.id,
+      isPreinstalled: true,
+      properties: {
+        voltage: source.voltage,
+        energyOutput: source.energy_output,
+        isSource: true
+      }
+    })
+  }
+  
+  // Add target components - place in safe zone (100,100 - 400,400)
+  level.circuit_definition.targets.forEach((target, index) => {
+    const gridX = 6 + (index * 3) // Positions: 6, 9 (pixels: 260, 380)
+    const gridY = 3 // Same row as source
+    const targetPixelPos = gridToPixel({ row: gridY, col: gridX })
+    
+    components.push({
+      id: target.id,
+      type: ComponentType.LED,
+      position: targetPixelPos,
+      rotation: 0,
+      originalComponentId: target.id,
+      isPreinstalled: true,
+      properties: {
+        energyRange: target.energy_range,
+        isTarget: true
+      }
+    })
+  })
+  
+  return components
+}
 
 interface GameScreenProps {
   level: Level
@@ -46,55 +93,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         simulator.loadLevel(level)
         simulator.getGameState()
         
-        // Create preinstalled components (sources and targets)
-        const preinstalledComponents: PlacedComponent[] = []
-        
-        // Add source component
-        console.log('Level data:', level.circuit_definition)
-        if (level.circuit_definition.source) {
-          const source = level.circuit_definition.source
-          console.log('Creating source:', source)
-          preinstalledComponents.push({
-            id: source.id,
-            type: ComponentType.VOLTAGE_SOURCE,
-            position: { x: 150, y: 120 }, // Better position - more centered in left area  
-            rotation: 0,
-            originalComponentId: source.id,
-            isPreinstalled: true,
-            properties: {
-              voltage: source.voltage,
-              energyOutput: source.energy_output,
-              isSource: true
-            }
-          })
-        }
-        
-        // Add target components with safe positioning
-        console.log('Targets data:', level.circuit_definition.targets)
-        level.circuit_definition.targets.forEach((target, index) => {
-          console.log(`Creating target ${index}:`, target)
-          // Use safe positions that work on mobile screens (414x896)
-          // Position targets in right area with better spacing for multiple LEDs
-          const baseX = 220 + (index * 80) // Horizontal spacing for multiple LEDs
-          const baseY = 180 // Fixed Y position that's visible on mobile
-          
-          preinstalledComponents.push({
-            id: target.id,
-            type: ComponentType.LED,
-            position: { x: baseX, y: baseY },
-            rotation: 0,
-            originalComponentId: target.id,
-            isPreinstalled: true,
-            properties: {
-              energyRange: target.energy_range,
-              isTarget: true
-            }
-          })
-          
-          console.log(`Target ${index} positioned at:`, { x: baseX, y: baseY })
-        })
-        
-        console.log('Final preinstalled components:', preinstalledComponents.length, preinstalledComponents)
+        const preinstalledComponents = createPreinstalledComponents(level)
         
         setGameState(prev => ({
           ...prev,
@@ -109,19 +108,16 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         setGameState(prev => ({ ...prev, gameStatus: 'failed' }))
       }
     }
-  }, [level]) // Removed simulator dependency to prevent double loading
+  }, [level])
 
   const handleComponentPlace = (componentType: string, position: { x: number; y: number }) => {
-    console.log('handleComponentPlace called:', { componentType, position, level: !!gameState.level, draggedComponent: gameState.draggedComponent })
-    
     if (!gameState.level || !gameState.draggedComponent) {
-      console.log('Placement blocked - missing level or draggedComponent')
       return
     }
 
     // Check if we're moving an existing component
     if (gameState.draggedComponent.sourceId) {
-      // Moving existing component
+      // Moving existing component - all components use pixel coordinates
       const componentToMove = gameState.placedComponents.find(pc => pc.id === gameState.draggedComponent!.sourceId)
       if (componentToMove) {
         setGameState(prev => ({
@@ -156,13 +152,14 @@ export const GameScreen: React.FC<GameScreenProps> = ({
       return
     }
 
-    // Create new placed component
+    // Create new placed component - position is in pixels for user-placed components
     const newComponent: PlacedComponent = {
       id: `placed_${originalComponent.id}_${Date.now()}`,
       type: componentType as ComponentType[keyof ComponentType],
-      position,
+      position, // This is pixel position from grid snap
       rotation: 0,
       originalComponentId: originalComponent.id,
+      isPreinstalled: false, // Explicitly mark as user-placed
       properties: {
         resistance: originalComponent.resistance,
         capacitance: originalComponent.capacitance,
@@ -176,15 +173,6 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     // Check if more components of this type remain after placement
     const remainingAfterPlacement = (originalComponent.quantity || 1) - (usedCount + 1)
     const shouldKeepDragging = remainingAfterPlacement > 0
-    
-    console.log('Component placement:', {
-      componentType,
-      originalComponent,
-      usedCount,
-      remainingAfterPlacement,
-      shouldKeepDragging,
-      newComponent
-    })
     
     // Add to placed components
     setGameState(prev => ({
@@ -209,13 +197,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         sourceId: existingComponent.id
       } : (componentId ? null : prev.draggedComponent), // Clear if clicking empty space
     }))
-    
-    console.log('Component selected for dragging:', { componentId, existingComponent: !!existingComponent, isPreinstalled: existingComponent?.isPreinstalled })
   }
 
   const handleWireStart = (componentId: string, terminal: string, position: { x: number; y: number }) => {
     // TODO: Implement wire drawing logic
-    console.log('Start wire from:', componentId, terminal, 'at:', position)
   }
 
   const handleSimulation = () => {
@@ -299,10 +284,11 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   return (
     <Box
       sx={{
-        minHeight: '100vh',
-        backgroundColor: 'background.default',
+        width: '100%',
+        height: '100%',
         display: 'flex',
         flexDirection: 'column',
+        position: 'relative',
       }}
     >
       {/* Top Game Bar */}
@@ -314,14 +300,14 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         onBackClick={onBackToMain}
       />
 
-      {/* Main Game Area */}
+      {/* Main Game Area - Full screen without restrictions */}
       <Box
         sx={{
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
           position: 'relative',
-          overflow: 'hidden',
+          // No overflow restrictions - allow infinite canvas
         }}
       >
         {/* Game Canvas */}
@@ -343,23 +329,17 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           selectedComponent={gameState.selectedComponent}
           draggedComponent={gameState.draggedComponent}
           onComponentSelect={(componentId) => {
-            console.log('Palette component selected:', componentId)
-            // Find the component to get its type
             const selectedComponent = gameState.level?.circuit_definition.available_components.find(comp => comp.id === componentId)
             if (selectedComponent) {
-              // Set dragged component to enable placement
-              setGameState(prev => {
-                console.log('Setting draggedComponent in palette:', { componentId, type: selectedComponent.type, prevDraggedComponent: prev.draggedComponent })
-                return {
-                  ...prev,
-                  draggedComponent: {
-                    type: selectedComponent.type as ComponentType[keyof ComponentType],
-                    sourceId: undefined,
-                    componentId: componentId
-                  },
-                  selectedComponent: null
-                }
-              })
+              setGameState(prev => ({
+                ...prev,
+                draggedComponent: {
+                  type: selectedComponent.type as ComponentType[keyof ComponentType],
+                  sourceId: undefined,
+                  componentId: componentId
+                },
+                selectedComponent: null
+              }))
             }
           }}
         />
@@ -369,7 +349,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           gameStatus={gameState.gameStatus}
           onSimulate={handleSimulation}
           onReset={handleReset}
-          onHint={() => console.log('Show hint')}
+          onHint={() => {}}
           canSimulate={gameState.placedComponents.length > 0}
         />
       </Box>

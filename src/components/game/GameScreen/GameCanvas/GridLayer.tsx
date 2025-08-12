@@ -1,5 +1,6 @@
 import React from 'react'
 import { Box, useTheme } from '@mui/material'
+import { STANDARD_CANVAS_SIZE } from '../../../../types/gameScreen'
 
 interface GridLayerProps {
   gridCols: number
@@ -7,6 +8,7 @@ interface GridLayerProps {
   gridSize: number
   padding: number
   selectedComponent: string | null
+  canvasSize: { width: number; height: number } // Still needed for centering on screen
 }
 
 export const GridLayer: React.FC<GridLayerProps> = ({
@@ -15,63 +17,29 @@ export const GridLayer: React.FC<GridLayerProps> = ({
   gridSize,
   padding,
   selectedComponent,
+  canvasSize,
 }) => {
   const theme = useTheme()
 
-  const gridLines = []
-
-  // Vertical lines
-  for (let i = 0; i <= gridCols; i++) {
-    gridLines.push(
-      <Box
-        key={`v-${i}`}
-        sx={{
-          position: 'absolute',
-          left: padding + i * gridSize,
-          top: padding,
-          width: '1px',
-          height: gridRows * gridSize,
-          backgroundColor: theme.palette.circuit.grid,
-          opacity: 0.3,
-        }}
-      />
-    )
-  }
-
-  // Horizontal lines
-  for (let i = 0; i <= gridRows; i++) {
-    gridLines.push(
-      <Box
-        key={`h-${i}`}
-        sx={{
-          position: 'absolute',
-          left: padding,
-          top: padding + i * gridSize,
-          width: gridCols * gridSize,
-          height: '1px',
-          backgroundColor: theme.palette.circuit.grid,
-          opacity: 0.3,
-        }}
-      />
-    )
-  }
-
-  // Grid dots at intersections
+  // Grid dots at intersections - align with screen corner (simplified coordinates)
   const gridDots = []
-  for (let row = 0; row <= gridRows; row++) {
-    for (let col = 0; col <= gridCols; col++) {
+  for (let row = 0; row < gridRows; row++) {
+    for (let col = 0; col < gridCols; col++) {
+      // Calculate position using EXACT same logic as gridToPixel
+      const dotX = col * gridSize + gridSize / 2
+      const dotY = row * gridSize + gridSize / 2
+      
       gridDots.push(
         <Box
           key={`dot-${row}-${col}`}
           sx={{
             position: 'absolute',
-            left: padding + col * gridSize - 1,
-            top: padding + row * gridSize - 1,
-            width: '2px',
-            height: '2px',
-            backgroundColor: theme.palette.circuit.grid,
+            left: dotX - 2,
+            top: dotY - 2,
+            width: '4px',
+            height: '4px',
+            backgroundColor: '#343635',
             borderRadius: '50%',
-            opacity: selectedComponent ? 0.6 : 0.4,
           }}
         />
       )
@@ -80,7 +48,6 @@ export const GridLayer: React.FC<GridLayerProps> = ({
 
   return (
     <>
-      {gridLines}
       {gridDots}
     </>
   )

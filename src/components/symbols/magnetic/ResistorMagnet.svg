@@ -1,0 +1,17 @@
+<svg width="100" height="40" viewBox="0 0 100 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Магнитные точки -->
+  <circle cx="10" cy="20" r="6" fill="currentColor"/>
+  <circle cx="90" cy="20" r="6" fill="currentColor"/>
+
+  <!-- Соединительные линии -->
+  <line x1="10" y1="20" x2="25" y2="20" stroke="currentColor" stroke-width="2"/>
+  <line x1="73" y1="20" x2="90" y2="20" stroke="currentColor" stroke-width="2"/>
+
+  <!-- Зигзаг резистора -->
+  <path d="M25 20L29 11L37 29L45 11L53 29L61 11L69 29L73 20"
+        stroke="currentColor"
+        stroke-width="3"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        fill="none"/>
+</svg>

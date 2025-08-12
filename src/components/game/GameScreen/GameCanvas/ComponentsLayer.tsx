@@ -26,7 +26,6 @@ export const ComponentsLayer: React.FC<ComponentsLayerProps> = ({
 }) => {
   const theme = useTheme()
 
-  console.log('ComponentsLayer rendering with components:', placedComponents.length, placedComponents)
   
   return (
     <>
@@ -35,6 +34,9 @@ export const ComponentsLayer: React.FC<ComponentsLayerProps> = ({
         const isSelected = selectedComponent === component.id
         const isActive = isSimulating && Math.random() > 0.5 // TODO: Replace with actual simulation state
         const isPreinstalled = component.isPreinstalled
+        
+        // All components use pixel coordinates - simple and clean!
+        const pixelPosition = component.position
 
         return (
           <motion.div
@@ -49,8 +51,8 @@ export const ComponentsLayer: React.FC<ComponentsLayerProps> = ({
             <Box
               sx={{
                 position: 'absolute',
-                left: component.position.x - GRID_SIZE / 2,
-                top: component.position.y - GRID_SIZE / 2,
+                left: pixelPosition.x - GRID_SIZE / 2,
+                top: pixelPosition.y - GRID_SIZE / 2,
                 width: GRID_SIZE,
                 height: GRID_SIZE,
                 display: 'flex',
@@ -95,13 +97,9 @@ export const ComponentsLayer: React.FC<ComponentsLayerProps> = ({
                   },
                 }),
               }}
-              onClick={() => {
-                console.log('Component clicked:', { id: component.id, isPreinstalled: component.isPreinstalled, type: component.type })
-                onComponentSelect(component.id)
-              }}
+              onClick={() => onComponentSelect(component.id)}
               onTouchEnd={(e) => {
                 e.preventDefault()
-                console.log('Component touched:', { id: component.id, isPreinstalled: component.isPreinstalled, type: component.type })
                 onComponentSelect(component.id)
               }}
             >
@@ -111,6 +109,7 @@ export const ComponentsLayer: React.FC<ComponentsLayerProps> = ({
                 isActive={isActive}
                 isSelected={isSelected}
                 switchState={component.properties.isClosed}
+                useMagneticStyle={true}
               />
 
               {/* Connection points for wiring */}
@@ -138,8 +137,8 @@ export const ComponentsLayer: React.FC<ComponentsLayerProps> = ({
                     onClick={(e) => {
                       e.stopPropagation()
                       onWireStart(component.id, 'left', {
-                        x: component.position.x - GRID_SIZE / 2,
-                        y: component.position.y,
+                        x: pixelPosition.x - GRID_SIZE / 2,
+                        y: pixelPosition.y,
                       })
                     }}
                   />
@@ -166,8 +165,8 @@ export const ComponentsLayer: React.FC<ComponentsLayerProps> = ({
                     onClick={(e) => {
                       e.stopPropagation()
                       onWireStart(component.id, 'right', {
-                        x: component.position.x + GRID_SIZE / 2,
-                        y: component.position.y,
+                        x: pixelPosition.x + GRID_SIZE / 2,
+                        y: pixelPosition.y,
                       })
                     }}
                   />
@@ -274,7 +273,7 @@ export const ComponentsLayer: React.FC<ComponentsLayerProps> = ({
       })}
 
       {/* Preview of dragged component */}
-      {draggedComponent && (
+      {draggedComponent && dragPosition.x > -500 && (
         <motion.div
           animate={{
             scale: [1, 1.1, 1],
@@ -305,6 +304,7 @@ export const ComponentsLayer: React.FC<ComponentsLayerProps> = ({
               size="large"
               isActive={false}
               isSelected={true}
+              useMagneticStyle={true} // Enable magnetic symbols with connection points
             />
           </Box>
         </motion.div>

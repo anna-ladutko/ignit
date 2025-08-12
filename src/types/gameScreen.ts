@@ -66,34 +66,44 @@ export interface GridPosition {
   col: number
 }
 
-export const GRID_SIZE = 44 // Mobile touch target size
+// === COORDINATE SYSTEM CONSTANTS ===
+export const GRID_SIZE = 40 // Optimal for magnetic connections (100px SVG = 2.5 cells)
+export const GRID_COLS = 40 // Fixed grid columns for infinite canvas
+export const GRID_ROWS = 40 // Fixed grid rows for infinite canvas
+export const STANDARD_CANVAS_SIZE = { width: GRID_COLS * GRID_SIZE, height: GRID_ROWS * GRID_SIZE } // 1600x1600
 export const CANVAS_PADDING = 20
 export const COMPONENT_SIZE = 36 // Actual component size within grid cell
+export const MIN_TOUCH_AREA = 300 // Minimum canvas height for touch interaction
 
-// Convert pixel position to grid position
-export const pixelToGrid = (pixelPos: Position): GridPosition => ({
-  row: Math.round(pixelPos.y / GRID_SIZE),
-  col: Math.round(pixelPos.x / GRID_SIZE)
-})
+// === SIMPLIFIED COORDINATE FUNCTIONS ===
+// Convert pixel position to grid position (aligned with screen corner)
+export const pixelToGrid = (pixelPos: Position): GridPosition => {
+  return {
+    row: Math.round((pixelPos.y - GRID_SIZE / 2) / GRID_SIZE),
+    col: Math.round((pixelPos.x - GRID_SIZE / 2) / GRID_SIZE)
+  }
+}
 
-// Convert grid position to pixel position (center of cell)
-export const gridToPixel = (gridPos: GridPosition): Position => ({
-  x: gridPos.col * GRID_SIZE + GRID_SIZE / 2,
-  y: gridPos.row * GRID_SIZE + GRID_SIZE / 2
-})
+// Convert grid position to pixel position (aligned with screen corner)
+export const gridToPixel = (gridPos: GridPosition): Position => {
+  return {
+    x: gridPos.col * GRID_SIZE + GRID_SIZE / 2,
+    y: gridPos.row * GRID_SIZE + GRID_SIZE / 2
+  }
+}
 
-// Check if position is valid for component placement
-export const isValidGridPosition = (
-  gridPos: GridPosition,
-  canvasSize: { width: number; height: number }
-): boolean => {
-  const maxCols = Math.floor(canvasSize.width / GRID_SIZE)
-  const maxRows = Math.floor(canvasSize.height / GRID_SIZE)
-  
+// Check if position is valid for component placement (simplified)
+export const isValidGridPosition = (gridPos: GridPosition): boolean => {
   return (
     gridPos.col >= 0 &&
     gridPos.row >= 0 &&
-    gridPos.col < maxCols &&
-    gridPos.row < maxRows
+    gridPos.col < GRID_COLS &&
+    gridPos.row < GRID_ROWS
   )
+}
+
+// Snap pixel position to nearest grid point (returns pixel coordinates)
+export const snapToGrid = (pixelPos: Position): Position => {
+  const gridPos = pixelToGrid(pixelPos)
+  return gridToPixel(gridPos)
 }

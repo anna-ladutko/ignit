@@ -153,11 +153,16 @@ function App() {
   }
 
   if (currentTab === 0) {
-    // Game tab - full screen without container
+    // Game tab - completely full screen without any containers or limitations
     return (
       <Box sx={{ 
-        minHeight: '100vh',
+        width: '100vw',
+        height: '100vh',
+        position: 'fixed',
+        top: 0,
+        left: 0,
         backgroundColor: 'background.default',
+        overflow: 'hidden', // Prevent scrolling on game screens
       }}>
         {currentScreen === 'main' ? (
           <MainScreen

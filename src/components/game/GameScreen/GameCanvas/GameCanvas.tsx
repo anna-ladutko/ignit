@@ -4,7 +4,7 @@ import type { GameScreenState } from '../../../../types/gameScreen'
 import { GridLayer } from './GridLayer'
 import { ComponentsLayer } from './ComponentsLayer'
 import { WiresLayer } from './WiresLayer'
-import { GRID_SIZE, CANVAS_PADDING, pixelToGrid, gridToPixel, isValidGridPosition } from '../../../../types/gameScreen'
+import { GRID_SIZE, GRID_COLS, GRID_ROWS, CANVAS_PADDING, MIN_TOUCH_AREA, pixelToGrid, gridToPixel, isValidGridPosition } from '../../../../types/gameScreen'
 
 interface GameCanvasProps {
   gameState: GameScreenState
@@ -27,7 +27,14 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   const canvasRef = useRef<HTMLDivElement>(null)
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 })
   const [isDragging, setIsDragging] = useState(false)
-  const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 })
+  const [dragPosition, setDragPosition] = useState({ x: -1000, y: -1000 }) // Initialize off-screen
+  
+  // Helper function to get coordinates from mouse/touch events
+  const getEventCoords = (event: React.MouseEvent | React.TouchEvent) => {
+    return 'touches' in event 
+      ? event.touches[0] || event.changedTouches[0]
+      : event
+  }
 
   // Update canvas size on resize
   useEffect(() => {
@@ -47,37 +54,23 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   }, [])
 
   const handleCanvasClick = (event: React.MouseEvent | React.TouchEvent) => {
-    console.log('Canvas clicked:', { event: event.type, gameState: { draggedComponent: gameState.draggedComponent, placedComponents: gameState.placedComponents.length } })
-    
     if (!canvasRef.current) return
 
     const rect = canvasRef.current.getBoundingClientRect()
-    
-    // Handle both mouse and touch events
-    let clientX: number, clientY: number
-    if ('touches' in event) {
-      // Touch event
-      const touch = event.touches[0] || event.changedTouches[0]
-      clientX = touch.clientX
-      clientY = touch.clientY
-    } else {
-      // Mouse event
-      clientX = event.clientX
-      clientY = event.clientY
-    }
+    const coords = getEventCoords(event)
     
     const clickPos = {
-      x: clientX - rect.left - CANVAS_PADDING,
-      y: clientY - rect.top - CANVAS_PADDING,
+      x: coords.clientX - rect.left - CANVAS_PADDING,
+      y: coords.clientY - rect.top - CANVAS_PADDING,
     }
 
     const gridPos = pixelToGrid(clickPos)
-    const isValidPosition = isValidGridPosition(gridPos, canvasSize)
+    const isValidPosition = isValidGridPosition(gridPos)
     
     if (isValidPosition) {
       const pixelPos = gridToPixel(gridPos)
       
-      // Check if clicking on existing component
+      // Check if clicking on existing component - all components use pixel coordinates now
       const clickedComponent = gameState.placedComponents.find(component => {
         const dx = Math.abs(component.position.x - pixelPos.x)
         const dy = Math.abs(component.position.y - pixelPos.y)
@@ -121,7 +114,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     }
 
     const gridPos = pixelToGrid(mousePos)
-    if (isValidGridPosition(gridPos, canvasSize)) {
+    if (isValidGridPosition(gridPos)) {
       const snapPos = gridToPixel(gridPos)
       setDragPosition(snapPos)
     }
@@ -137,9 +130,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     setIsDragging(false)
   }
 
-  // Calculate grid dimensions
-  const gridCols = Math.floor(canvasSize.width / GRID_SIZE)
-  const gridRows = Math.floor(canvasSize.height / GRID_SIZE)
+  // Use constants for grid dimensions
 
   return (
     <Box
@@ -147,41 +138,30 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       sx={{
         width: '100%',
         height: '100%',
-        minHeight: '300px', // Ensure minimum touch area
+        minHeight: `${MIN_TOUCH_AREA}px`,
         position: 'relative',
-        backgroundColor: theme.palette.circuit.boardBackground,
-        border: `1px solid ${theme.palette.circuit.grid}`,
-        borderRadius: theme.mobile.cornerRadius,
-        margin: theme.spacing(1),
-        overflow: 'hidden',
+        backgroundColor: '#202221', // Dark background for magnetic grid
         cursor: isDragging ? 'grabbing' : gameState.draggedComponent ? 'crosshair' : 'default',
         userSelect: 'none',
+        touchAction: 'none',
+        WebkitTouchCallout: 'none',
+        WebkitUserSelect: 'none',
       }}
       onClick={handleCanvasClick}
-      onTouchEnd={(e) => {
-        handleCanvasClick(e);
-      }}
-      onTouchStart={(e) => {
-        // Don't prevent default here to avoid passive event listener errors
-      }}
+      onTouchEnd={handleCanvasClick}
       onMouseMove={handleMouseMove}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
-      style={{ 
-        touchAction: 'none',
-        WebkitTouchCallout: 'none',
-        WebkitUserSelect: 'none',
-        userSelect: 'none'
-      }} // Disable default touch actions
     >
       {/* Grid Layer - Background grid for placement */}
       <GridLayer
-        gridCols={gridCols}
-        gridRows={gridRows}
+        gridCols={GRID_COLS}
+        gridRows={GRID_ROWS}
         gridSize={GRID_SIZE}
         padding={CANVAS_PADDING}
         selectedComponent={gameState.selectedComponent}
+        canvasSize={canvasSize}
       />
 
       {/* Wires Layer - Connection wires between components */}

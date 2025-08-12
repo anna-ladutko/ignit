@@ -1,0 +1,16 @@
+<svg width="100" height="40" viewBox="0 0 100 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Магнитные точки -->
+  <circle cx="10" cy="20" r="6" fill="currentColor"/>
+  <circle cx="90" cy="20" r="6" fill="currentColor"/>
+
+  <!-- Соединительные линии -->
+  <line x1="10" y1="20" x2="25" y2="20" stroke="currentColor" stroke-width="2"/>
+  <line x1="75" y1="20" x2="90" y2="20" stroke="currentColor" stroke-width="2"/>
+
+  <!-- Индуктивность - серия полукругов -->
+  <path d="M25 20 C25 12, 35 12, 35 20 C35 12, 45 12, 45 20 C45 12, 55 12, 55 20 C55 12, 65 12, 65 20 C65 12, 75 12, 75 20" 
+        stroke="currentColor" 
+        stroke-width="3" 
+        stroke-linecap="round" 
+        fill="none"/>
+</svg>
