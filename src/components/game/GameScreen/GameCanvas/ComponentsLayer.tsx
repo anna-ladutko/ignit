@@ -11,8 +11,14 @@ interface ComponentsLayerProps {
   draggedComponent: GameScreenState['draggedComponent']
   dragPosition: { x: number; y: number }
   isSimulating: boolean
-  onComponentSelect: (componentId: string) => void
+  isDragging: boolean
+  dragComponentId: string | null
+  dragCurrentPosition: { x: number; y: number } | null
   onWireStart: (componentId: string, terminal: string, position: { x: number; y: number }) => void
+  onComponentTap: (componentId: string) => void
+  onDragStart: (componentId: string, position: { x: number; y: number }) => void
+  onDragMove: (componentId: string, position: { x: number; y: number }) => void
+  onDragEnd: (componentId: string, position: { x: number; y: number }) => void
 }
 
 export const ComponentsLayer: React.FC<ComponentsLayerProps> = ({
@@ -21,12 +27,121 @@ export const ComponentsLayer: React.FC<ComponentsLayerProps> = ({
   draggedComponent,
   dragPosition,
   isSimulating,
-  onComponentSelect,
+  dragComponentId,
+  dragCurrentPosition,
   onWireStart,
+  onComponentTap,
+  onDragStart,
+  onDragMove,
+  onDragEnd,
 }) => {
   const theme = useTheme()
-
+  const [touchStartPosition, setTouchStartPosition] = React.useState<{x: number, y: number} | null>(null)
   
+  // Direct drag refs for ultra-performance
+  const isDraggingRef = React.useRef(false)
+  const dragElementRef = React.useRef<HTMLElement | null>(null)
+  const startTouchRef = React.useRef<{x: number, y: number} | null>(null)
+  const dragStartTimeRef = React.useRef<number>(0)
+
+  // NATIVE EVENTS: Register touch events with preventDefault capability
+  React.useEffect(() => {
+    const handleNativeTouchMove = (event: TouchEvent) => {
+      if (isDraggingRef.current && dragElementRef.current && startTouchRef.current) {
+        // WORKS: preventDefault in native event listener
+        event.preventDefault()
+        event.stopPropagation()
+        
+        const touch = event.touches[0]
+        if (!touch) return
+
+        // Direct transform without React delays
+        const deltaX = touch.clientX - startTouchRef.current.x
+        const deltaY = touch.clientY - startTouchRef.current.y
+        
+        dragElementRef.current.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0)`
+      }
+    }
+
+    // Register with passive: false to enable preventDefault
+    document.addEventListener('touchmove', handleNativeTouchMove, { passive: false })
+    
+    return () => {
+      document.removeEventListener('touchmove', handleNativeTouchMove)
+    }
+  }, [])
+
+  const handleTouchStart = React.useCallback((event: React.TouchEvent, componentId: string) => {
+    const touch = event.touches[0]
+    if (!touch) return
+
+    const startPos = { x: touch.clientX, y: touch.clientY }
+    setTouchStartPosition(startPos)
+    dragStartTimeRef.current = Date.now()
+    
+    // Cache element and start position for direct manipulation
+    const element = (event.target as HTMLElement).closest('[data-component-id]') as HTMLElement
+    if (element) {
+      dragElementRef.current = element
+      startTouchRef.current = startPos
+      isDraggingRef.current = true
+      
+      // Apply white color INSTANTLY
+      element.classList.add('dragging')
+      element.style.willChange = 'transform'
+      element.style.zIndex = '1000'
+    }
+    
+    // Still call parent for position updates at the end
+    onDragStart(componentId, startPos)
+  }, [onDragStart])
+
+  const handleTouchMove = React.useCallback((event: React.TouchEvent, componentId: string) => {
+    // Native event handler does the actual work - this is just for compatibility
+    const touch = event.touches[0]
+    if (!touch) return
+
+    // Still call parent for coordinate updates (non-blocking)
+    onDragMove(componentId, { x: touch.clientX, y: touch.clientY })
+  }, [onDragMove])
+
+  const handleTouchEnd = React.useCallback((event: React.TouchEvent, componentId: string) => {
+    if (!touchStartPosition) return
+
+    const touch = event.changedTouches[0]
+    if (!touch) return
+
+    const dragDuration = Date.now() - dragStartTimeRef.current
+    const deltaX = touch.clientX - touchStartPosition.x
+    const deltaY = touch.clientY - touchStartPosition.y
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY)
+
+    // Clean up direct refs
+    if (dragElementRef.current) {
+      dragElementRef.current.classList.remove('dragging')
+      dragElementRef.current.style.transform = ''
+      dragElementRef.current.style.willChange = 'auto'
+      dragElementRef.current.style.zIndex = ''
+    }
+    
+    isDraggingRef.current = false
+    dragElementRef.current = null
+    startTouchRef.current = null
+
+    // IMPROVED LOGIC: Prevent accidental rotations during drag
+    const isTap = distance < 10 && dragDuration < 200 // Increased threshold and time limit
+    
+    if (isTap) {
+      // Genuine tap - rotate component
+      onComponentTap(componentId)
+    } else {
+      // Drag movement - end drag operation
+      onDragEnd(componentId, { x: touch.clientX, y: touch.clientY })
+    }
+
+    setTouchStartPosition(null)
+  }, [touchStartPosition, onComponentTap, onDragEnd])
+
   return (
     <>
       {/* Placed Components */}
@@ -34,245 +149,155 @@ export const ComponentsLayer: React.FC<ComponentsLayerProps> = ({
         const isSelected = selectedComponent === component.id
         const isActive = isSimulating && Math.random() > 0.5 // TODO: Replace with actual simulation state
         const isPreinstalled = component.isPreinstalled
+        // Note: White color is now handled via CSS .dragging class for instant response
         
-        // All components use pixel coordinates - simple and clean!
+        // Always use original position - drag position is handled via direct DOM manipulation
         const pixelPosition = component.position
 
         return (
-          <motion.div
+          <Box
             key={component.id}
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: 'backOut' }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            data-component-id={component.id}
+            sx={{
+              position: 'absolute',
+              left: pixelPosition.x - GRID_SIZE / 2,
+              top: pixelPosition.y - GRID_SIZE / 2,
+              opacity: 1,
+              width: GRID_SIZE,
+              height: GRID_SIZE,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: isPreinstalled ? 'move' : 'pointer',
+              zIndex: theme.electronicZIndex.components,
+              transform: `rotate(${component.rotation}deg)`,
+              transition: 'transform 0.2s ease',
+              // GPU optimization now handled via .dragging class
+              // Different border style for preinstalled components
+              ...(isPreinstalled && {
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  inset: -2,
+                  border: `2px dashed ${theme.palette.electronic.primary}40`,
+                  borderRadius: theme.mobile.cornerRadius / 2,
+                },
+              }),
+            }}
+            onTouchStart={(e) => handleTouchStart(e, component.id)}
+            onTouchMove={(e) => handleTouchMove(e, component.id)}
+            onTouchEnd={(e) => handleTouchEnd(e, component.id)}
           >
-            <Box
-              sx={{
-                position: 'absolute',
-                left: pixelPosition.x - GRID_SIZE / 2,
-                top: pixelPosition.y - GRID_SIZE / 2,
-                width: GRID_SIZE,
-                height: GRID_SIZE,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: isPreinstalled ? 'move' : 'pointer', // Different cursor for preinstalled
-                zIndex: theme.electronicZIndex.components,
-                transform: `rotate(${component.rotation}deg)`,
-                transition: 'transform 0.2s ease',
-                // Different border style for preinstalled components
-                ...(isPreinstalled && {
-                  '&::before': {
-                    content: '""',
-                    position: 'absolute',
-                    inset: -2,
-                    border: `2px dashed ${theme.palette.electronic.primary}40`,
-                    borderRadius: theme.mobile.cornerRadius / 2,
-                  },
-                }),
-                ...(isSelected && {
-                  '&::after': {
-                    content: '""',
-                    position: 'absolute',
-                    inset: -4,
-                    border: `2px solid ${theme.palette.circuit.selection}`,
-                    borderRadius: theme.mobile.cornerRadius / 2,
-                    animation: 'pulse 1s infinite',
-                    '@keyframes pulse': {
-                      '0%': {
-                        opacity: 1,
-                        transform: 'scale(1)',
-                      },
-                      '50%': {
-                        opacity: 0.7,
-                        transform: 'scale(1.05)',
-                      },
-                      '100%': {
-                        opacity: 1,
-                        transform: 'scale(1)',
-                      },
-                    },
-                  },
-                }),
-              }}
-              onClick={() => onComponentSelect(component.id)}
-              onTouchEnd={(e) => {
-                e.preventDefault()
-                onComponentSelect(component.id)
-              }}
-            >
-              <ComponentIcon
-                type={component.type}
-                size="large"
-                isActive={isActive}
-                isSelected={isSelected}
-                switchState={component.properties.isClosed}
-                useMagneticStyle={true}
-              />
+            <ComponentIcon
+              type={component.type}
+              size="large"
+              isActive={isActive}
+              isSelected={false} // White color now handled via CSS .dragging class
+              switchState={component.properties.isClosed}
+              useMagneticStyle={true}
+            />
 
-              {/* Connection points for wiring */}
-              {isSelected && (
-                <>
-                  {/* Left terminal */}
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      left: -6,
-                      top: '50%',
-                      width: 12,
-                      height: 12,
-                      backgroundColor: theme.palette.circuit.connectionPoint,
-                      border: `2px solid ${theme.palette.circuit.selection}`,
-                      borderRadius: '50%',
-                      transform: 'translateY(-50%)',
-                      cursor: 'crosshair',
-                      zIndex: 1,
-                      '&:hover': {
-                        backgroundColor: theme.palette.circuit.connectionPointActive,
-                        transform: 'translateY(-50%) scale(1.2)',
-                      },
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onWireStart(component.id, 'left', {
-                        x: pixelPosition.x - GRID_SIZE / 2,
-                        y: pixelPosition.y,
-                      })
-                    }}
-                  />
+            {/* Connection points removed for cleaner interface */}
 
-                  {/* Right terminal */}
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      right: -6,
-                      top: '50%',
-                      width: 12,
-                      height: 12,
-                      backgroundColor: theme.palette.circuit.connectionPoint,
-                      border: `2px solid ${theme.palette.circuit.selection}`,
-                      borderRadius: '50%',
-                      transform: 'translateY(-50%)',
-                      cursor: 'crosshair',
-                      zIndex: 1,
-                      '&:hover': {
-                        backgroundColor: theme.palette.circuit.connectionPointActive,
-                        transform: 'translateY(-50%) scale(1.2)',
-                      },
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onWireStart(component.id, 'right', {
-                        x: pixelPosition.x + GRID_SIZE / 2,
-                        y: pixelPosition.y,
-                      })
-                    }}
-                  />
-                </>
-              )}
-
-              {/* Component value label */}
-              {(component.properties.resistance || component.properties.capacitance || component.properties.inductance) && (
+            {/* Component value label */}
+            {(component.properties.resistance || component.properties.capacitance || component.properties.inductance) && (
+              <Box
+                sx={{
+                  position: 'absolute',
+                  bottom: -20,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  backgroundColor: theme.palette.electronic.surface,
+                  border: `1px solid ${theme.palette.circuit.grid}`,
+                  borderRadius: theme.mobile.cornerRadius / 4,
+                  px: 0.5,
+                  py: 0.25,
+                  minWidth: 'max-content',
+                  zIndex: 1,
+                }}
+              >
                 <Box
                   sx={{
-                    position: 'absolute',
-                    bottom: -20,
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    backgroundColor: theme.palette.electronic.surface,
-                    border: `1px solid ${theme.palette.circuit.grid}`,
-                    borderRadius: theme.mobile.cornerRadius / 4,
-                    px: 0.5,
-                    py: 0.25,
-                    minWidth: 'max-content',
-                    zIndex: 1,
+                    fontSize: '8px',
+                    fontWeight: 600,
+                    color: theme.palette.text.primary,
+                    textAlign: 'center',
+                    lineHeight: 1,
                   }}
                 >
-                  <Box
-                    sx={{
-                      fontSize: '8px',
-                      fontWeight: 600,
-                      color: theme.palette.text.primary,
-                      textAlign: 'center',
-                      lineHeight: 1,
-                    }}
-                  >
-                    {component.properties.resistance && `${component.properties.resistance}Ω`}
-                    {component.properties.capacitance && `${component.properties.capacitance}μF`}
-                    {component.properties.inductance && `${component.properties.inductance}mH`}
-                  </Box>
+                  {component.properties.resistance && `${component.properties.resistance}Ω`}
+                  {component.properties.capacitance && `${component.properties.capacitance}μF`}
+                  {component.properties.inductance && `${component.properties.inductance}mH`}
                 </Box>
-              )}
+              </Box>
+            )}
 
-              {/* Energy range for targets */}
-              {isPreinstalled && component.properties.energyRange && (
+            {/* Energy range for targets */}
+            {isPreinstalled && component.properties.energyRange && (
+              <Box
+                sx={{
+                  position: 'absolute',
+                  bottom: -20,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  backgroundColor: theme.palette.electronic.surface,
+                  border: `1px solid ${theme.palette.circuit.grid}`,
+                  borderRadius: theme.mobile.cornerRadius / 4,
+                  px: 0.5,
+                  py: 0.25,
+                  minWidth: 'max-content',
+                  zIndex: 1,
+                }}
+              >
                 <Box
                   sx={{
-                    position: 'absolute',
-                    bottom: -20,
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    backgroundColor: theme.palette.electronic.surface,
-                    border: `1px solid ${theme.palette.circuit.grid}`,
-                    borderRadius: theme.mobile.cornerRadius / 4,
-                    px: 0.5,
-                    py: 0.25,
-                    minWidth: 'max-content',
-                    zIndex: 1,
+                    fontSize: '8px',
+                    fontWeight: 600,
+                    color: theme.palette.electronic.primary,
+                    textAlign: 'center',
+                    lineHeight: 1,
                   }}
                 >
-                  <Box
-                    sx={{
-                      fontSize: '8px',
-                      fontWeight: 600,
-                      color: theme.palette.electronic.primary,
-                      textAlign: 'center',
-                      lineHeight: 1,
-                    }}
-                  >
-                    {`${component.properties.energyRange[0]}-${component.properties.energyRange[1]} EU`}
-                  </Box>
+                  {`${component.properties.energyRange[0]}-${component.properties.energyRange[1]} EU`}
                 </Box>
-              )}
+              </Box>
+            )}
 
-              {/* Voltage label for sources */}
-              {isPreinstalled && component.properties.voltage && (
+            {/* Voltage label for sources */}
+            {isPreinstalled && component.properties.voltage && (
+              <Box
+                sx={{
+                  position: 'absolute',
+                  bottom: -20,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  backgroundColor: theme.palette.electronic.surface,
+                  border: `1px solid ${theme.palette.circuit.grid}`,
+                  borderRadius: theme.mobile.cornerRadius / 4,
+                  px: 0.5,
+                  py: 0.25,
+                  minWidth: 'max-content',
+                  zIndex: 1,
+                }}
+              >
                 <Box
                   sx={{
-                    position: 'absolute',
-                    bottom: -20,
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    backgroundColor: theme.palette.electronic.surface,
-                    border: `1px solid ${theme.palette.circuit.grid}`,
-                    borderRadius: theme.mobile.cornerRadius / 4,
-                    px: 0.5,
-                    py: 0.25,
-                    minWidth: 'max-content',
-                    zIndex: 1,
+                    fontSize: '8px',
+                    fontWeight: 600,
+                    color: theme.palette.simulation.energyFlow,
+                    textAlign: 'center',
+                    lineHeight: 1,
                   }}
                 >
-                  <Box
-                    sx={{
-                      fontSize: '8px',
-                      fontWeight: 600,
-                      color: theme.palette.simulation.energyFlow,
-                      textAlign: 'center',
-                      lineHeight: 1,
-                    }}
-                  >
-                    {`${component.properties.voltage}V`}
-                  </Box>
+                  {`${component.properties.voltage}V`}
                 </Box>
-              )}
-            </Box>
-          </motion.div>
+              </Box>
+            )}
+          </Box>
         )
       })}
 
-      {/* Preview of dragged component */}
+      {/* Preview of dragged component from palette */}
       {draggedComponent && dragPosition.x > -500 && (
         <motion.div
           animate={{
@@ -304,7 +329,7 @@ export const ComponentsLayer: React.FC<ComponentsLayerProps> = ({
               size="large"
               isActive={false}
               isSelected={true}
-              useMagneticStyle={true} // Enable magnetic symbols with connection points
+              useMagneticStyle={true}
             />
           </Box>
         </motion.div>

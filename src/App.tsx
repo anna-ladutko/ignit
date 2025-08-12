@@ -169,28 +169,37 @@ function App() {
             playerName="Hello Stranger"
             levelsCompleted={7}
             onPlayClick={async () => {
-              // Load first level from Prometheus Studio export
+              console.log('🎮 ДИАГНОСТИКА: Запуск игры, начинаем загрузку уровня...')
+              
               try {
+                console.log('🔄 ДИАГНОСТИКА: Пытаемся загрузить level-001 через levelManager...')
                 const firstLevel = await levelManager.loadLevelByOrder(1)
+                
                 if (firstLevel) {
+                  console.log('✅ ДИАГНОСТИКА: Level-001 загружен успешно:', firstLevel.metadata)
                   setTestLevel(firstLevel)
                   setCurrentScreen('game')
                 } else {
-                  // Fallback to sample level if no exported levels found
-                  console.warn('No exported levels found, using sample level')
+                  console.error('❌ ДИАГНОСТИКА: levelManager.loadLevelByOrder(1) returned null')
+                  console.log('🔄 ДИАГНОСТИКА: Пытаемся загрузить sampleLevelData...')
                   const loadedLevel = await loadLevel(sampleLevelData)
+                  console.log('✅ ДИАГНОСТИКА: sampleLevelData загружен:', loadedLevel.metadata)
                   setTestLevel(loadedLevel)
                   setCurrentScreen('game')
                 }
               } catch (error) {
-                console.error('Failed to load first level:', error)
-                // Try fallback to sample level
+                console.error('❌ ДИАГНОСТИКА: Ошибка загрузки level-001:', error)
+                console.error('❌ ДИАГНОСТИКА: Error details:', error.message, error.stack)
+                
                 try {
+                  console.log('🔄 ДИАГНОСТИКА: Fallback на sampleLevelData...')
                   const loadedLevel = await loadLevel(sampleLevelData)
+                  console.log('✅ ДИАГНОСТИКА: Fallback успешен:', loadedLevel.metadata)
                   setTestLevel(loadedLevel)
                   setCurrentScreen('game')
                 } catch (fallbackError) {
-                  console.error('Failed to load fallback level:', fallbackError)
+                  console.error('❌ ДИАГНОСТИКА: Критическая ошибка - даже fallback не работает:', fallbackError)
+                  alert('Критическая ошибка загрузки уровня: ' + fallbackError.message)
                 }
               }
             }}

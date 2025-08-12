@@ -41,23 +41,28 @@ export class LevelManager {
    * Load a specific level by order
    */
   async loadLevelByOrder(levelOrder: number): Promise<Level | null> {
+    console.log(`🔄 LEVELMANAGER: Загрузка уровня ${levelOrder}...`)
+    
     // Check if already loaded and cached
     if (this.loadedLevels.has(levelOrder)) {
+      console.log(`✅ LEVELMANAGER: Уровень ${levelOrder} найден в кэше`)
       return this.loadedLevels.get(levelOrder)!;
     }
 
     // Check if level exists in registry
     const levelEntry = getLevelByOrder(levelOrder);
     if (!levelEntry) {
-      console.error(`Level ${levelOrder} not found in registry`);
+      console.error(`❌ LEVELMANAGER: Уровень ${levelOrder} не найден в registry`);
       return null;
     }
+    console.log(`✅ LEVELMANAGER: Уровень ${levelOrder} найден в registry:`, levelEntry)
 
     // Check if level is unlocked
     if (!isLevelUnlocked(levelOrder, this.playerProgress.completedLevels, this.playerProgress.totalScore)) {
-      console.warn(`Level ${levelOrder} is locked`);
+      console.warn(`❌ LEVELMANAGER: Уровень ${levelOrder} заблокирован. Progress:`, this.playerProgress);
       return null;
     }
+    console.log(`✅ LEVELMANAGER: Уровень ${levelOrder} разблокирован`)
 
     try {
       // Get level file path
@@ -65,17 +70,25 @@ export class LevelManager {
       if (!levelPath) {
         throw new Error(`No file path found for level ${levelOrder}`);
       }
+      console.log(`✅ LEVELMANAGER: Путь к файлу: ${levelPath}`)
 
       // Fetch and parse level JSON
+      console.log(`🔄 LEVELMANAGER: Выполняем fetch(${levelPath})...`)
       const response = await fetch(levelPath);
+      console.log(`📡 LEVELMANAGER: Fetch response:`, response.status, response.statusText)
+      
       if (!response.ok) {
-        throw new Error(`Failed to fetch level: ${response.status}`);
+        throw new Error(`Failed to fetch level: ${response.status} ${response.statusText}`);
       }
 
+      console.log(`🔄 LEVELMANAGER: Парсим JSON...`)
       const levelData = await response.json();
+      console.log(`✅ LEVELMANAGER: JSON распарсен. Metadata:`, levelData.metadata)
       
       // Use existing loadLevel utility to convert JSON to Level object
+      console.log(`🔄 LEVELMANAGER: Конвертируем через loadLevel()...`)
       const level = await loadLevel(levelData);
+      console.log(`✅ LEVELMANAGER: loadLevel() выполнен успешно`)
       
       // Add game-specific metadata
       level.metadata = {
@@ -90,11 +103,13 @@ export class LevelManager {
 
       // Cache the loaded level
       this.loadedLevels.set(levelOrder, level);
+      console.log(`✅ LEVELMANAGER: Уровень ${levelOrder} успешно загружен и кэширован`)
       
       return level;
 
     } catch (error) {
-      console.error(`Failed to load level ${levelOrder}:`, error);
+      console.error(`❌ LEVELMANAGER: Ошибка загрузки уровня ${levelOrder}:`, error);
+      console.error(`❌ LEVELMANAGER: Error details:`, error.message, error.stack);
       return null;
     }
   }

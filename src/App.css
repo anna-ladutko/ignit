@@ -40,3 +40,17 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Drag-n-drop performance optimization - UNIVERSAL SELECTORS */
+.dragging svg,
+.dragging .MuiSvgIcon-root,
+.dragging path,
+.dragging circle,
+.dragging rect,
+.dragging line,
+.dragging * {
+  color: #ffffff !important;
+  fill: #ffffff !important;
+  stroke: #ffffff !important;
+  transition: none !important; /* Remove transitions during drag for max performance */
+}

@@ -59,6 +59,7 @@ export interface GameScreenState {
     terminal: Terminal[keyof Terminal]
     position: Position
   } | null
+  // Note: drag-n-drop states moved to refs for performance
 }
 
 export interface GridPosition {
@@ -106,4 +107,20 @@ export const isValidGridPosition = (gridPos: GridPosition): boolean => {
 export const snapToGrid = (pixelPos: Position): Position => {
   const gridPos = pixelToGrid(pixelPos)
   return gridToPixel(gridPos)
+}
+
+// Check if position is occupied by any component (excluding optional component to ignore)
+export const isPositionOccupied = (
+  position: Position, 
+  placedComponents: PlacedComponent[], 
+  ignoreComponentId?: string
+): boolean => {
+  return placedComponents.some(component => {
+    if (ignoreComponentId && component.id === ignoreComponentId) {
+      return false
+    }
+    const dx = Math.abs(component.position.x - position.x)
+    const dy = Math.abs(component.position.y - position.y)
+    return dx < GRID_SIZE / 2 && dy < GRID_SIZE / 2
+  })
 }

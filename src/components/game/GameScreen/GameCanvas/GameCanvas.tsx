@@ -12,6 +12,10 @@ interface GameCanvasProps {
   onComponentSelect: (componentId: string) => void
   onComponentRemove: (componentId: string) => void
   onWireStart: (componentId: string, terminal: string, position: { x: number; y: number }) => void
+  onComponentTap: (componentId: string) => void
+  onDragStart: (componentId: string, position: { x: number; y: number }) => void
+  onDragMove: (componentId: string, position: { x: number; y: number }) => void
+  onDragEnd: (componentId: string, position: { x: number; y: number }) => void
   isSimulating: boolean
 }
 
@@ -21,6 +25,10 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   onComponentSelect,
   onComponentRemove,
   onWireStart,
+  onComponentTap,
+  onDragStart,
+  onDragMove,
+  onDragEnd,
   isSimulating,
 }) => {
   const theme = useTheme()
@@ -120,7 +128,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     }
   }
 
-  const handleMouseDown = (_event: React.MouseEvent) => {
+  const handleMouseDown = () => {
     if (gameState.draggedComponent) {
       setIsDragging(true)
     }
@@ -135,6 +143,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   return (
     <Box
       ref={canvasRef}
+      data-testid="game-canvas"
       sx={{
         width: '100%',
         height: '100%',
@@ -181,8 +190,15 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         draggedComponent={gameState.draggedComponent}
         dragPosition={dragPosition}
         isSimulating={isSimulating}
+        isDragging={false} // Now handled via refs
+        dragComponentId={null} // Now handled via refs
+        dragCurrentPosition={null} // Now handled via refs
         onComponentSelect={onComponentSelect}
         onWireStart={onWireStart}
+        onComponentTap={onComponentTap}
+        onDragStart={onDragStart}
+        onDragMove={onDragMove}
+        onDragEnd={onDragEnd}
       />
 
 

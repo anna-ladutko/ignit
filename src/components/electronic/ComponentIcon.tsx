@@ -29,7 +29,7 @@ interface ComponentIconProps {
   useMagneticStyle?: boolean // Use new magnetic symbols with connection points
 }
 
-export const ComponentIcon: React.FC<ComponentIconProps> = ({
+const ComponentIconMemoized: React.FC<ComponentIconProps> = ({
   type,
   size = 'medium',
   isActive = false,
@@ -63,7 +63,7 @@ export const ComponentIcon: React.FC<ComponentIconProps> = ({
 
   const getColor = () => {
     if (isSelected) {
-      return theme.palette.circuit.selection
+      return '#ffffff' // White color for selected components
     }
     
     switch (type) {
@@ -167,4 +167,6 @@ export const ComponentIcon: React.FC<ComponentIconProps> = ({
   return getSymbol()
 }
 
+// Memoized version for performance
+export const ComponentIcon = React.memo(ComponentIconMemoized)
 export default ComponentIcon
