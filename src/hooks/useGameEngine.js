@@ -1,5 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import { GameEngine } from '../game/GameEngine.js'
+import { initializeGameEngineBridge, cleanupGameEngineBridge } from '../utils/gameEngineBridge.ts'
 
 /**
  * useGameEngine - React хук для управления игровым движком
@@ -36,6 +37,9 @@ export const useGameEngine = (level) => {
     console.log('🔄 USEGAMEENGINE: Canvas element:', canvasElement, 'размеры:', canvasElement.offsetWidth, 'x', canvasElement.offsetHeight)
     
     try {
+      // Инициализируем SVG bridge перед созданием GameEngine
+      initializeGameEngineBridge()
+      
       // Создать игровой движок с коллбэками
       gameEngineRef.current = new GameEngine(canvasElement, {
         onScoreChange: (score) => {
@@ -133,6 +137,17 @@ export const useGameEngine = (level) => {
     }
     
   }, [level, gameEngineReady]) // ВАЖНО: Добавили gameEngineReady в зависимости
+  
+  // Cleanup effect - освобождаем ресурсы при размонтировании
+  useEffect(() => {
+    return () => {
+      if (gameEngineRef.current) {
+        console.log('🧹 USEGAMEENGINE: Cleanup - уничтожаем GameEngine')
+        gameEngineRef.current = null
+      }
+      cleanupGameEngineBridge()
+    }
+  }, [])
   
   // === ИГРОВЫЕ ДЕЙСТВИЯ (вызываются из React UI) ===
   

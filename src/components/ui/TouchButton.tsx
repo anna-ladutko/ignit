@@ -63,11 +63,11 @@ export const TouchButton: React.FC<TouchButtonProps> = ({
       case 'accent':
         return {
           ...baseStyles,
-          background: theme.palette.gradients.accentTopRight,
+          background: theme.palette.gradients.accentGradient,
           color: theme.palette.text.primary,
           border: 'none',
           '&:hover': {
-            background: theme.palette.gradients.accentBottomLeft,
+            background: theme.palette.gradients.accentGradient,
             boxShadow: theme.palette.customShadows.glow,
           },
         }

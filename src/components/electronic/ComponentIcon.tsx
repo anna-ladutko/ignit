@@ -2,20 +2,13 @@ import React from 'react'
 import { useTheme } from '@mui/material/styles'
 import { ComponentType } from '../../types'
 import {
-  ResistorSymbol,
-  CapacitorSymbol,
-  InductorSymbol,
-  LEDSymbol,
-  VoltageSourceSymbol,
-  SwitchSymbol,
-  SupercapacitorSymbol,
-} from '../symbols'
-import {
   ResistorMagneticSymbol,
   CapacitorMagneticSymbol,
   InductorMagneticSymbol,
   LEDMagneticSymbol,
   VoltageSourceMagneticSymbol,
+  SwitchMagneticSymbol,
+  SupercapacitorMagneticSymbol,
 } from '../symbols/magnetic'
 
 interface ComponentIconProps {
@@ -26,7 +19,7 @@ interface ComponentIconProps {
   switchState?: boolean // For switches
   className?: string
   onClick?: () => void
-  useMagneticStyle?: boolean // Use new magnetic symbols with connection points
+  // useMagneticStyle removed - now only uses magnetic symbols
 }
 
 const ComponentIconMemoized: React.FC<ComponentIconProps> = ({
@@ -37,27 +30,15 @@ const ComponentIconMemoized: React.FC<ComponentIconProps> = ({
   switchState = false,
   className,
   onClick,
-  useMagneticStyle = false,
+  // useMagneticStyle removed
 }) => {
   const theme = useTheme()
 
   const getSize = () => {
-    // For magnetic symbols, use fixed size to maintain proper magnetic point alignment
-    if (useMagneticStyle) {
-      return {
-        width: '100px',
-        height: '40px',
-      }
-    }
-    
-    // For standard symbols, use theme sizes
-    switch (size) {
-      case 'small':
-        return theme.componentSizes.icon.small
-      case 'large':
-        return theme.componentSizes.icon.large
-      default:
-        return theme.componentSizes.icon.medium
+    // All symbols now use magnetic style with fixed size for proper magnetic point alignment
+    return {
+      width: '100px',
+      height: '40px',
     }
   }
 
@@ -104,10 +85,7 @@ const ComponentIconMemoized: React.FC<ComponentIconProps> = ({
     const sizeConfig = getSize()
     const iconProps = {
       sx: { 
-        ...(useMagneticStyle 
-          ? sizeConfig  // Use fixed width/height for magnetic symbols
-          : { fontSize: sizeConfig }  // Use fontSize for standard symbols
-        ),
+        ...sizeConfig,  // Use fixed width/height for all magnetic symbols
         color: getColor(),
         cursor: onClick ? 'pointer' : 'default',
         filter: isActive ? `drop-shadow(0 0 6px ${getColor()})` : 'none',
@@ -121,44 +99,22 @@ const ComponentIconMemoized: React.FC<ComponentIconProps> = ({
       onClick,
     }
 
-    // Use magnetic symbols if requested
-    if (useMagneticStyle) {
-      switch (type) {
-        case ComponentType.RESISTOR:
-          return <ResistorMagneticSymbol {...iconProps} />
-        case ComponentType.CAPACITOR:
-          return <CapacitorMagneticSymbol {...iconProps} />
-        case ComponentType.INDUCTOR:
-          return <InductorMagneticSymbol {...iconProps} />
-        case ComponentType.LED:
-          return <LEDMagneticSymbol {...iconProps} />
-        case ComponentType.VOLTAGE_SOURCE:
-          return <VoltageSourceMagneticSymbol {...iconProps} />
-        case ComponentType.SWITCH:
-          return <SwitchSymbol {...iconProps} isOpen={!switchState} />
-        case ComponentType.SUPERCAPACITOR:
-          return <SupercapacitorSymbol {...iconProps} />
-        default:
-          return null
-      }
-    }
-
-    // Use standard symbols
+    // All components now use magnetic symbols
     switch (type) {
       case ComponentType.RESISTOR:
-        return <ResistorSymbol {...iconProps} />
+        return <ResistorMagneticSymbol {...iconProps} />
       case ComponentType.CAPACITOR:
-        return <CapacitorSymbol {...iconProps} />
+        return <CapacitorMagneticSymbol {...iconProps} />
       case ComponentType.INDUCTOR:
-        return <InductorSymbol {...iconProps} />
+        return <InductorMagneticSymbol {...iconProps} />
       case ComponentType.LED:
-        return <LEDSymbol {...iconProps} />
+        return <LEDMagneticSymbol {...iconProps} />
       case ComponentType.VOLTAGE_SOURCE:
-        return <VoltageSourceSymbol {...iconProps} />
+        return <VoltageSourceMagneticSymbol {...iconProps} />
       case ComponentType.SWITCH:
-        return <SwitchSymbol {...iconProps} isOpen={!switchState} />
+        return <SwitchMagneticSymbol {...iconProps} isOpen={!switchState} />
       case ComponentType.SUPERCAPACITOR:
-        return <SupercapacitorSymbol {...iconProps} />
+        return <SupercapacitorMagneticSymbol {...iconProps} />
       default:
         return null
     }

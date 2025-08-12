@@ -26,7 +26,7 @@ export const themeIgnitElectronic = createTheme({
       main: '#FF4444',
     },
     background: {
-      default: '#0A0E27',  // темно-синий фон
+      default: '#202221',  // новый темный фон
       paper: '#1A1F3A',    // поверхности
     },
     text: {
@@ -36,7 +36,7 @@ export const themeIgnitElectronic = createTheme({
 
     // Электронная цветовая схема
     electronic: {
-      background: '#0A0E27',   // основной фон
+      background: '#202221',   // новый основной фон
       surface: '#1A1F3A',     // поверхности панелей
       primary: '#00FF88',     // основной зеленый
       secondary: '#0088FF',   // дополнительный синий
@@ -113,39 +113,27 @@ export const themeIgnitElectronic = createTheme({
 
     // Градиенты для красивых эффектов
     gradients: {
-      backgroundPrimary: 'linear-gradient(135deg, #0A0E27 0%, #1A1F3A 100%)',
+      backgroundPrimary: 'linear-gradient(135deg, #202221 0%, #1A1F3A 100%)',
       backgroundSecondary: 'linear-gradient(135deg, #1A1F3A 0%, #2A2F4A 100%)',
       backgroundAccent: 'linear-gradient(135deg, #00FF8820 0%, #0088FF20 100%)',
       backgroundModule1: 'linear-gradient(135deg, #00FF8815 0%, #33FF9915 100%)',
       backgroundModule2: 'linear-gradient(135deg, #0088FF15 0%, #3399FF15 100%)',
       backgroundModule3: 'linear-gradient(135deg, #6C5CE715 0%, #8B7ED815 100%)',
       backgroundTransparent: 'linear-gradient(135deg, rgba(0,255,136,0.1) 0%, rgba(0,136,255,0.1) 100%)',
-      titleAccent: 'linear-gradient(90deg, #00FF88 0%, #0088FF 100%)',
-      accentTopLeft: 'linear-gradient(135deg, #00FF88 0%, #0088FF 100%)',
-      accentTopRight: 'linear-gradient(45deg, #00FF88 0%, #0088FF 100%)',
-      accentBottomRight: 'linear-gradient(315deg, #00FF88 0%, #0088FF 100%)',
-      accentBottomLeft: 'linear-gradient(225deg, #00FF88 0%, #0088FF 100%)',
+      accentGradient: 'linear-gradient(135deg, #FF8000 0%, #FF3939 100%)',
     },
 
     customColors: {
       uiTextSecondary: '#B0B8CC',
       uiTextSecondaryDark: '#8090A4',
       uiTextForWhiteBg: '#1A1F3A',
-      uiTextLight: '#E0E4F0',
+      uiTextLight: '#E5DFD1',
       uiIcon: '#B0B8CC',
       borderTransparent: 'rgba(0, 255, 136, 0.2)',
-      uiAccentPurple: '#6C5CE7',
-      uiAccentPurpleDisabled: '#6C5CE750',
-      uiBackgroundAccent: 'rgba(0, 255, 136, 0.1)',
-      uiBackgroundLight: '#2A2F4A',
     },
 
     customShadows: {
       mainShadow: '0px 4px 20px rgba(0, 0, 0, 0.6)',
-      softShadow: '0px 2px 10px rgba(0, 255, 136, 0.2)',
-      textShadow: '0px 1px 3px rgba(0, 0, 0, 0.5)',
-      componentShadow: '0px 2px 8px rgba(0, 0, 0, 0.4)',
-      glow: '0px 0px 12px rgba(0, 255, 136, 0.4)',
     },
   },
 
@@ -191,11 +179,11 @@ export const themeIgnitElectronic = createTheme({
 
   // Типография оптимизированная для мобильных экранов
   typography: {
-    fontFamily: '"Inter", "Roboto", "Arial", sans-serif',
+    fontFamily: '"Montserrat", "Arial", sans-serif',
     
     // Электронные заголовки
     electronicTitle: {
-      fontFamily: '"Inter", monospace',
+      fontFamily: '"Montserrat", sans-serif',
       fontSize: '24px',
       fontWeight: 700,
       lineHeight: 1.2,
@@ -205,7 +193,7 @@ export const themeIgnitElectronic = createTheme({
     
     // Component labels
     componentLabel: {
-      fontFamily: '"Inter", monospace', 
+      fontFamily: '"Montserrat", sans-serif', 
       fontSize: '12px',
       fontWeight: 500,
       lineHeight: 1.2,
@@ -214,7 +202,7 @@ export const themeIgnitElectronic = createTheme({
     
     // Component values (resistance, capacitance, etc.)
     componentValue: {
-      fontFamily: '"Inter", monospace',
+      fontFamily: '"Montserrat", sans-serif',
       fontSize: '10px', 
       fontWeight: 400,
       lineHeight: 1.2,
@@ -223,7 +211,7 @@ export const themeIgnitElectronic = createTheme({
     
     // Energy/voltage values
     energyValue: {
-      fontFamily: '"Inter", monospace',
+      fontFamily: '"Montserrat", sans-serif',
       fontSize: '14px',
       fontWeight: 600,
       lineHeight: 1.2,
@@ -233,7 +221,7 @@ export const themeIgnitElectronic = createTheme({
     
     // Информация о схеме
     circuitInfo: {
-      fontFamily: '"Inter"',
+      fontFamily: '"Montserrat", sans-serif',
       fontSize: '13px',
       fontWeight: 400, 
       lineHeight: 1.4,
@@ -242,7 +230,7 @@ export const themeIgnitElectronic = createTheme({
     
     // Мобильные кнопки
     mobileButton: {
-      fontFamily: '"Inter"',
+      fontFamily: '"Montserrat", sans-serif',
       fontSize: '16px',
       fontWeight: 600,
       lineHeight: 1.2,
@@ -275,11 +263,11 @@ export const themeIgnitElectronic = createTheme({
             fontSize: '16px',
             fontWeight: 600,
             textTransform: 'capitalize',
-            boxShadow: theme.palette.customShadows.componentShadow,
+            // boxShadow removed
             border: `1px solid ${theme.palette.circuit.selection}30`,
             '&:hover': {
-              background: theme.palette.gradients.accentTopRight,
-              boxShadow: theme.palette.customShadows.glow,
+              background: theme.palette.gradients.accentGradient,
+              // boxShadow removed
             },
             '&:active': {
               transform: 'scale(0.98)',
@@ -338,7 +326,7 @@ export const themeIgnitElectronic = createTheme({
             border: `1px solid ${theme.palette.circuit.grid}`,
             borderRadius: theme.mobile.cornerRadius,
             padding: theme.spacing(2),
-            boxShadow: theme.palette.customShadows.componentShadow,
+            // boxShadow removed
           }),
         },
         {
@@ -358,7 +346,7 @@ export const themeIgnitElectronic = createTheme({
             background: theme.palette.gradients.backgroundModule1,
             borderRadius: theme.mobile.cornerRadius,
             padding: theme.spacing(2),
-            boxShadow: theme.palette.customShadows.softShadow,
+            // boxShadow removed
           }),
         },
         {
@@ -368,7 +356,7 @@ export const themeIgnitElectronic = createTheme({
             borderRadius: theme.mobile.cornerRadius,
             padding: theme.spacing(2),
             minHeight: theme.mobile.touchTarget,
-            boxShadow: theme.palette.customShadows.componentShadow,
+            // boxShadow removed
           }),
         },
       ],
@@ -389,7 +377,7 @@ export const themeIgnitElectronic = createTheme({
       styleOverrides: {
         root: ({ theme, ownerState }) => ({
           ...(ownerState.variant === 'electronicTitle' && {
-            background: theme.palette.gradients.titleAccent,
+            background: theme.palette.gradients.accentGradient,
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
@@ -403,7 +391,7 @@ export const themeIgnitElectronic = createTheme({
           ...(ownerState.variant === 'energyValue' && {
             color: theme.palette.electronic.primary,
             fontWeight: 700,
-            textShadow: theme.palette.customShadows.textShadow,
+            // textShadow removed
           }),
         }),
       },

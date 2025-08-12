@@ -31,6 +31,13 @@ export class GameEngine {
     this.canvas.style.touchAction = 'none' // Отключаем браузерные жесты
     this.canvas.style.userSelect = 'none'
     this.canvas.style.webkitUserSelect = 'none'
+    
+    // Добавляем визуальную сетку из серых точечек
+    this.canvas.style.backgroundImage = 'radial-gradient(circle, #666666 2px, transparent 2px)'
+    this.canvas.style.backgroundSize = '40px 40px'
+    this.canvas.style.backgroundPosition = '20px 20px' // Центрируем точки в grid
+    
+    console.log('✅ GameEngine: Canvas setup завершен с визуальной сеткой')
   }
   
   setupEvents() {
@@ -67,11 +74,11 @@ export class GameEngine {
     element.setAttribute('data-component-id', componentData.id)
     element.setAttribute('data-component-type', componentData.type)
     
-    // Позиционирование
+    // Позиционирование для магнитных символов (100x40)
     element.style.position = 'absolute'
-    element.style.left = `${componentData.position.x - 20}px` // GRID_SIZE/2
-    element.style.top = `${componentData.position.y - 20}px`
-    element.style.width = '40px'
+    element.style.left = `${componentData.position.x - 50}px` // 100px/2
+    element.style.top = `${componentData.position.y - 20}px` // 40px/2
+    element.style.width = '100px'
     element.style.height = '40px'
     element.style.cursor = 'pointer'
     element.style.zIndex = '10'
@@ -87,7 +94,39 @@ export class GameEngine {
   }
   
   getComponentSVG(componentData) {
-    // Упрощенные SVG символы для максимальной производительности
+    // Используем новый hybrid SVG подход с магнитными символами
+    const { getComponentSVGForGameEngine, ComponentType } = window.SVGConverter || {}
+    
+    if (!getComponentSVGForGameEngine) {
+      console.warn('SVG Converter не загружен, используем fallback')
+      return this.getFallbackSVG(componentData)
+    }
+    
+    // Преобразуем строковые типы в ComponentType enum
+    const typeMap = {
+      'resistor': ComponentType?.RESISTOR,
+      'capacitor': ComponentType?.CAPACITOR,
+      'inductor': ComponentType?.INDUCTOR,
+      'led': ComponentType?.LED,
+      'voltage_source': ComponentType?.VOLTAGE_SOURCE,
+      'switch': ComponentType?.SWITCH,
+      'supercapacitor': ComponentType?.SUPERCAPACITOR
+    }
+    
+    const componentType = typeMap[componentData.type]
+    if (!componentType) {
+      console.warn(`Неизвестный тип компонента: ${componentData.type}`)
+      return this.getFallbackSVG(componentData)
+    }
+    
+    const isActive = componentData.isActive || false
+    const switchState = componentData.switchState || false
+    
+    return getComponentSVGForGameEngine(componentType, isActive, switchState)
+  }
+  
+  getFallbackSVG(componentData) {
+    // Fallback для случаев когда SVG Converter недоступен
     const color = this.getComponentColor(componentData.type)
     
     switch(componentData.type) {

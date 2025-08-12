@@ -8,6 +8,7 @@ import { LevelLoader } from './components/LevelLoader'
 import { ThemeDemo } from './components/ThemeDemo'
 import { MainScreen, SettingsScreen, GameScreen } from './components/game'
 import { levelManager } from './services/LevelManager'
+import ColorPalette from './pages/ColorPalette'
 import type { Level } from './types'
 
 // Sample level data from Prometheus for testing
@@ -263,6 +264,7 @@ function App() {
             <Tab label="Game" />
             <Tab label="Game Engine" />
             <Tab label="Theme Demo" />
+            <Tab label="Color Palette" />
           </Tabs>
 
           {currentTab === 1 && (
@@ -358,6 +360,8 @@ function App() {
           )}
 
           {currentTab === 2 && <ThemeDemo />}
+          
+          {currentTab === 3 && <ColorPalette />}
         </Box>
       </Container>
     </Box>

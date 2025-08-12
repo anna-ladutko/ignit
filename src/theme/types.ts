@@ -60,11 +60,7 @@ declare module '@mui/material/styles' {
       backgroundModule2: string
       backgroundModule3: string
       backgroundTransparent: string
-      titleAccent: string
-      accentTopLeft: string
-      accentTopRight: string
-      accentBottomRight: string
-      accentBottomLeft: string
+      accentGradient: string
     }
     
     customColors: {
@@ -74,18 +70,10 @@ declare module '@mui/material/styles' {
       uiTextLight: string
       uiIcon: string
       borderTransparent: string
-      uiAccentPurple: string
-      uiAccentPurpleDisabled: string
-      uiBackgroundAccent: string
-      uiBackgroundLight: string
     }
     
     customShadows: {
       mainShadow: string
-      softShadow: string
-      textShadow: string
-      componentShadow: string
-      glow: string
     }
   }
 
@@ -143,11 +131,7 @@ declare module '@mui/material/styles' {
       backgroundModule2?: string
       backgroundModule3?: string
       backgroundTransparent?: string
-      titleAccent?: string
-      accentTopLeft?: string
-      accentTopRight?: string
-      accentBottomRight?: string
-      accentBottomLeft?: string
+      accentGradient?: string
     }
     
     customColors?: {
@@ -157,18 +141,10 @@ declare module '@mui/material/styles' {
       uiTextLight?: string
       uiIcon?: string
       borderTransparent?: string
-      uiAccentPurple?: string
-      uiAccentPurpleDisabled?: string
-      uiBackgroundAccent?: string
-      uiBackgroundLight?: string
     }
     
     customShadows?: {
       mainShadow?: string
-      softShadow?: string
-      textShadow?: string
-      componentShadow?: string
-      glow?: string
     }
   }
 
