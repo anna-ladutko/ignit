@@ -306,6 +306,236 @@ const addComponent = (type) => {
 
 ---
 
+## 🔥 КРИТИЧЕСКИ ВАЖНЫЕ ДЕТАЛИ АРХИТЕКТУРЫ
+
+### SVG Bridge Pattern - Ключевое архитектурное решение
+
+**Проблема:** GameEngine (Vanilla JS) должен отображать React TypeScript компоненты без прямого доступа к React.
+
+**Решение:** SVG Bridge через window.SVGConverter
+
+```javascript
+// GameEngine.js - Получение SVG от React компонентов
+const { getComponentSVGForGameEngine, ComponentType } = window.SVGConverter || {}
+if (getComponentSVGForGameEngine) {
+  const svgResult = getComponentSVGForGameEngine(componentType, isActive, switchState)
+  element.innerHTML = svgResult
+}
+```
+
+```typescript
+// gameEngineBridge.ts - Инициализация моста
+export const initializeGameEngineBridge = () => {
+  window.SVGConverter = {
+    getComponentSVGForGameEngine,
+    ComponentType: ComponentType as any
+  }
+}
+```
+
+**КРИТИЧЕСКИ ВАЖНО:**
+- SVG Bridge ДОЛЖЕН быть инициализирован ДО создания GameEngine
+- Любые ошибки в SVG Bridge приводят к ERROR компонентам
+- Fallback SVG показывает визуальные ошибки на игровом поле
+
+### Lifecycle Management - Предотвращение Race Conditions
+
+```javascript
+// ❌ НЕПРАВИЛЬНО - Race condition
+useEffect(() => {
+  if (canvasRef.current) initGameEngine(canvasRef.current)
+}, [])
+
+// ✅ ПРАВИЛЬНО - Callback ref гарантирует готовность DOM
+const canvasRef = useCallback((element) => {
+  if (element) {
+    initializeGameEngineBridge()  // 1. Сначала bridge
+    gameEngine = new GameEngine(element, callbacks)  // 2. Потом GameEngine
+    setGameEngineReady(true)  // 3. Потом готовность
+  }
+}, [])
+
+// ✅ ПРАВИЛЬНО - Загрузка уровня ТОЛЬКО после готовности
+useEffect(() => {
+  if (!gameEngineReady || !level) return
+  gameEngine.loadLevel(levelData)
+}, [level, gameEngineReady])
+```
+
+### Memory Management & Cleanup
+
+```javascript
+// ✅ Правильная очистка GameEngine
+useEffect(() => {
+  return () => {
+    if (gameEngineRef.current) {
+      gameEngineRef.current.destroy()  // Очистка событий
+      gameEngineRef.current = null
+    }
+    cleanupGameEngineBridge()  // Очистка window.SVGConverter
+  }
+}, [])
+
+// GameEngine.destroy() - обязательная очистка
+destroy() {
+  this.clearComponents()
+  this.canvas.removeEventListener('touchstart', this.handleTouchStart)
+  this.canvas.removeEventListener('touchmove', this.handleTouchMove)
+  this.canvas.removeEventListener('touchend', this.handleTouchEnd)
+}
+```
+
+### Coordinate System & Magnetic Grid
+
+```javascript
+// Магнитная сетка 40x40px с визуализацией
+canvas.style.backgroundImage = 'radial-gradient(circle, #666666 2px, transparent 2px)'
+canvas.style.backgroundSize = '40px 40px'
+canvas.style.backgroundPosition = '20px 20px'
+
+// Позиционирование компонентов 100x40px
+// SVG магнитные точки: cx="10" и cx="90"
+element.style.left = `${componentData.position.x - 10}px`  // Левая магнитная точка на сетку
+element.style.top = `${componentData.position.y - 20}px`   // Центр по вертикали
+
+// Snap to grid алгоритм
+snapToGrid(position) {
+  const GRID_SIZE = 40
+  return {
+    x: Math.round(position.x / GRID_SIZE) * GRID_SIZE,
+    y: Math.round(position.y / GRID_SIZE) * GRID_SIZE
+  }
+}
+```
+
+### Touch vs Mouse Events - Cross-Platform Support
+
+```javascript
+// ✅ Универсальная обработка touch/mouse
+setupEvents() {
+  // Touch для мобильных
+  this.canvas.addEventListener('touchstart', this.handleTouchStart, { passive: false })
+  this.canvas.addEventListener('touchmove', this.handleTouchMove, { passive: false })
+  this.canvas.addEventListener('touchend', this.handleTouchEnd, { passive: false })
+  
+  // Mouse для десктопа
+  this.canvas.addEventListener('mousedown', this.handleMouseDown)
+  this.canvas.addEventListener('mousemove', this.handleMouseMove)
+  this.canvas.addEventListener('mouseup', this.handleMouseUp)
+}
+
+// Unified interaction logic
+startInteraction(x, y, target) {
+  const componentElement = target.closest('[data-component-id]')
+  // ... единая логика для touch и mouse
+}
+```
+
+### GPU Optimizations - 60fps Performance
+
+```javascript
+// ✅ GPU-accelerated transformations
+updateDrag(x, y) {
+  // translate3d активирует GPU acceleration
+  element.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0)`
+}
+
+// ✅ willChange для анимированных элементов
+element.style.willChange = 'transform'
+element.style.backfaceVisibility = 'hidden'
+
+// ✅ Прямые DOM операции вместо React setState
+rotateComponent(component) {
+  component.rotation = (component.rotation + 90) % 360
+  component.element.style.transform = `rotate(${component.rotation}deg)`  // 60fps
+  this.onComponentRotate(component.data.id, component.rotation)  // Notify React
+}
+```
+
+### Error Boundaries & Debugging
+
+```javascript
+// ✅ Визуальные ошибки на игровом поле
+getFallbackSVG(componentData) {
+  console.error(`❌ КРИТИЧЕСКАЯ ОШИБКА: SVG Converter недоступен для ${componentData.type}!`)
+  return `<svg width="100" height="40" viewBox="0 0 100 40">
+    <rect x="2" y="2" width="96" height="36" fill="none" stroke="#FF0000" stroke-width="2" stroke-dasharray="4,4"/>
+    <text x="50" y="20" text-anchor="middle" fill="#FF0000" font-size="12">ERROR</text>
+  </svg>`
+}
+
+// ✅ Debug режим
+if (process.env.NODE_ENV === 'development') {
+  window.gameEngine = this  // Global access для debugging
+}
+```
+
+### React State Synchronization Patterns
+
+```javascript
+// ✅ Правильная синхронизация: GameEngine → React
+onComponentPlace: (componentId, position) => {
+  setGameState(prev => ({
+    ...prev,
+    placedComponents: prev.placedComponents.map(comp =>
+      comp.id === componentId ? {...comp, position} : comp
+    )
+  }))
+}
+
+// ✅ Правильная синхронизация: React → GameEngine
+const addComponent = (type) => {
+  const newComponent = {id, type, position, rotation: 0}
+  gameEngine.addComponent(newComponent)  // 1. Сначала GameEngine
+  setGameState(prev => ({                // 2. Потом React state
+    ...prev,
+    placedComponents: [...prev.placedComponents, newComponent]
+  }))
+}
+```
+
+### Tap Detection Algorithm
+
+```javascript
+// ✅ Точная детекция tap vs drag
+endInteraction(x, y) {
+  const deltaX = x - this.dragStartPosition.x
+  const deltaY = y - this.dragStartPosition.y
+  const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY)
+  const duration = Date.now() - this.touchStartTime
+  
+  const isTap = distance < 10 && duration < 200  // Критические значения
+  
+  if (isTap) {
+    this.rotateComponent(this.draggedComponent)  // Поворот
+  } else {
+    this.moveComponent(this.draggedComponent, deltaX, deltaY)  // Перемещение
+  }
+}
+```
+
+### Security Considerations
+
+```javascript
+// ✅ Безопасность window.SVGConverter
+if (!getComponentSVGForGameEngine) {
+  console.warn('❌ SVG Converter не загружен, используем fallback')
+  return this.getFallbackSVG(componentData)  // Не ломаем приложение
+}
+
+// ✅ Валидация компонентов
+const typeMap = {
+  'resistor': ComponentType?.RESISTOR,
+  // ... безопасное маппирование
+}
+if (!componentType) {
+  console.warn(`❌ Неизвестный тип компонента: ${componentData.type}`)
+  return this.getFallbackSVG(componentData)
+}
+```
+
+---
+
 ## 🚀 Расширение архитектуры
 
 ### Добавление новых интерактивных компонентов

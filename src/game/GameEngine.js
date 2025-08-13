@@ -95,6 +95,12 @@ export class GameEngine {
     // Добавляем SVG символ компонента
     element.innerHTML = this.getComponentSVG(componentData)
     
+    // КРИТИЧЕСКИ ВАЖНО: SVG элементы должны пропускать события к GameEngine
+    const svg = element.querySelector('svg')
+    if (svg) {
+      svg.style.pointerEvents = 'none' // События проходят к контейнеру
+    }
+    
     return element
   }
   
@@ -278,7 +284,7 @@ export class GameEngine {
     
     // Очистка
     this.setComponentSelected(this.draggedComponent.element, false)
-    this.draggedComponent.element.style.transform = ''
+    // Убираем временную трансформацию drag'а - поворот сохранится через setComponentSelected
     
     this.isDragging = false
     this.draggedComponent = null
@@ -347,13 +353,18 @@ export class GameEngine {
   }
   
   setComponentSelected(element, selected) {
+    // Получить текущий поворот компонента для сохранения трансформации
+    const componentId = element.getAttribute('data-component-id')
+    const component = this.components.get(componentId)
+    const currentRotation = component?.rotation || 0
+    
     if (selected) {
       element.style.filter = 'brightness(2) saturate(0)'
-      element.style.transform = 'scale(1.1)'
+      element.style.transform = `rotate(${currentRotation}deg) scale(1.1)` // Объединяем поворот и масштаб
       element.style.zIndex = '1000'
     } else {
       element.style.filter = ''
-      element.style.transform = ''
+      element.style.transform = `rotate(${currentRotation}deg)` // Сохраняем только поворот
       element.style.zIndex = '10'
     }
   }
