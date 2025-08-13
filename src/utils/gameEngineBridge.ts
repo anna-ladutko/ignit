@@ -4,20 +4,28 @@
  */
 
 import { getComponentSVGForGameEngine } from './svgConverter'
-import { ComponentType } from '../types'
+import { ComponentType } from '../types/enums'
 
 /**
  * Initialize the bridge between React/TypeScript and vanilla JS GameEngine
  * Call this before initializing GameEngine to ensure SVG Converter is available
  */
 export function initializeGameEngineBridge() {
+  console.log('🚀 GameEngine Bridge: Initializing SVG Converter...')
+  
   // Make SVG utilities available globally for GameEngine
   ;(window as any).SVGConverter = {
     getComponentSVGForGameEngine,
     ComponentType
   }
   
-  console.log('🔗 GameEngine Bridge: SVG Converter initialized and available globally')
+  // Verify bridge was set up correctly
+  const testConverter = (window as any).SVGConverter
+  console.log('🔍 GameEngine Bridge: Verification - getComponentSVGForGameEngine available:', !!testConverter?.getComponentSVGForGameEngine)
+  console.log('🔍 GameEngine Bridge: Verification - ComponentType available:', !!testConverter?.ComponentType)
+  console.log('🔍 GameEngine Bridge: ComponentType keys:', Object.keys(testConverter?.ComponentType || {}))
+  
+  console.log('✅ GameEngine Bridge: SVG Converter initialized and available globally')
 }
 
 /**

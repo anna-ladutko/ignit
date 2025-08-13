@@ -74,10 +74,15 @@ export class GameEngine {
     element.setAttribute('data-component-id', componentData.id)
     element.setAttribute('data-component-type', componentData.type)
     
-    // Позиционирование для магнитных символов (100x40)
+    // Позиционирование для магнитных символов (100x40) - синхронизация с сеткой
     element.style.position = 'absolute'
-    element.style.left = `${componentData.position.x - 50}px` // 100px/2
-    element.style.top = `${componentData.position.y - 20}px` // 40px/2
+    
+    // Магнитные точки должны попадать на сеточные точки (20px, 60px, 100px...)
+    // SVG магнитные точки: cx="10" и cx="90" (в 100px компоненте)
+    // Чтобы левая магнитная точка (10px) попала на сеточную точку position.x:
+    // left = position.x - 10px
+    element.style.left = `${componentData.position.x - 10}px` 
+    element.style.top = `${componentData.position.y - 20}px` // Центр по вертикали
     element.style.width = '100px'
     element.style.height = '40px'
     element.style.cursor = 'pointer'
@@ -94,11 +99,15 @@ export class GameEngine {
   }
   
   getComponentSVG(componentData) {
+    console.log(`🔧 GameEngine: getComponentSVG called for type: ${componentData.type}`)
+    
     // Используем новый hybrid SVG подход с магнитными символами
     const { getComponentSVGForGameEngine, ComponentType } = window.SVGConverter || {}
     
+    console.log(`🔗 GameEngine: SVGConverter available:`, !!getComponentSVGForGameEngine, !!ComponentType)
+    
     if (!getComponentSVGForGameEngine) {
-      console.warn('SVG Converter не загружен, используем fallback')
+      console.warn('❌ SVG Converter не загружен, используем fallback')
       return this.getFallbackSVG(componentData)
     }
     
@@ -114,51 +123,36 @@ export class GameEngine {
     }
     
     const componentType = typeMap[componentData.type]
+    console.log(`🎯 GameEngine: Mapped ${componentData.type} to:`, componentType)
+    
     if (!componentType) {
-      console.warn(`Неизвестный тип компонента: ${componentData.type}`)
+      console.warn(`❌ Неизвестный тип компонента: ${componentData.type}`)
       return this.getFallbackSVG(componentData)
     }
     
     const isActive = componentData.isActive || false
     const switchState = componentData.switchState || false
     
-    return getComponentSVGForGameEngine(componentType, isActive, switchState)
+    console.log(`✅ GameEngine: Calling getComponentSVGForGameEngine`)
+    const svgResult = getComponentSVGForGameEngine(componentType, isActive, switchState)
+    console.log(`📄 GameEngine: Generated SVG length:`, svgResult?.length)
+    
+    return svgResult
   }
   
   getFallbackSVG(componentData) {
-    // Fallback для случаев когда SVG Converter недоступен
-    const color = this.getComponentColor(componentData.type)
+    // КРИТИЧЕСКАЯ ОШИБКА: SVG Converter должен быть всегда доступен
+    console.error(`❌ КРИТИЧЕСКАЯ ОШИБКА: SVG Converter недоступен для ${componentData.type}!`)
+    console.error(`❌ Bridge не инициализирован или произошла ошибка загрузки`)
     
-    switch(componentData.type) {
-      case 'resistor':
-        return `<svg width="40" height="40" viewBox="0 0 40 40">
-          <path d="M5 20L10 10L15 30L20 10L25 30L30 10L35 20" 
-                stroke="${color}" stroke-width="3" fill="none" stroke-linecap="round"/>
-        </svg>`
-        
-      case 'capacitor':
-        return `<svg width="40" height="40" viewBox="0 0 40 40">
-          <line x1="17" y1="8" x2="17" y2="32" stroke="${color}" stroke-width="3"/>
-          <line x1="23" y1="8" x2="23" y2="32" stroke="${color}" stroke-width="3"/>
-        </svg>`
-        
-      case 'led':
-        return `<svg width="40" height="40" viewBox="0 0 40 40">
-          <circle cx="20" cy="20" r="12" fill="none" stroke="${color}" stroke-width="3"/>
-          <path d="M14 14L26 26M14 26L26 14" stroke="${color}" stroke-width="2"/>
-        </svg>`
-        
-      case 'voltage_source':
-        return `<svg width="40" height="40" viewBox="0 0 40 40">
-          <circle cx="20" cy="20" r="15" fill="none" stroke="${color}" stroke-width="3"/>
-          <text x="20" y="25" text-anchor="middle" fill="${color}" font-size="16">V</text>
-        </svg>`
-        
-      default:
-        return `<svg width="40" height="40" viewBox="0 0 40 40">
-          <rect x="5" y="5" width="30" height="30" fill="none" stroke="${color}" stroke-width="2"/>
-        </svg>`
-    }
+    // Показываем ошибку визуально на игровом поле
+    const color = '#FF0000' // Красный цвет для ошибок
+    
+    return `<svg width="100" height="40" viewBox="0 0 100 40">
+      <rect x="2" y="2" width="96" height="36" fill="none" stroke="${color}" stroke-width="2" stroke-dasharray="4,4"/>
+      <text x="50" y="20" text-anchor="middle" fill="${color}" font-size="12">ERROR</text>
+      <text x="50" y="32" text-anchor="middle" fill="${color}" font-size="8">${componentData.type}</text>
+    </svg>`
   }
   
   getComponentColor(type) {
@@ -302,8 +296,8 @@ export class GameEngine {
     
     // Применить новую позицию
     component.position = snappedPosition
-    component.element.style.left = `${snappedPosition.x - 20}px`
-    component.element.style.top = `${snappedPosition.y - 20}px`
+    component.element.style.left = `${snappedPosition.x - 10}px`  // Синхронизация с createComponentElement
+    component.element.style.top = `${snappedPosition.y - 20}px`   // Центр по вертикали
     
     // Уведомить React
     this.onComponentPlace(component.data.id, snappedPosition)

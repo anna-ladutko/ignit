@@ -227,13 +227,13 @@ export const useGameEngine = (level) => {
 function prepareLevelData(level) {
   const preinstalledComponents = []
   
-  // Добавить источник питания
+  // Добавить источник питания - точное позиционирование по сетке
   if (level.circuit_definition.source) {
     const source = level.circuit_definition.source
     preinstalledComponents.push({
       id: source.id,
       type: 'voltage_source',
-      position: { x: 100, y: 200 },
+      position: { x: 70, y: 200 }, // x: 70 → left=60px → магнитная точка на сеточной точке 60px
       rotation: 0,
       isPreinstalled: true,
       properties: {
@@ -243,12 +243,12 @@ function prepareLevelData(level) {
     })
   }
   
-  // Добавить цели (LED лампочки)
+  // Добавить цели (LED лампочки) - компактный столбик по сетке
   level.circuit_definition.targets.forEach((target, index) => {
     preinstalledComponents.push({
       id: target.id,
       type: 'led',
-      position: { x: 400 + (index * 80), y: 200 },
+      position: { x: 70, y: 280 + (index * 80) }, // Компактный шаг 80px (2×GRID_SIZE)
       rotation: 0,
       isPreinstalled: true,
       properties: {
