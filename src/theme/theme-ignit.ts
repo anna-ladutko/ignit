@@ -105,7 +105,7 @@ export const themeIgnit = createTheme({
     gradients: {
       backgroundPrimary: "linear-gradient(135deg, #202221 0%, #1A1F3A 100%)",
       backgroundSecondary: "linear-gradient(135deg, #1A1F3A 0%, #2A2F4A 100%)",
-      backgroundAccent: "linear-gradient(135deg, #00FF8820 0%, #0088FF20 100%)",
+      backgroundAccent: "linear-gradient(135deg, #FF8000 0%, #D84205 100%)",
       backgroundModule1:
         "linear-gradient(135deg, #00FF8815 0%, #33FF9915 100%)",
       backgroundModule2:

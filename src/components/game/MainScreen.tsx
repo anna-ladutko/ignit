@@ -73,65 +73,6 @@ export const MainScreen: React.FC<MainScreenProps> = ({
           </Typography>
         </motion.div>
 
-        {/* Game Logo/Visual Element */}
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 1, delay: 0.3, ease: 'easeOut' }}
-        >
-          <MobilePanel variant="accent" sx={{ p: 4, textAlign: 'center', maxWidth: '300px', mx: 'auto' }}>
-            <motion.div
-              animate={{ 
-                rotate: [0, 360],
-                scale: [1, 1.05, 1]
-              }}
-              transition={{ 
-                rotate: { duration: 20, repeat: Infinity, ease: 'linear' },
-                scale: { duration: 2, repeat: Infinity, ease: 'easeInOut' }
-              }}
-            >
-              <Box
-                sx={{
-                  width: 120,
-                  height: 120,
-                  borderRadius: '50%',
-                  background: theme.palette.gradients.accentTopLeft,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  mb: 2,
-                  mx: 'auto',
-                  position: 'relative',
-                  boxShadow: theme.palette.customShadows.glow,
-                  '&::before': {
-                    content: '""',
-                    position: 'absolute',
-                    inset: 4,
-                    borderRadius: '50%',
-                    background: theme.palette.circuit.boardBackground,
-                  },
-                }}
-              >
-                {/* Circuit symbol in center */}
-                <Box
-                  sx={{
-                    position: 'relative',
-                    zIndex: 1,
-                    color: theme.palette.primary.main,
-                    fontSize: '48px',
-                    fontWeight: 700,
-                    filter: `drop-shadow(0 0 8px ${theme.palette.primary.main})`,
-                  }}
-                >
-                  ⚡
-                </Box>
-              </Box>
-            </motion.div>
-            <Typography variant="componentLabel" sx={{ fontSize: '14px' }}>
-              Ready to start?
-            </Typography>
-          </MobilePanel>
-        </motion.div>
 
         {/* Play Button */}
         <motion.div

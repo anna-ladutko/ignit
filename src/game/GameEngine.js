@@ -245,8 +245,10 @@ export class GameEngine {
     const deltaX = x - this.dragStartPosition.x
     const deltaY = y - this.dragStartPosition.y
     
-    this.draggedComponent.element.style.transform = 
-      `translate3d(${deltaX}px, ${deltaY}px, 0)`
+    // КРИТИЧЕСКИ ВАЖНО: Разделить rotate и translate для правильных координат
+    const currentRotation = this.draggedComponent.rotation || 0
+    this.draggedComponent.element.style.rotate = `${currentRotation}deg`
+    this.draggedComponent.element.style.translate = `${deltaX}px ${deltaY}px`
   }
   
   handleTouchEnd(e) {
@@ -293,7 +295,7 @@ export class GameEngine {
   
   rotateComponent(component) {
     component.rotation = (component.rotation + 90) % 360
-    component.element.style.transform = `rotate(${component.rotation}deg)`
+    component.element.style.rotate = `${component.rotation}deg`
     
     // Уведомить React
     this.onComponentRotate(component.data.id, component.rotation)
@@ -360,11 +362,14 @@ export class GameEngine {
     
     if (selected) {
       element.style.filter = 'brightness(2) saturate(0)'
-      element.style.transform = `rotate(${currentRotation}deg) scale(1.1)` // Объединяем поворот и масштаб
+      element.style.rotate = `${currentRotation}deg`  // Поворот отдельно
+      element.style.scale = '1.1'  // Масштаб отдельно  
       element.style.zIndex = '1000'
     } else {
       element.style.filter = ''
-      element.style.transform = `rotate(${currentRotation}deg)` // Сохраняем только поворот
+      element.style.rotate = `${currentRotation}deg`  // Только поворот
+      element.style.scale = '1'  // Сброс масштаба
+      element.style.translate = '0px 0px'  // Сброс перемещения
       element.style.zIndex = '10'
     }
   }
