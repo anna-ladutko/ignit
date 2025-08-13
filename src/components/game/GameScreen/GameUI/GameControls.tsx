@@ -111,7 +111,7 @@ export const GameControls: React.FC<GameControlsProps> = ({
             whileTap={{ scale: 0.9 }}
           >
             <TouchButton
-              variant="secondary"
+              variant="primary"
               size="small"
               onClick={onReset}
               disabled={gameStatus === 'loading'}
@@ -132,7 +132,7 @@ export const GameControls: React.FC<GameControlsProps> = ({
             whileTap={{ scale: 0.9 }}
           >
             <TouchButton
-              variant="secondary"
+              variant="primary"
               size="small"
               onClick={onHint}
               disabled={gameStatus === 'loading' || gameStatus === 'complete'}

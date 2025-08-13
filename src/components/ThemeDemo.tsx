@@ -37,7 +37,7 @@ export const ThemeDemo: React.FC = () => {
         </MobilePanel>
 
         {/* Component Buttons Demo */}
-        <MobilePanel title="Component Buttons" variant="secondary">
+        <MobilePanel title="Component Buttons" variant="primary">
           <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1 }}>
             <ComponentButton 
               type={ComponentType.RESISTOR} 
@@ -78,7 +78,7 @@ export const ThemeDemo: React.FC = () => {
             <TouchButton variant="primary" fullWidth>
               Primary Action
             </TouchButton>
-            <TouchButton variant="secondary" fullWidth>
+            <TouchButton variant="primary" fullWidth>
               Secondary Action
             </TouchButton>
             <TouchButton variant="accent" size="large">
@@ -138,7 +138,7 @@ export const ThemeDemo: React.FC = () => {
                       const parts = path.split('.')
                       return (theme.palette as any)[parts[0]][parts[1]][parts[2]]
                     },
-                    borderRadius: 1,
+                    borderRadius: 2,
                     mb: 1,
                     border: '1px solid rgba(255,255,255,0.2)',
                   }} 
@@ -170,7 +170,7 @@ export const ThemeDemo: React.FC = () => {
                       const parts = path.split('.')
                       return (theme.palette as any)[parts[0]][parts[1]]
                     },
-                    borderRadius: 1,
+                    borderRadius: 2,
                     mb: 1,
                     border: '1px solid rgba(255,255,255,0.2)',
                   }} 

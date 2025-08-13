@@ -147,7 +147,7 @@ export const MainScreen: React.FC<MainScreenProps> = ({
             style={{ position: 'fixed', bottom: 20, left: 20 }}
           >
             <TouchButton
-              variant="secondary"
+              variant="primary"
               size="small"
               onClick={onDevModeClick}
               sx={{

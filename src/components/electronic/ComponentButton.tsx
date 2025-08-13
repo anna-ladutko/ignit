@@ -67,18 +67,13 @@ export const ComponentButton: React.FC<ComponentButtonProps> = ({
         p: theme.spacing(1),
         minWidth: theme.mobile.touchTarget,
         minHeight: theme.mobile.touchTarget,
-        border: selected 
-          ? `2px solid ${theme.palette.circuit.selection}` 
-          : `1px solid ${theme.palette.circuit.grid}`,
         background: selected 
           ? `${theme.palette.circuit.selection}15` 
           : 'transparent',
         '&:hover': {
-          border: `1px solid ${theme.palette.circuit.selection}`,
           background: `${theme.palette.circuit.selection}10`,
         },
         '&:disabled': {
-          border: `1px solid ${theme.palette.circuit.grid}`,
           background: 'transparent',
           opacity: 0.5,
         },

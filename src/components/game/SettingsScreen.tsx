@@ -28,7 +28,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           display: 'flex',
           alignItems: 'center',
           p: theme.spacing(2),
-          background: theme.palette.gradients.backgroundModule2,
+          background: theme.palette.circuit.boardBackground,
           boxShadow: theme.palette.customShadows.softShadow,
         }}
       >

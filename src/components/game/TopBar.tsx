@@ -22,7 +22,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         justifyContent: 'space-between',
         alignItems: 'center',
         p: theme.spacing(2),
-        background: theme.palette.gradients.backgroundModule1,
+        background: theme.palette.circuit.boardBackground,
         borderRadius: theme.mobile.cornerRadius,
         mb: theme.spacing(3),
         boxShadow: theme.palette.customShadows.softShadow,

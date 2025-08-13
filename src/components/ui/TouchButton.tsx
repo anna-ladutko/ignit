@@ -2,7 +2,7 @@ import React from 'react'
 import { Button, type ButtonProps, useTheme } from '@mui/material'
 
 interface TouchButtonProps extends Omit<ButtonProps, 'variant'> {
-  variant?: 'primary' | 'secondary' | 'accent' | 'danger'
+  variant?: 'primary' | 'accent' | 'danger'
   size?: 'small' | 'medium' | 'large'
   fullWidth?: boolean
 }
@@ -42,7 +42,7 @@ export const TouchButton: React.FC<TouchButtonProps> = ({
 
   const getVariantStyles = () => {
     const baseStyles = {
-      borderRadius: theme.mobile.cornerRadius,
+      borderRadius: 10, // Кнопки всегда 10px
       fontWeight: 600,
       textTransform: 'capitalize' as const,
       transition: 'all 0.2s ease',
@@ -50,16 +50,6 @@ export const TouchButton: React.FC<TouchButtonProps> = ({
     }
 
     switch (variant) {
-      case 'secondary':
-        return {
-          ...baseStyles,
-          background: 'transparent',
-          color: theme.palette.primary.main,
-          border: `2px solid ${theme.palette.primary.main}`,
-          '&:hover': {
-            background: `${theme.palette.primary.main}15`,
-          },
-        }
       case 'accent':
         return {
           ...baseStyles,

@@ -6,6 +6,7 @@ import { CircuitSimulator } from './game/circuitSimulator'
 import { loadLevel } from './utils/levelLoader'
 import { LevelLoader } from './components/LevelLoader'
 import { ThemeDemo } from './components/ThemeDemo'
+import { ModalDemo } from './components/ModalDemo'
 import { MainScreen, SettingsScreen, GameScreen } from './components/game'
 import { levelManager } from './services/LevelManager'
 import ColorPalette from './pages/ColorPalette'
@@ -265,6 +266,7 @@ function App() {
             <Tab label="Game Engine" />
             <Tab label="Theme Demo" />
             <Tab label="Color Palette" />
+            <Tab label="Modal Demo" />
           </Tabs>
 
           {currentTab === 1 && (
@@ -362,6 +364,8 @@ function App() {
           {currentTab === 2 && <ThemeDemo />}
           
           {currentTab === 3 && <ColorPalette />}
+
+          {currentTab === 4 && <ModalDemo />}
         </Box>
       </Container>
     </Box>

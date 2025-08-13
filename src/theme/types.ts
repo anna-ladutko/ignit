@@ -46,9 +46,6 @@ declare module '@mui/material/styles' {
       backgroundPrimary: string
       backgroundSecondary: string
       backgroundAccent: string
-      backgroundModule1: string
-      backgroundModule2: string
-      backgroundModule3: string
       backgroundTransparent: string
       accentGradient: string
     }
@@ -108,9 +105,6 @@ declare module '@mui/material/styles' {
       backgroundPrimary?: string
       backgroundSecondary?: string
       backgroundAccent?: string
-      backgroundModule1?: string
-      backgroundModule2?: string
-      backgroundModule3?: string
       backgroundTransparent?: string
       accentGradient?: string
     }

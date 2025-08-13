@@ -3,7 +3,7 @@ import { Box, Card, Typography, useTheme } from '@mui/material'
 
 interface MobilePanelProps {
   title?: string
-  variant?: 'primary' | 'secondary' | 'accent'
+  variant?: 'primary' | 'accent'
   elevation?: number
   children: React.ReactNode
   sx?: object
@@ -20,20 +20,13 @@ export const MobilePanel: React.FC<MobilePanelProps> = ({
 
   const getVariantStyles = () => {
     switch (variant) {
-      case 'secondary':
-        return {
-          background: theme.palette.background.paper,
-          border: `1px solid ${theme.palette.circuit.grid}`,
-        }
       case 'accent':
         return {
-          background: theme.palette.gradients.backgroundModule1,
-          border: `1px solid ${theme.palette.circuit.selection}30`,
+          background: theme.palette.circuit.boardBackground,
         }
       default:
         return {
           background: theme.palette.circuit.boardBackground,
-          border: `2px solid ${theme.palette.circuit.grid}`,
         }
     }
   }

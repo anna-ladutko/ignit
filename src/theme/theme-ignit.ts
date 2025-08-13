@@ -80,11 +80,11 @@ export const themeIgnit = createTheme({
       wireError: "#FF4444", // провод с ошибкой
       connectionPoint: "#FFFFFF", // connection points
       connectionPointActive: "#00DDFF", // active connection point
-      grid: "#2A2F4A", // сетка размещения
+      grid: "transparent", // убрано для flat дизайна
       gridActive: "#3A3F5A", // активированная сетка
       selection: "#00DDFF", // component selection
       selectionSecondary: "#0088FF", // вторичное выделение
-      boardBackground: "#0F1425", // фон игрового поля
+      boardBackground: "#343635", // фон игрового поля
     },
 
     // Simulation animation
@@ -104,14 +104,8 @@ export const themeIgnit = createTheme({
     // Градиенты для красивых эффектов
     gradients: {
       backgroundPrimary: "linear-gradient(135deg, #202221 0%, #1A1F3A 100%)",
-      backgroundSecondary: "linear-gradient(135deg, #1A1F3A 0%, #2A2F4A 100%)",
+      backgroundSecondary: "linear-gradient(135deg, #1A1F3A 0%, #202221 100%)",
       backgroundAccent: "linear-gradient(135deg, #FF8000 0%, #D84205 100%)",
-      backgroundModule1:
-        "linear-gradient(135deg, #00FF8815 0%, #33FF9915 100%)",
-      backgroundModule2:
-        "linear-gradient(135deg, #0088FF15 0%, #3399FF15 100%)",
-      backgroundModule3:
-        "linear-gradient(135deg, #6C5CE715 0%, #8B7ED815 100%)",
       backgroundTransparent:
         "linear-gradient(135deg, rgba(0,255,136,0.1) 0%, rgba(0,136,255,0.1) 100%)",
       accentGradient: "linear-gradient(135deg, #FF8000 0%, #FF3939 100%)",
@@ -141,7 +135,7 @@ export const themeIgnit = createTheme({
     wireThicknessActive: 5, // толщина активных проводов
     gridSpacing: 44, // расстояние сетки (= touchTarget для точности)
     gridSpacingSmall: 32, // плотная сетка
-    cornerRadius: 8, // радиус скругления
+    cornerRadius: 20, // радиус скругления
     animationDuration: 200, // длительность анимаций в мс
   },
 
@@ -238,7 +232,7 @@ export const themeIgnit = createTheme({
 
   // Форма элементов
   shape: {
-    borderRadius: 8, // меньший радиус для мобильных интерфейсов
+    borderRadius: 20, // стандартный радиус для панелей и окон
   },
 
   // Material UI components with custom styles
@@ -253,11 +247,10 @@ export const themeIgnit = createTheme({
             color: theme.palette.text.primary,
             minHeight: theme.mobile.touchTarget,
             minWidth: theme.mobile.touchTarget * 2,
-            borderRadius: theme.mobile.cornerRadius,
+            borderRadius: 10, // Кнопки всегда 10px
             fontSize: "16px",
             fontWeight: 600,
             textTransform: "capitalize",
-            border: `1px solid ${theme.palette.circuit.selection}30`,
             "&:hover": {
               background: theme.palette.gradients.accentGradient,
             },
@@ -271,10 +264,9 @@ export const themeIgnit = createTheme({
           style: ({ theme }) => ({
             background: "transparent",
             color: theme.palette.primary.main,
-            border: `2px solid ${theme.palette.primary.main}`,
             minHeight: theme.mobile.touchTarget,
             minWidth: theme.mobile.touchTarget * 2,
-            borderRadius: theme.mobile.cornerRadius,
+            borderRadius: 10, // Кнопки всегда 10px
             fontSize: "16px",
             fontWeight: 600,
             textTransform: "capitalize",
@@ -291,13 +283,11 @@ export const themeIgnit = createTheme({
           style: ({ theme }) => ({
             background: "transparent",
             color: theme.palette.text.secondary,
-            border: `1px solid ${theme.palette.circuit.grid}`,
             minHeight: theme.mobile.touchTarget,
             minWidth: theme.mobile.touchTarget,
-            borderRadius: theme.mobile.cornerRadius,
+            borderRadius: 10, // Кнопки всегда 10px
             padding: "8px",
             "&:hover": {
-              border: `1px solid ${theme.palette.circuit.selection}`,
               background: `${theme.palette.circuit.selection}10`,
             },
             "&:active": {
@@ -315,8 +305,7 @@ export const themeIgnit = createTheme({
           props: { variant: "componentCard" },
           style: ({ theme }) => ({
             background: theme.palette.background.paper,
-            border: `1px solid ${theme.palette.circuit.grid}`,
-            borderRadius: theme.mobile.cornerRadius,
+            borderRadius: 20, // Панели всегда 20px
             padding: theme.spacing(2),
           }),
         },
@@ -324,8 +313,7 @@ export const themeIgnit = createTheme({
           props: { variant: "circuitBoard" },
           style: ({ theme }) => ({
             background: theme.palette.circuit.boardBackground,
-            border: `2px solid ${theme.palette.circuit.grid}`,
-            borderRadius: theme.mobile.cornerRadius,
+            borderRadius: 20, // Панели всегда 20px
             padding: theme.spacing(1),
             position: "relative",
             overflow: "hidden",
@@ -334,8 +322,8 @@ export const themeIgnit = createTheme({
         {
           props: { variant: "infoPanel" },
           style: ({ theme }) => ({
-            background: theme.palette.gradients.backgroundModule1,
-            borderRadius: theme.mobile.cornerRadius,
+            background: theme.palette.circuit.boardBackground,
+            borderRadius: 20, // Панели всегда 20px
             padding: theme.spacing(2),
             // boxShadow removed
           }),
@@ -344,7 +332,7 @@ export const themeIgnit = createTheme({
           props: { variant: "mobile" },
           style: ({ theme }) => ({
             background: theme.palette.background.paper,
-            borderRadius: theme.mobile.cornerRadius,
+            borderRadius: 20, // Панели всегда 20px
             padding: theme.spacing(2),
             minHeight: theme.mobile.touchTarget,
           }),

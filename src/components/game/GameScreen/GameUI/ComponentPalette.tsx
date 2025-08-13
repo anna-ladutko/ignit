@@ -77,7 +77,6 @@ export const ComponentPalette: React.FC<ComponentPaletteProps> = ({
     <Box
       sx={{
         backgroundColor: theme.palette.circuit.boardBackground,
-        borderTop: `2px solid ${theme.palette.circuit.grid}`,
         p: theme.spacing(1),
         maxHeight: '180px',
         overflowY: 'auto',
@@ -147,7 +146,6 @@ export const ComponentPalette: React.FC<ComponentPaletteProps> = ({
                       ...(isDraggedComponent && {
                         transform: 'scale(1.05)',
                         boxShadow: `0 0 12px ${theme.palette.circuit.selection}`,
-                        border: `2px solid ${theme.palette.circuit.selection}`,
                         backgroundColor: `${theme.palette.circuit.selection}30`,
                       }),
                     }}

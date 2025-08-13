@@ -30,8 +30,7 @@ export const TopGameBar: React.FC<TopGameBarProps> = ({
         justifyContent: 'space-between',
         px: theme.spacing(2),
         py: theme.spacing(1),
-        background: theme.palette.gradients.backgroundModule1,
-        borderBottom: `1px solid ${theme.palette.circuit.grid}`,
+        background: theme.palette.circuit.boardBackground,
         boxShadow: theme.palette.customShadows.softShadow,
         minHeight: theme.mobile.touchTarget,
       }}
