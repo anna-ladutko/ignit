@@ -138,7 +138,7 @@ const ColorPalette: React.FC = () => {
           sx={{
             width: 80,
             height: 80,
-            backgroundColor: theme.palette.electronic.surface,
+            backgroundColor: theme.palette.background.paper,
             borderRadius: 1,
             mx: 'auto',
             mb: 1,
@@ -204,29 +204,29 @@ const ColorPalette: React.FC = () => {
         </Typography>
       </motion.div>
 
-      {/* Electronic Colors */}
+      {/* MUI Theme Colors */}
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h5" sx={{ mb: 2, color: theme.palette.electronic.primary }}>
-          ⚡ Electronic Colors
+        <Typography variant="h5" sx={{ mb: 2, color: theme.palette.primary.main }}>
+          ⚡ MUI Theme Colors
         </Typography>
         <Grid container spacing={2}>
           <Grid item xs={6} sm={4} md={2}>
-            <ColorCard title="Background" color={theme.palette.electronic.background} />
+            <ColorCard title="Background" color={theme.palette.background.default} />
           </Grid>
           <Grid item xs={6} sm={4} md={2}>
-            <ColorCard title="Surface" color={theme.palette.electronic.surface} />
+            <ColorCard title="Surface" color={theme.palette.background.paper} />
           </Grid>
           <Grid item xs={6} sm={4} md={2}>
-            <ColorCard title="Primary" color={theme.palette.electronic.primary} />
+            <ColorCard title="Primary" color={theme.palette.primary.main} />
           </Grid>
           <Grid item xs={6} sm={4} md={2}>
-            <ColorCard title="Secondary" color={theme.palette.electronic.secondary} />
+            <ColorCard title="Secondary" color={theme.palette.secondary.main} />
           </Grid>
           <Grid item xs={6} sm={4} md={2}>
-            <ColorCard title="Warning" color={theme.palette.electronic.warning} />
+            <ColorCard title="Warning" color={theme.palette.warning.main} />
           </Grid>
           <Grid item xs={6} sm={4} md={2}>
-            <ColorCard title="Error" color={theme.palette.electronic.error} />
+            <ColorCard title="Error" color={theme.palette.error.main} />
           </Grid>
         </Grid>
       </Box>
@@ -235,11 +235,11 @@ const ColorPalette: React.FC = () => {
 
       {/* Component Colors */}
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h5" sx={{ mb: 2, color: theme.palette.electronic.primary }}>
+        <Typography variant="h5" sx={{ mb: 2, color: theme.palette.primary.main }}>
           🔧 Component Colors
         </Typography>
         <Grid container spacing={2}>
-          {Object.entries(theme.palette.components).map(([componentType, colors]) => (
+          {Object.entries(theme.palette.electronicsComponents).map(([componentType, colors]) => (
             <React.Fragment key={componentType}>
               <Grid item xs={12} sm={6} md={4}>
                 <Typography variant="h6" sx={{ mb: 1, fontSize: '14px', textTransform: 'capitalize' }}>
@@ -266,7 +266,7 @@ const ColorPalette: React.FC = () => {
 
       {/* Circuit Colors */}
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h5" sx={{ mb: 2, color: theme.palette.electronic.primary }}>
+        <Typography variant="h5" sx={{ mb: 2, color: theme.palette.primary.main }}>
           🔌 Circuit Colors
         </Typography>
         <Grid container spacing={2}>
@@ -285,7 +285,7 @@ const ColorPalette: React.FC = () => {
 
       {/* Simulation Colors */}
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h5" sx={{ mb: 2, color: theme.palette.electronic.primary }}>
+        <Typography variant="h5" sx={{ mb: 2, color: theme.palette.primary.main }}>
           ⚡ Simulation Colors
         </Typography>
         <Grid container spacing={2}>
@@ -304,7 +304,7 @@ const ColorPalette: React.FC = () => {
 
       {/* Gradients */}
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h5" sx={{ mb: 2, color: theme.palette.electronic.primary }}>
+        <Typography variant="h5" sx={{ mb: 2, color: theme.palette.primary.main }}>
           🌈 Gradients
         </Typography>
         <Grid container spacing={2}>
@@ -323,7 +323,7 @@ const ColorPalette: React.FC = () => {
 
       {/* Custom Colors */}
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h5" sx={{ mb: 2, color: theme.palette.electronic.primary }}>
+        <Typography variant="h5" sx={{ mb: 2, color: theme.palette.primary.main }}>
           🎨 Custom Colors
         </Typography>
         <Grid container spacing={2}>
@@ -342,7 +342,7 @@ const ColorPalette: React.FC = () => {
 
       {/* Custom Shadows */}
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h5" sx={{ mb: 2, color: theme.palette.electronic.primary }}>
+        <Typography variant="h5" sx={{ mb: 2, color: theme.palette.primary.main }}>
           🌟 Custom Shadows
         </Typography>
         <Grid container spacing={2}>
@@ -372,7 +372,7 @@ const ColorPalette: React.FC = () => {
             border: '1px solid rgba(255, 255, 255, 0.1)',
           }}
         >
-          <Typography variant="h6" sx={{ mb: 2, color: theme.palette.electronic.primary }}>
+          <Typography variant="h6" sx={{ mb: 2, color: theme.palette.primary.main }}>
             📝 Instructions
           </Typography>
           <Typography variant="body2" sx={{ mb: 1, opacity: 0.8 }}>
@@ -385,7 +385,7 @@ const ColorPalette: React.FC = () => {
             • Each color shows its hex value and visual representation
           </Typography>
           <Typography variant="body2" sx={{ opacity: 0.8 }}>
-            • Use this page to manually adjust palette colors in theme-ignit-electronic.ts
+            • Use this page to manually adjust palette colors in theme-ignit.ts
           </Typography>
         </Paper>
       </motion.div>

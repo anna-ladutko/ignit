@@ -134,7 +134,7 @@ export function getThemeColor(
   componentType: ComponentType,
   isActive = false
 ): string {
-  // These colors match the theme-ignit-electronic.ts palette
+  // These colors match the theme-ignit.ts palette
   const colors: Record<ComponentType, { main: string; active: string }> = {
     [ComponentType.RESISTOR]: {
       main: '#FF6B35',

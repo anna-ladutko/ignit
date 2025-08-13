@@ -42,12 +42,12 @@ export const TopBar: React.FC<TopBarProps> = ({
       <IconButton
         onClick={onSettingsClick}
         sx={{
-          color: theme.palette.electronic.primary,
-          backgroundColor: `${theme.palette.electronic.primary}15`,
+          color: theme.palette.primary.main,
+          backgroundColor: `${theme.palette.primary.main}15`,
           width: theme.mobile.touchTarget,
           height: theme.mobile.touchTarget,
           '&:hover': {
-            backgroundColor: `${theme.palette.electronic.primary}25`,
+            backgroundColor: `${theme.palette.primary.main}25`,
             transform: 'scale(1.05)',
           },
           '&:active': {

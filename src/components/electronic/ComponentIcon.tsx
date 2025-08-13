@@ -50,32 +50,32 @@ const ComponentIconMemoized: React.FC<ComponentIconProps> = ({
     switch (type) {
       case ComponentType.RESISTOR:
         return isActive 
-          ? theme.palette.components.resistor.active 
-          : theme.palette.components.resistor.main
+          ? theme.palette.electronicsComponents.resistor.active 
+          : theme.palette.electronicsComponents.resistor.main
       case ComponentType.CAPACITOR:
         return isActive 
-          ? theme.palette.components.capacitor.active 
-          : theme.palette.components.capacitor.main
+          ? theme.palette.electronicsComponents.capacitor.active 
+          : theme.palette.electronicsComponents.capacitor.main
       case ComponentType.INDUCTOR:
         return isActive 
-          ? theme.palette.components.inductor.active 
-          : theme.palette.components.inductor.main
+          ? theme.palette.electronicsComponents.inductor.active 
+          : theme.palette.electronicsComponents.inductor.main
       case ComponentType.LED:
         return isActive 
-          ? theme.palette.components.led.active 
-          : theme.palette.components.led.main
+          ? theme.palette.electronicsComponents.led.active 
+          : theme.palette.electronicsComponents.led.main
       case ComponentType.VOLTAGE_SOURCE:
         return isActive 
-          ? theme.palette.components.source.active 
-          : theme.palette.components.source.main
+          ? theme.palette.electronicsComponents.source.active 
+          : theme.palette.electronicsComponents.source.main
       case ComponentType.SWITCH:
         return isActive 
-          ? theme.palette.components.switch.active 
-          : theme.palette.components.switch.main
+          ? theme.palette.electronicsComponents.switch.active 
+          : theme.palette.electronicsComponents.switch.main
       case ComponentType.SUPERCAPACITOR:
         return isActive 
-          ? theme.palette.components.capacitor.active 
-          : theme.palette.components.capacitor.main
+          ? theme.palette.electronicsComponents.capacitor.active 
+          : theme.palette.electronicsComponents.capacitor.main
       default:
         return theme.palette.text.secondary
     }

@@ -112,14 +112,31 @@ export class GameEngine {
     }
     
     // Преобразуем строковые типы в ComponentType enum
+    // Поддержка как базовых типов, так и палитных названий компонентов
     const typeMap = {
+      // Базовые типы
       'resistor': ComponentType?.RESISTOR,
       'capacitor': ComponentType?.CAPACITOR,
       'inductor': ComponentType?.INDUCTOR,
       'led': ComponentType?.LED,
       'voltage_source': ComponentType?.VOLTAGE_SOURCE,
       'switch': ComponentType?.SWITCH,
-      'supercapacitor': ComponentType?.SUPERCAPACITOR
+      'supercapacitor': ComponentType?.SUPERCAPACITOR,
+      
+      // Палитные типы резисторов
+      'R_DIV_1': ComponentType?.RESISTOR,
+      'R_DIV_2': ComponentType?.RESISTOR,
+      
+      // Палитные типы конденсаторов  
+      'C_FILTER': ComponentType?.CAPACITOR,
+      'C_WRONG_1': ComponentType?.CAPACITOR,
+      
+      // Палитные типы индуктивностей
+      'L_FILTER': ComponentType?.INDUCTOR,
+      
+      // Палитные типы LED
+      'TARGET_LED_1': ComponentType?.LED,
+      'TARGET_LED_2': ComponentType?.LED
     }
     
     const componentType = typeMap[componentData.type]

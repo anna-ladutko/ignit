@@ -90,7 +90,7 @@ export const ComponentPalette: React.FC<ComponentPaletteProps> = ({
           sx={{
             fontSize: '12px',
             mb: 1,
-            color: theme.palette.electronic.primary,
+            color: theme.palette.primary.main,
             textTransform: 'uppercase',
             letterSpacing: '0.1em',
           }}

@@ -22,7 +22,7 @@ export const MobilePanel: React.FC<MobilePanelProps> = ({
     switch (variant) {
       case 'secondary':
         return {
-          background: theme.palette.electronic.surface,
+          background: theme.palette.background.paper,
           border: `1px solid ${theme.palette.circuit.grid}`,
         }
       case 'accent':
@@ -54,7 +54,7 @@ export const MobilePanel: React.FC<MobilePanelProps> = ({
           variant="componentLabel"
           sx={{ 
             mb: theme.spacing(1.5),
-            color: theme.palette.electronic.primary,
+            color: theme.palette.primary.main,
             textTransform: 'uppercase',
             letterSpacing: '0.1em',
           }}

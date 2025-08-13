@@ -2,18 +2,8 @@ import '@mui/material/styles'
 
 declare module '@mui/material/styles' {
   interface Palette {
-    // Электронная цветовая схема
-    electronic: {
-      background: string
-      surface: string
-      primary: string
-      secondary: string
-      warning: string
-      error: string
-    }
-    
-    // Цвета компонентов
-    components: {
+    // Цвета электронных компонентов
+    electronicsComponents: {
       resistor: { main: string; active: string; disabled: string }
       capacitor: { main: string; active: string; disabled: string }
       inductor: { main: string; active: string; disabled: string }
@@ -78,16 +68,7 @@ declare module '@mui/material/styles' {
   }
 
   interface PaletteOptions {
-    electronic?: {
-      background?: string
-      surface?: string
-      primary?: string
-      secondary?: string
-      warning?: string
-      error?: string
-    }
-    
-    components?: {
+    electronicsComponents?: {
       resistor?: { main?: string; active?: string; disabled?: string }
       capacitor?: { main?: string; active?: string; disabled?: string }
       inductor?: { main?: string; active?: string; disabled?: string }

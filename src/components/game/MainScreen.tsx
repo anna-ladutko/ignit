@@ -117,10 +117,10 @@ export const MainScreen: React.FC<MainScreenProps> = ({
                   sx={{
                     position: 'relative',
                     zIndex: 1,
-                    color: theme.palette.electronic.primary,
+                    color: theme.palette.primary.main,
                     fontSize: '48px',
                     fontWeight: 700,
-                    filter: `drop-shadow(0 0 8px ${theme.palette.electronic.primary})`,
+                    filter: `drop-shadow(0 0 8px ${theme.palette.primary.main})`,
                   }}
                 >
                   ⚡
@@ -162,7 +162,7 @@ export const MainScreen: React.FC<MainScreenProps> = ({
                   left: '-100%',
                   width: '100%',
                   height: '100%',
-                  background: `linear-gradient(90deg, transparent, ${theme.palette.electronic.primary}40, transparent)`,
+                  background: `linear-gradient(90deg, transparent, ${theme.palette.primary.main}40, transparent)`,
                   animation: 'shimmer 2s infinite',
                 },
                 '@keyframes shimmer': {

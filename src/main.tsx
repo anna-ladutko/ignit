@@ -4,11 +4,11 @@ import { ThemeProvider } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 import './index.css'
 import App from './App.tsx'
-import { themeIgnitElectronic } from './theme/theme-ignit-electronic'
+import { themeIgnit } from './theme/theme-ignit'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ThemeProvider theme={themeIgnitElectronic}>
+    <ThemeProvider theme={themeIgnit}>
       <CssBaseline />
       <App />
     </ThemeProvider>

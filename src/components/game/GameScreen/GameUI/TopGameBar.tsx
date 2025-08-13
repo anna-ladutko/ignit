@@ -41,13 +41,13 @@ export const TopGameBar: React.FC<TopGameBarProps> = ({
         <IconButton
           onClick={onBackClick}
           sx={{
-            color: theme.palette.electronic.primary,
-            backgroundColor: `${theme.palette.electronic.primary}15`,
+            color: theme.palette.primary.main,
+            backgroundColor: `${theme.palette.primary.main}15`,
             width: theme.mobile.touchTarget,
             height: theme.mobile.touchTarget,
             mr: theme.spacing(1.5),
             '&:hover': {
-              backgroundColor: `${theme.palette.electronic.primary}25`,
+              backgroundColor: `${theme.palette.primary.main}25`,
             },
           }}
         >
@@ -137,7 +137,7 @@ export const TopGameBar: React.FC<TopGameBarProps> = ({
                 fontWeight: 700,
                 color: gameStatus === 'complete' 
                   ? theme.palette.simulation.success
-                  : theme.palette.electronic.primary,
+                  : theme.palette.primary.main,
               }}
             >
               {score.toFixed(1)}

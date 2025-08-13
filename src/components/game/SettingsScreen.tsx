@@ -35,13 +35,13 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
         <IconButton
           onClick={onBackClick}
           sx={{
-            color: theme.palette.electronic.primary,
-            backgroundColor: `${theme.palette.electronic.primary}15`,
+            color: theme.palette.primary.main,
+            backgroundColor: `${theme.palette.primary.main}15`,
             width: theme.mobile.touchTarget,
             height: theme.mobile.touchTarget,
             mr: theme.spacing(2),
             '&:hover': {
-              backgroundColor: `${theme.palette.electronic.primary}25`,
+              backgroundColor: `${theme.palette.primary.main}25`,
               transform: 'scale(1.05)',
             },
             '&:active': {
@@ -68,7 +68,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           <MobilePanel variant="primary" sx={{ textAlign: 'center', py: 4 }}>
             <Box
               sx={{
-                color: theme.palette.electronic.primary,
+                color: theme.palette.primary.main,
                 fontSize: '64px',
                 mb: 2,
               }}

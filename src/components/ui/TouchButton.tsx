@@ -54,10 +54,10 @@ export const TouchButton: React.FC<TouchButtonProps> = ({
         return {
           ...baseStyles,
           background: 'transparent',
-          color: theme.palette.electronic.primary,
-          border: `2px solid ${theme.palette.electronic.primary}`,
+          color: theme.palette.primary.main,
+          border: `2px solid ${theme.palette.primary.main}`,
           '&:hover': {
-            background: `${theme.palette.electronic.primary}15`,
+            background: `${theme.palette.primary.main}15`,
           },
         }
       case 'accent':
@@ -84,11 +84,11 @@ export const TouchButton: React.FC<TouchButtonProps> = ({
       default:
         return {
           ...baseStyles,
-          background: theme.palette.electronic.primary,
-          color: theme.palette.electronic.background,
+          background: theme.palette.primary.main,
+          color: theme.palette.background.default,
           border: 'none',
           '&:hover': {
-            background: theme.palette.electronic.secondary,
+            background: theme.palette.secondary.main,
             boxShadow: theme.palette.customShadows.glow,
           },
         }

@@ -142,7 +142,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             >
               <Box
                 sx={{
-                  color: theme.palette.electronic.primary,
+                  color: theme.palette.primary.main,
                   fontSize: '24px',
                   textAlign: 'center',
                 }}
