@@ -188,16 +188,33 @@ export const useGameEngine = (level) => {
     }))
   }
   
-  const addComponentFromPalette = (componentType) => {
-    if (!gameEngineRef.current) return
+  const addComponentFromPalette = (componentId) => {
+    if (!gameEngineRef.current || !level) return
     
-    // Создать новый компонент из палитры
+    // Найти определение компонента в уровне
+    const componentDef = level.circuit_definition.available_components.find(c => c.id === componentId)
+    if (!componentDef) {
+      console.error('useGameEngine: Component definition not found for ID:', componentId)
+      return
+    }
+    
+    // Найти первую свободную позицию для автоматического размещения
+    const autoPosition = findNextAvailablePosition(gameState.placedComponents)
+    
+    // Создать новый компонент из палитры с правильными данными
     const newComponent = {
-      id: `user_${componentType}_${Date.now()}`,
-      type: componentType,
-      position: { x: 200, y: 200 }, // Начальная позиция
+      id: `user_${componentId}_${Date.now()}`,
+      type: componentDef.type,
+      position: autoPosition, // Автоматическая позиция вместо фиксированной
       rotation: 0,
-      isPreinstalled: false
+      isPreinstalled: false,
+      originalComponentId: componentId, // КРИТИЧЕСКИ ВАЖНО для подсчета в палитре
+      properties: {
+        resistance: componentDef.resistance,
+        capacitance: componentDef.capacitance,
+        inductance: componentDef.inductance,
+        voltage: componentDef.voltage
+      }
     }
     
     gameEngineRef.current.addComponent(newComponent)
@@ -207,7 +224,7 @@ export const useGameEngine = (level) => {
       placedComponents: [...prev.placedComponents, newComponent]
     }))
     
-    console.log('useGameEngine: Added component from palette', newComponent)
+    console.log('useGameEngine: Added component from palette', {componentId, autoPosition, newComponent})
   }
   
   return {
@@ -267,4 +284,43 @@ function calculateScore(components) {
   // Простая логика подсчета очков
   const userComponents = components.filter(c => !c.isPreinstalled)
   return userComponents.length * 10 + Math.floor(Math.random() * 50)
+}
+
+// === АВТОМАТИЧЕСКОЕ РАЗМЕЩЕНИЕ КОМПОНЕНТОВ ===
+
+/**
+ * Найти первую свободную позицию для размещения компонента из палитры
+ * Начинает с x: 240, y: 120 и идет вниз с шагом 40px: 160, 200, 240, 280...
+ */
+function findNextAvailablePosition(placedComponents) {
+  const START_X = 240
+  const START_Y = 120
+  const STEP_Y = 40 // Шаг сетки для вертикального размещения
+  const MAX_ATTEMPTS = 20 // Максимум проверок, чтобы избежать бесконечного цикла
+  
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+    const candidatePosition = {
+      x: START_X,
+      y: START_Y + (attempt * STEP_Y)
+    }
+    
+    // Проверить, свободна ли позиция
+    const isOccupied = placedComponents.some(component => {
+      const dx = Math.abs(component.position.x - candidatePosition.x)
+      const dy = Math.abs(component.position.y - candidatePosition.y)
+      return dx < 20 && dy < 20 // Те же правила что и в GameEngine.isPositionOccupied
+    })
+    
+    if (!isOccupied) {
+      console.log(`findNextAvailablePosition: Found free position at attempt ${attempt}:`, candidatePosition)
+      return candidatePosition
+    }
+    
+    console.log(`findNextAvailablePosition: Position occupied at attempt ${attempt}:`, candidatePosition)
+  }
+  
+  // Если все позиции заняты, вернуть позицию справа от последней попытки
+  const fallbackPosition = { x: START_X + 40, y: START_Y }
+  console.warn('findNextAvailablePosition: All default positions occupied, using fallback:', fallbackPosition)
+  return fallbackPosition
 }

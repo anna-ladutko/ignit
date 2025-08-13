@@ -49,8 +49,8 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     actions.resetLevel()
   }
 
-  const handleComponentFromPalette = (componentType: string) => {
-    actions.addComponentFromPalette(componentType)
+  const handleComponentFromPalette = (componentId: string) => {
+    actions.addComponentFromPalette(componentId)
   }
 
   // Failed state - показываем только при критических ошибках
