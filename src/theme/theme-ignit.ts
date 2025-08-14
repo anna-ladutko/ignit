@@ -237,17 +237,19 @@ export const themeIgnit = createTheme({
 
   // Material UI components with custom styles
   components: {
-    // Кнопки с электронной темой
+    // Кнопки с электронной темой - используем styleOverrides вместо variants
     MuiButton: {
-      variants: [
-        {
-          props: { variant: "electronicPrimary" },
-          style: ({ theme }) => ({
+      styleOverrides: {
+        root: ({ theme, ownerState }) => ({
+          // Принудительно ставим 10px border-radius для всех кнопок
+          borderRadius: "10px !important",
+          
+          // Специфичные стили в зависимости от variant
+          ...(ownerState.variant === "electronicPrimary" && {
             background: theme.palette.gradients.accentGradient,
             color: theme.palette.text.primary,
             minHeight: theme.mobile.touchTarget,
             minWidth: theme.mobile.touchTarget * 2,
-            borderRadius: 10, // Кнопки всегда 10px
             fontSize: "16px",
             fontWeight: 600,
             textTransform: "capitalize",
@@ -258,15 +260,12 @@ export const themeIgnit = createTheme({
               transform: "scale(0.98)",
             },
           }),
-        },
-        {
-          props: { variant: "electronicSecondary" },
-          style: ({ theme }) => ({
+          
+          ...(ownerState.variant === "electronicSecondary" && {
             background: "transparent",
             color: theme.palette.primary.main,
             minHeight: theme.mobile.touchTarget,
             minWidth: theme.mobile.touchTarget * 2,
-            borderRadius: 10, // Кнопки всегда 10px
             fontSize: "16px",
             fontWeight: 600,
             textTransform: "capitalize",
@@ -277,15 +276,12 @@ export const themeIgnit = createTheme({
               transform: "scale(0.98)",
             },
           }),
-        },
-        {
-          props: { variant: "component" },
-          style: ({ theme }) => ({
+          
+          ...(ownerState.variant === "component" && {
             background: "transparent",
             color: theme.palette.text.secondary,
             minHeight: theme.mobile.touchTarget,
             minWidth: theme.mobile.touchTarget,
-            borderRadius: 10, // Кнопки всегда 10px
             padding: "8px",
             "&:hover": {
               background: `${theme.palette.circuit.selection}10`,
@@ -294,50 +290,43 @@ export const themeIgnit = createTheme({
               transform: "scale(0.95)",
             },
           }),
-        },
-      ],
+        }),
+      },
     },
 
-    // Cards with different variants
+    // Cards с фиксированными стилями - используем styleOverrides вместо variants
     MuiCard: {
-      variants: [
-        {
-          props: { variant: "componentCard" },
-          style: ({ theme }) => ({
+      styleOverrides: {
+        root: ({ theme, ownerState }) => ({
+          // Принудительно ставим 20px border-radius для всех панелей
+          borderRadius: "20px !important",
+          
+          // Специфичные стили в зависимости от variant
+          ...(ownerState.variant === "componentCard" && {
             background: theme.palette.background.paper,
-            borderRadius: 20, // Панели всегда 20px
             padding: theme.spacing(2),
           }),
-        },
-        {
-          props: { variant: "circuitBoard" },
-          style: ({ theme }) => ({
+          
+          ...(ownerState.variant === "circuitBoard" && {
             background: theme.palette.circuit.boardBackground,
-            borderRadius: 20, // Панели всегда 20px
             padding: theme.spacing(1),
             position: "relative",
             overflow: "hidden",
           }),
-        },
-        {
-          props: { variant: "infoPanel" },
-          style: ({ theme }) => ({
+          
+          ...(ownerState.variant === "infoPanel" && {
             background: theme.palette.circuit.boardBackground,
-            borderRadius: 20, // Панели всегда 20px
             padding: theme.spacing(2),
             // boxShadow removed
           }),
-        },
-        {
-          props: { variant: "mobile" },
-          style: ({ theme }) => ({
+          
+          ...(ownerState.variant === "mobile" && {
             background: theme.palette.background.paper,
-            borderRadius: 20, // Панели всегда 20px
             padding: theme.spacing(2),
             minHeight: theme.mobile.touchTarget,
           }),
-        },
-      ],
+        }),
+      },
     },
 
     // Типография с электронными вариантами

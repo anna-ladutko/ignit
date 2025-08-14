@@ -40,3 +40,21 @@ Do what has been asked; nothing more, nothing less.
 NEVER create files unless they're absolutely necessary for achieving your goal.
 ALWAYS prefer editing an existing file to creating a new one.
 NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
+
+# UI Design Rules
+NEVER use glow effects in the interface by default. The app's design philosophy is clean and minimalistic. Glow effects should only be used in extremely rare and exceptional cases (less than 1% of use cases). Avoid animations like `glow`, `pulse`, or similar lighting effects unless specifically requested.
+
+# border-radius-rules
+⚠️ КРИТИЧЕСКАЯ ПРОБЛЕМА: Theme values превращаются в гигантские размеры (20px → 400px)
+
+ЗАПРЕЩЕНО использовать:
+- `theme.mobile.cornerRadius`
+- `theme.shape.borderRadius` 
+- MUI `variants` для кастомных стилей
+
+ОБЯЗАТЕЛЬНО использовать:
+- Константы из `src/constants/design.ts`: `BORDER_RADIUS.BUTTON` (10px), `BORDER_RADIUS.PANEL` (20px)
+- `styleOverrides` вместо `variants` для MUI компонентов
+- `!important` для критических значений border-radius
+
+См. BORDER_RADIUS_ISSUE.md для полного описания проблемы.

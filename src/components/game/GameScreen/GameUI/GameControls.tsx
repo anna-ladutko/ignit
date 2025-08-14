@@ -14,6 +14,12 @@ interface GameControlsProps {
   onReset: () => void
   onHint: () => void
   canSimulate: boolean
+  // Новые пропы для Two-Button System
+  canFinishLevel: boolean
+  onFinishLevel: () => void
+  currentScore: number
+  bestScore: number
+  attemptCount: number
 }
 
 export const GameControls: React.FC<GameControlsProps> = ({
@@ -22,29 +28,38 @@ export const GameControls: React.FC<GameControlsProps> = ({
   onReset,
   onHint,
   canSimulate,
+  canFinishLevel,
+  onFinishLevel,
+  currentScore,
+  bestScore,
+  attemptCount,
 }) => {
   const theme = useTheme()
 
   const getSimulateButtonProps = () => {
-    switch (gameStatus) {
-      case 'complete':
-        return {
-          variant: 'accent' as const,
-          children: 'Success!',
-          disabled: false,
-        }
-      case 'failed':
-        return {
-          variant: 'danger' as const,
-          children: 'Try Again',
-          disabled: false,
-        }
-      default:
-        return {
-          variant: 'primary' as const,
-          children: 'Simulate',
-          disabled: !canSimulate || gameStatus === 'loading',
-        }
+    // Кнопка Simulate всегда остается для экспериментов
+    if (gameStatus === 'loading') {
+      return {
+        variant: 'primary' as const,
+        children: 'Loading...',
+        disabled: true,
+      }
+    }
+    
+    if (attemptCount > 0) {
+      // После попыток - показываем "Simulate Again"
+      return {
+        variant: currentScore > 50 ? 'accent' as const : 'primary' as const,
+        children: 'Simulate Again',
+        disabled: !canSimulate,
+      }
+    }
+    
+    // Первая попытка
+    return {
+      variant: 'primary' as const,
+      children: 'Simulate',
+      disabled: !canSimulate,
     }
   }
 
@@ -101,6 +116,30 @@ export const GameControls: React.FC<GameControlsProps> = ({
             }}
           >
             {simulateProps.children}
+          </TouchButton>
+        </motion.div>
+
+        {/* Finish Level Button - всегда видна, но может быть disabled */}
+        <motion.div
+          whileHover={canFinishLevel ? { scale: 1.05 } : {}}
+          whileTap={canFinishLevel ? { scale: 0.95 } : {}}
+        >
+          <TouchButton
+            variant={canFinishLevel ? "accent" : "primary"}
+            size="large"
+            disabled={!canFinishLevel}
+            onClick={onFinishLevel}
+            sx={{
+              minWidth: 140,
+              fontWeight: 700,
+              fontSize: '16px',
+              boxShadow: theme.palette.customShadows.componentShadow,
+              ...(canFinishLevel && {
+                background: theme.palette.gradients.accentGradient,
+              }),
+            }}
+          >
+            Finish Level
           </TouchButton>
         </motion.div>
 

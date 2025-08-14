@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react'
 import { Box, useTheme } from '@mui/material'
+import { BORDER_RADIUS } from '../../../../constants/design'
 import type { GameScreenState } from '../../../../types/gameScreen'
 import { GridLayer } from './GridLayer'
 import { ComponentsLayer } from './ComponentsLayer'
@@ -212,7 +213,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
             width: GRID_SIZE,
             height: GRID_SIZE,
             border: `2px dashed ${theme.palette.circuit.selection}`,
-            borderRadius: theme.mobile.cornerRadius / 2,
+            borderRadius: "10px", // Половина от BORDER_RADIUS.PANEL
             backgroundColor: `${theme.palette.circuit.selection}20`,
             zIndex: theme.electronicZIndex.dragging,
             pointerEvents: 'none',

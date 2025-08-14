@@ -37,7 +37,7 @@ export const MobilePanel: React.FC<MobilePanelProps> = ({
       elevation={elevation}
       sx={{
         ...getVariantStyles(),
-        borderRadius: theme.mobile.cornerRadius,
+        borderRadius: "20px !important", // Принудительно 20px для панели
         p: theme.spacing(2),
         ...sx,
       }}

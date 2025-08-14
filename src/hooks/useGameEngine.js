@@ -11,15 +11,25 @@ export const useGameEngine = (level) => {
   
   // REACT STATE: Только данные для UI
   const [gameState, setGameState] = useState({
-    score: 0,
+    currentScore: 0, // последний результат симуляции
+    bestScore: 0, // лучший результат за все попытки
     energyUsed: 0,
-    gameStatus: 'loading', // loading | playing | complete | failed
+    gameStatus: 'loading', // loading | playing (убрали auto-complete)
     placedComponents: [], // Финальные позиции для сохранения
-    isSimulating: false
+    isSimulating: false,
+    levelTime: 0, // время прохождения уровня в секундах
+    showSuccessModal: false, // показывать ли success модал
+    hasValidSolution: false, // есть ли проходное решение (score > 50)
+    attemptCount: 0, // количество симуляций
+    canFinishLevel: false // можно ли завершить уровень
   })
   
   // Состояние готовности GameEngine - для контроля race condition
   const [gameEngineReady, setGameEngineReady] = useState(false)
+  
+  // Трекинг времени уровня
+  const levelStartTimeRef = useRef(null)
+  const levelTimerRef = useRef(null)
   
   // Метод для внешней инициализации GameEngine когда canvas готов
   const initializeGameEngine = (canvasElement) => {
@@ -73,8 +83,9 @@ export const useGameEngine = (level) => {
         },
         
         onLevelComplete: () => {
-          setGameState(prev => ({ ...prev, gameStatus: 'complete' }))
-          console.log('useGameEngine: Level completed!')
+          // УСТАРЕЛО: Этот callback больше не используется
+          // Завершение уровня теперь происходит через finishLevel()
+          console.log('useGameEngine: onLevelComplete called (legacy - now use finishLevel())')
         }
       })
       
@@ -126,8 +137,12 @@ export const useGameEngine = (level) => {
         ...prev,
         placedComponents: levelData.preinstalledComponents || [],
         gameStatus: 'playing',
-        score: 0,
-        energyUsed: 0
+        currentScore: 0,
+        bestScore: 0,
+        energyUsed: 0,
+        hasValidSolution: false,
+        attemptCount: 0,
+        canFinishLevel: false
       }))
       console.log('✅ USEGAMEENGINE: Уровень успешно загружен, gameStatus = playing')
       
@@ -138,6 +153,27 @@ export const useGameEngine = (level) => {
     
   }, [level, gameEngineReady]) // ВАЖНО: Добавили gameEngineReady в зависимости
   
+  // Трекинг времени уровня
+  useEffect(() => {
+    if (gameState.gameStatus === 'playing' && !levelStartTimeRef.current) {
+      // Начинаем отсчет времени
+      levelStartTimeRef.current = Date.now()
+      console.log('⏱️ USEGAMEENGINE: Начат отсчет времени уровня')
+      
+      // Обновляем время каждую секунду для UI (опционально)
+      levelTimerRef.current = setInterval(() => {
+        if (levelStartTimeRef.current) {
+          const currentTime = Math.floor((Date.now() - levelStartTimeRef.current) / 1000)
+          setGameState(prev => ({ ...prev, levelTime: currentTime }))
+        }
+      }, 1000)
+    } else if (gameState.gameStatus !== 'playing' && levelTimerRef.current) {
+      // Останавливаем таймер если не playing
+      clearInterval(levelTimerRef.current)
+      levelTimerRef.current = null
+    }
+  }, [gameState.gameStatus])
+
   // Cleanup effect - освобождаем ресурсы при размонтировании
   useEffect(() => {
     return () => {
@@ -145,6 +181,14 @@ export const useGameEngine = (level) => {
         console.log('🧹 USEGAMEENGINE: Cleanup - уничтожаем GameEngine')
         gameEngineRef.current = null
       }
+      
+      // Очищаем таймеры
+      if (levelTimerRef.current) {
+        clearInterval(levelTimerRef.current)
+        levelTimerRef.current = null
+      }
+      levelStartTimeRef.current = null
+      
       cleanupGameEngineBridge()
     }
   }, [])
@@ -160,13 +204,28 @@ export const useGameEngine = (level) => {
     
     // Симуляция цепи (пока заглушка)
     setTimeout(() => {
-      const score = calculateScore(gameState.placedComponents)
-      setGameState(prev => ({
-        ...prev,
-        isSimulating: false,
-        score,
-        gameStatus: score > 50 ? 'complete' : 'playing'
-      }))
+      const currentScore = calculateScore(gameState.placedComponents)
+      
+      setGameState(prev => {
+        const newBestScore = Math.max(prev.bestScore, currentScore)
+        const newHasValidSolution = prev.hasValidSolution || currentScore > 50
+        const newAttemptCount = prev.attemptCount + 1
+        const newCanFinishLevel = newHasValidSolution
+        
+        console.log(`useGameEngine: Simulation complete. Score: ${currentScore}, Best: ${newBestScore}, Valid: ${newHasValidSolution}`)
+        
+        return {
+          ...prev,
+          isSimulating: false,
+          currentScore,
+          bestScore: newBestScore,
+          hasValidSolution: newHasValidSolution,
+          attemptCount: newAttemptCount,
+          canFinishLevel: newCanFinishLevel,
+          // Важно: НЕ меняем gameStatus на 'complete' автоматически!
+          gameStatus: 'playing'
+        }
+      })
     }, 2000)
   }
   
@@ -182,9 +241,13 @@ export const useGameEngine = (level) => {
       ...prev,
       placedComponents: levelData.preinstalledComponents || [],
       gameStatus: 'playing',
-      score: 0,
+      currentScore: 0,
+      bestScore: 0,
       energyUsed: 0,
-      isSimulating: false
+      isSimulating: false,
+      hasValidSolution: false,
+      attemptCount: 0,
+      canFinishLevel: false
     }))
   }
   
@@ -227,6 +290,65 @@ export const useGameEngine = (level) => {
     console.log('useGameEngine: Added component from palette', {componentId, autoPosition, newComponent})
   }
   
+  // НОВОЕ: Осознанное завершение уровня игроком
+  const finishLevel = () => {
+    if (!gameState.canFinishLevel) {
+      console.warn('useGameEngine: Cannot finish level - no valid solution found yet')
+      return
+    }
+    
+    // Останавливаем таймер
+    if (levelTimerRef.current) {
+      clearInterval(levelTimerRef.current)
+      levelTimerRef.current = null
+    }
+    
+    const finalTime = levelStartTimeRef.current 
+      ? Math.floor((Date.now() - levelStartTimeRef.current) / 1000)
+      : gameState.levelTime
+      
+    // Обновляем состояние для завершения
+    setGameState(prev => ({
+      ...prev,
+      gameStatus: 'complete', // Теперь официально завершен
+      levelTime: finalTime,
+      showSuccessModal: true
+    }))
+    
+    console.log(`useGameEngine: Level finished by player! Best Score: ${gameState.bestScore}, Attempts: ${gameState.attemptCount}, Time: ${finalTime}s`)
+  }
+
+  // Actions для управления success modal
+  const hideSuccessModal = () => {
+    setGameState(prev => ({ ...prev, showSuccessModal: false }))
+  }
+  
+  const resetForNextLevel = () => {
+    // Сброс состояния для следующего уровня
+    if (levelTimerRef.current) {
+      clearInterval(levelTimerRef.current)
+      levelTimerRef.current = null
+    }
+    levelStartTimeRef.current = null
+    
+    setGameState(prev => ({
+      ...prev,
+      gameStatus: 'loading',
+      currentScore: 0,
+      bestScore: 0,
+      energyUsed: 0,
+      levelTime: 0,
+      showSuccessModal: false,
+      hasValidSolution: false,
+      attemptCount: 0,
+      canFinishLevel: false,
+      placedComponents: [],
+      isSimulating: false
+    }))
+    
+    console.log('useGameEngine: Reset for next level')
+  }
+
   return {
     gameState,
     gameEngine: gameEngineRef.current,
@@ -234,7 +356,10 @@ export const useGameEngine = (level) => {
     actions: {
       simulateCircuit,
       resetLevel,
-      addComponentFromPalette
+      addComponentFromPalette,
+      finishLevel, // НОВОЕ: Осознанное завершение уровня
+      hideSuccessModal,
+      resetForNextLevel
     }
   }
 }

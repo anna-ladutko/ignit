@@ -23,7 +23,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         alignItems: 'center',
         p: theme.spacing(2),
         background: theme.palette.circuit.boardBackground,
-        borderRadius: theme.mobile.cornerRadius,
+        borderRadius: "20px !important", // Принудительно 20px для панели
         mb: theme.spacing(3),
         boxShadow: theme.palette.customShadows.softShadow,
       }}

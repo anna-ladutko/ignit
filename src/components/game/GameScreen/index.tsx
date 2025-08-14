@@ -5,6 +5,7 @@ import { useGameEngine } from '../../../hooks/useGameEngine.js'
 import { TopGameBar } from './GameUI/TopGameBar'
 import { ComponentPalette } from './GameUI/ComponentPalette'
 import { GameControls } from './GameUI/GameControls'
+import { LevelCompleteModal } from './UI/LevelCompleteModal'
 
 /**
  * GameScreen - Чистый UI Shell
@@ -53,6 +54,21 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     actions.addComponentFromPalette(componentId)
   }
 
+  // Обработчики Success Modal
+  const handleNextLevel = () => {
+    if (_onNextLevel) {
+      actions.resetForNextLevel() // Сначала сбрасываем состояние
+      _onNextLevel() // Потом переходим к следующему уровню
+    } else {
+      console.warn('GameScreen: onNextLevel callback не предоставлен')
+    }
+  }
+
+  const handleMainScreen = () => {
+    actions.resetForNextLevel() // Сбрасываем состояние 
+    onBackToMain() // Возвращаемся в главное меню
+  }
+
   // Failed state - показываем только при критических ошибках
   if (gameState.gameStatus === 'failed') {
     return (
@@ -94,8 +110,9 @@ export const GameScreen: React.FC<GameScreenProps> = ({
       {/* Top Game Bar - Статичный UI */}
       <TopGameBar
         level={level}
-        score={gameState.score}
+        score={gameState.currentScore}
         energyUsed={gameState.energyUsed}
+        bestScore={gameState.bestScore}
         gameStatus={gameState.gameStatus}
         onBackClick={onBackToMain}
       />
@@ -172,8 +189,22 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           onReset={handleReset}
           onHint={() => {}}
           canSimulate={gameState.placedComponents.length > 0}
+          canFinishLevel={gameState.canFinishLevel}
+          onFinishLevel={actions.finishLevel}
+          currentScore={gameState.currentScore}
+          bestScore={gameState.bestScore}
+          attemptCount={gameState.attemptCount}
         />
       </Box>
+
+      {/* Success Modal */}
+      <LevelCompleteModal
+        open={gameState.showSuccessModal}
+        score={gameState.bestScore}
+        levelTime={gameState.levelTime}
+        onNextLevel={handleNextLevel}
+        onMainScreen={handleMainScreen}
+      />
     </Box>
   )
 }

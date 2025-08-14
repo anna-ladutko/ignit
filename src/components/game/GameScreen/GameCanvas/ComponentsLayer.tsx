@@ -1,6 +1,7 @@
 import React from 'react'
 import { Box, useTheme } from '@mui/material'
 import { motion } from 'framer-motion'
+import { BORDER_RADIUS } from '../../../../constants/design'
 import type { PlacedComponent, GameScreenState } from '../../../../types/gameScreen'
 import { ComponentIcon } from '../../../electronic'
 import { GRID_SIZE } from '../../../../types/gameScreen'
@@ -180,7 +181,7 @@ export const ComponentsLayer: React.FC<ComponentsLayerProps> = ({
                   position: 'absolute',
                   inset: -2,
                   border: `2px dashed ${theme.palette.primary.main}40`,
-                  borderRadius: theme.mobile.cornerRadius / 2,
+                  borderRadius: "10px", // Половина от BORDER_RADIUS.PANEL
                 },
               }),
             }}
@@ -209,7 +210,7 @@ export const ComponentsLayer: React.FC<ComponentsLayerProps> = ({
                   transform: 'translateX(-50%)',
                   backgroundColor: theme.palette.background.paper,
                   border: `1px solid ${theme.palette.circuit.grid}`,
-                  borderRadius: theme.mobile.cornerRadius / 4,
+                  borderRadius: BORDER_RADIUS.SMALL, // 5px
                   px: 0.5,
                   py: 0.25,
                   minWidth: 'max-content',
@@ -242,7 +243,7 @@ export const ComponentsLayer: React.FC<ComponentsLayerProps> = ({
                   transform: 'translateX(-50%)',
                   backgroundColor: theme.palette.background.paper,
                   border: `1px solid ${theme.palette.circuit.grid}`,
-                  borderRadius: theme.mobile.cornerRadius / 4,
+                  borderRadius: BORDER_RADIUS.SMALL, // 5px
                   px: 0.5,
                   py: 0.25,
                   minWidth: 'max-content',
@@ -273,7 +274,7 @@ export const ComponentsLayer: React.FC<ComponentsLayerProps> = ({
                   transform: 'translateX(-50%)',
                   backgroundColor: theme.palette.background.paper,
                   border: `1px solid ${theme.palette.circuit.grid}`,
-                  borderRadius: theme.mobile.cornerRadius / 4,
+                  borderRadius: BORDER_RADIUS.SMALL, // 5px
                   px: 0.5,
                   py: 0.25,
                   minWidth: 'max-content',

@@ -8,6 +8,7 @@ interface TopGameBarProps {
   level: Level | null
   score: number
   energyUsed: number
+  bestScore: number
   gameStatus: 'loading' | 'playing' | 'complete' | 'failed'
   onBackClick: () => void
 }
@@ -16,6 +17,7 @@ export const TopGameBar: React.FC<TopGameBarProps> = ({
   level,
   score,
   energyUsed,
+  bestScore,
   gameStatus,
   onBackClick,
 }) => {
@@ -110,7 +112,7 @@ export const TopGameBar: React.FC<TopGameBarProps> = ({
                 color: theme.palette.simulation.energyFlow,
               }}
             >
-              {energyUsed.toFixed(1)} EU
+              {(energyUsed || 0).toFixed(1)} EU
             </Typography>
           </Box>
           <Typography
@@ -139,7 +141,7 @@ export const TopGameBar: React.FC<TopGameBarProps> = ({
                   : theme.palette.primary.main,
               }}
             >
-              {score.toFixed(1)}
+              {(score || 0).toFixed(1)}
             </Typography>
           </motion.div>
           <Typography
@@ -149,7 +151,32 @@ export const TopGameBar: React.FC<TopGameBarProps> = ({
               color: theme.palette.text.secondary,
             }}
           >
-            Score
+            Current
+          </Typography>
+        </Box>
+
+        {/* Best Score - показывается всегда */}
+        <Box sx={{ textAlign: 'right' }}>
+          <Typography
+            variant="energyValue"
+            sx={{
+              fontSize: '16px',
+              fontWeight: 700,
+              color: (bestScore || 0) > (score || 0) 
+                ? theme.palette.simulation.success 
+                : theme.palette.primary.main,
+            }}
+          >
+            {(bestScore || 0).toFixed(1)}
+          </Typography>
+          <Typography
+            variant="componentValue"
+            sx={{
+              fontSize: '10px',
+              color: theme.palette.text.secondary,
+            }}
+          >
+            Best
           </Typography>
         </Box>
       </Box>
