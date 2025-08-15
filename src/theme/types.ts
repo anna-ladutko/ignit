@@ -15,11 +15,6 @@ declare module '@mui/material/styles' {
     
     // Цвета схемы
     circuit: {
-      wire: string
-      wireActive: string
-      wireError: string
-      connectionPoint: string
-      connectionPointActive: string
       grid: string
       gridActive: string
       selection: string
@@ -76,11 +71,6 @@ declare module '@mui/material/styles' {
     }
     
     circuit?: {
-      wire?: string
-      wireActive?: string
-      wireError?: string
-      connectionPoint?: string
-      connectionPointActive?: string
       grid?: string
       gridActive?: string
       selection?: string
@@ -130,8 +120,6 @@ declare module '@mui/material/styles' {
       componentSize: number
       componentSizeSmall: number
       componentSizeLarge: number
-      wireThickness: number
-      wireThicknessActive: number
       gridSpacing: number
       gridSpacingSmall: number
       cornerRadius: number
@@ -156,7 +144,6 @@ declare module '@mui/material/styles' {
     electronicZIndex: {
       background: number
       grid: number
-      wires: number
       components: number
       selection: number
       dragging: number
@@ -171,8 +158,6 @@ declare module '@mui/material/styles' {
       componentSize?: number
       componentSizeSmall?: number
       componentSizeLarge?: number
-      wireThickness?: number
-      wireThicknessActive?: number
       gridSpacing?: number
       gridSpacingSmall?: number
       cornerRadius?: number
@@ -195,7 +180,6 @@ declare module '@mui/material/styles' {
     electronicZIndex?: {
       background?: number
       grid?: number
-      wires?: number
       components?: number
       selection?: number
       dragging?: number

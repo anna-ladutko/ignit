@@ -4,7 +4,8 @@
  * Maintains visual consistency while ensuring GameEngine compatibility
  */
 
-import { ComponentType } from '../types/enums'
+import { ComponentType, ComponentState } from '../types/enums'
+import { ComponentColors } from './componentColors'
 
 /**
  * Static SVG templates for magnetic components
@@ -127,49 +128,13 @@ const MAGNETIC_SVG_TEMPLATES = {
 }
 
 /**
- * Get theme colors for GameEngine components
- * This integrates the Material UI theme with GameEngine rendering
+ * Get component color based on state
+ * New unified color system - all components use the same colors based on their state
  */
-export function getThemeColor(
-  componentType: ComponentType,
-  isActive = false
+export function getComponentStateColor(
+  componentState: ComponentState
 ): string {
-  // These colors match the theme-ignit.ts palette
-  const colors: Record<ComponentType, { main: string; active: string }> = {
-    [ComponentType.RESISTOR]: {
-      main: '#FF6B35',
-      active: '#FF8E53'
-    },
-    [ComponentType.CAPACITOR]: {
-      main: '#4ECDC4',
-      active: '#6ED4CC'
-    },
-    [ComponentType.INDUCTOR]: {
-      main: '#45B7D1',
-      active: '#67C3D6'
-    },
-    [ComponentType.LED]: {
-      main: '#96CEB4',
-      active: '#A8D4C0'
-    },
-    [ComponentType.VOLTAGE_SOURCE]: {
-      main: '#FFEAA7',
-      active: '#FFF0B8'
-    },
-    [ComponentType.SWITCH]: {
-      main: '#DDA0DD',
-      active: '#E5B4E5'
-    },
-    [ComponentType.SUPERCAPACITOR]: {
-      main: '#4ECDC4',
-      active: '#6ED4CC'
-    }
-  }
-  
-  const colorSet = colors[componentType]
-  if (!colorSet) return '#FFFFFF'
-  
-  return isActive ? colorSet.active : colorSet.main
+  return ComponentColors[componentState]
 }
 
 /**
@@ -228,9 +193,9 @@ function getFallbackSVG(componentType: ComponentType): string {
  */
 export function getComponentSVGForGameEngine(
   componentType: ComponentType,
-  isActive = false,
+  componentState: ComponentState = ComponentState.DISCONNECTED,
   switchState = false
 ): string {
-  const color = getThemeColor(componentType, isActive)
+  const color = getComponentStateColor(componentState)
   return getStaticSVG(componentType, color, switchState)
 }

@@ -1,5 +1,6 @@
-import { useState, useEffect, useLayoutEffect, useRef } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 import { GameEngine } from '../game/GameEngine.js'
+import { CircuitSimulator } from '../game/circuitSimulator.ts'
 import { initializeGameEngineBridge, cleanupGameEngineBridge } from '../utils/gameEngineBridge.ts'
 
 /**
@@ -8,6 +9,7 @@ import { initializeGameEngineBridge, cleanupGameEngineBridge } from '../utils/ga
  */
 export const useGameEngine = (level) => {
   const gameEngineRef = useRef(null)
+  const circuitSimulatorRef = useRef(null)
   
   // REACT STATE: Только данные для UI
   const [gameState, setGameState] = useState({
@@ -21,7 +23,8 @@ export const useGameEngine = (level) => {
     showSuccessModal: false, // показывать ли success модал
     hasValidSolution: false, // есть ли проходное решение (score > 50)
     attemptCount: 0, // количество симуляций
-    canFinishLevel: false // можно ли завершить уровень
+    canFinishLevel: false, // можно ли завершить уровень
+    connectionPoints: [] // координаты активных магнитных соединений для визуализации
   })
   
   // Состояние готовности GameEngine - для контроля race condition
@@ -32,15 +35,13 @@ export const useGameEngine = (level) => {
   const levelTimerRef = useRef(null)
   
   // Метод для внешней инициализации GameEngine когда canvas готов
-  const initializeGameEngine = (canvasElement) => {
+  const initializeGameEngine = useCallback((canvasElement) => {
     if (!canvasElement) {
-      console.log('❌ USEGAMEENGINE: initializeGameEngine получил null element')
       return
     }
     
     if (gameEngineRef.current) {
-      console.log('❌ USEGAMEENGINE: GameEngine уже инициализирован')
-      return
+      return // Уже инициализирован
     }
     
     console.log('🔄 USEGAMEENGINE: Initializing GameEngine через callback ref...')
@@ -50,6 +51,9 @@ export const useGameEngine = (level) => {
       // Инициализируем SVG bridge перед созданием GameEngine
       initializeGameEngineBridge()
       
+      // Создать CircuitSimulator
+      circuitSimulatorRef.current = new CircuitSimulator()
+      
       // Создать игровой движок с коллбэками
       gameEngineRef.current = new GameEngine(canvasElement, {
         onScoreChange: (score) => {
@@ -57,16 +61,26 @@ export const useGameEngine = (level) => {
         },
         
         onComponentPlace: (componentId, position) => {
+          console.log(`🔄 CALLBACK: onComponentPlace вызван для componentId="${componentId}"`)
           // Обновить позицию компонента в React state
-          setGameState(prev => ({
-            ...prev,
-            placedComponents: prev.placedComponents.map(comp =>
-              comp.id === componentId 
-                ? { ...comp, position }
-                : comp
-            )
-          }))
-          console.log('useGameEngine: Component placed', componentId, position)
+          setGameState(prev => {
+            const updatedComponents = prev.placedComponents.map(comp => {
+              if (comp.id === componentId) {
+                const updatedComp = { ...comp, position }
+                console.log(`🔄 CALLBACK: Обновляем компонент ${componentId}:`, updatedComp)
+                console.log(`🔄 CALLBACK: originalComponentId сохранился="${updatedComp.originalComponentId}"`)
+                return updatedComp
+              }
+              return comp
+            })
+            return {
+              ...prev,
+              placedComponents: updatedComponents
+            }
+          })
+          // Пересчитать соединения после перемещения
+          setTimeout(() => autoDetectConnections(), 0)
+          // Component placed
         },
         
         onComponentRotate: (componentId, rotation) => {
@@ -79,7 +93,9 @@ export const useGameEngine = (level) => {
                 : comp
             )
           }))
-          console.log('useGameEngine: Component rotated', componentId, rotation)
+          // Пересчитать соединения после поворота
+          setTimeout(() => autoDetectConnections(), 0)
+          // Component rotated
         },
         
         onLevelComplete: () => {
@@ -89,27 +105,24 @@ export const useGameEngine = (level) => {
         }
       })
       
-      console.log('✅ USEGAMEENGINE: GameEngine инициализирован успешно через callback ref!')
-      setGameEngineReady(true) // ВАЖНО: Устанавливаем готовность GameEngine
+      setGameEngineReady(true)
       
     } catch (error) {
       console.error('❌ USEGAMEENGINE: Ошибка инициализации GameEngine:', error)
       setGameState(prev => ({ ...prev, gameStatus: 'failed' }))
     }
-  }
+  }, []) // КРИТИЧЕСКИ ВАЖНО: пустые dependencies для стабильности
   
   
   // Загрузка уровня - ЖДЕМ ГОТОВНОСТИ GameEngine
   useEffect(() => {
-    console.log('🔄 USEGAMEENGINE: useEffect triggered. gameEngineReady:', gameEngineReady, 'level:', !!level)
+    // useEffect triggered
     
     if (!gameEngineReady) {
-      console.log('❌ USEGAMEENGINE: GameEngine не готов, ждем инициализации...')
       return
     }
     
     if (!level) {
-      console.log('❌ USEGAMEENGINE: Level отсутствует, ждем...')
       return
     }
     
@@ -118,21 +131,22 @@ export const useGameEngine = (level) => {
       return
     }
     
-    console.log('✅ USEGAMEENGINE: GameEngine готов И level загружен - начинаем загрузку уровня:', level.metadata)
+    // Начинаем загрузку уровня
     
     try {
       // Подготовить данные уровня для игрового движка
-      console.log('🔄 USEGAMEENGINE: Подготавливаем данные уровня...')
       const levelData = prepareLevelData(level)
-      console.log('✅ USEGAMEENGINE: Данные подготовлены:', levelData)
       
       // Загрузить в движок
-      console.log('🔄 USEGAMEENGINE: Загружаем в GameEngine...')
       gameEngineRef.current.loadLevel(levelData)
-      console.log('✅ USEGAMEENGINE: GameEngine.loadLevel() выполнен')
+      
+      // Загрузить уровень в CircuitSimulator
+      if (circuitSimulatorRef.current) {
+        circuitSimulatorRef.current.loadLevel(level)
+      }
       
       // Обновить React state
-      console.log('🔄 USEGAMEENGINE: Обновляем React state на playing...')
+      // Обновляем React state
       setGameState(prev => ({
         ...prev,
         placedComponents: levelData.preinstalledComponents || [],
@@ -142,37 +156,33 @@ export const useGameEngine = (level) => {
         energyUsed: 0,
         hasValidSolution: false,
         attemptCount: 0,
-        canFinishLevel: false
+        canFinishLevel: false,
+        connectionPoints: []
       }))
-      console.log('✅ USEGAMEENGINE: Уровень успешно загружен, gameStatus = playing')
+      // Уровень загружен
       
     } catch (error) {
       console.error('❌ USEGAMEENGINE: Ошибка загрузки уровня:', error)
       setGameState(prev => ({ ...prev, gameStatus: 'failed' }))
     }
     
-  }, [level, gameEngineReady]) // ВАЖНО: Добавили gameEngineReady в зависимости
+  }, [level?.metadata?.level_id, gameEngineReady]) // ИСПРАВЛЕНО: используем стабильный ID вместо объекта
   
-  // Трекинг времени уровня
-  useEffect(() => {
-    if (gameState.gameStatus === 'playing' && !levelStartTimeRef.current) {
-      // Начинаем отсчет времени
-      levelStartTimeRef.current = Date.now()
-      console.log('⏱️ USEGAMEENGINE: Начат отсчет времени уровня')
-      
-      // Обновляем время каждую секунду для UI (опционально)
-      levelTimerRef.current = setInterval(() => {
-        if (levelStartTimeRef.current) {
-          const currentTime = Math.floor((Date.now() - levelStartTimeRef.current) / 1000)
-          setGameState(prev => ({ ...prev, levelTime: currentTime }))
-        }
-      }, 1000)
-    } else if (gameState.gameStatus !== 'playing' && levelTimerRef.current) {
-      // Останавливаем таймер если не playing
-      clearInterval(levelTimerRef.current)
-      levelTimerRef.current = null
-    }
-  }, [gameState.gameStatus])
+  // ВРЕМЕННО ОТКЛЮЧЕН: Трекинг времени уровня для устранения постоянных state updates
+  // useEffect(() => {
+  //   if (gameState.gameStatus === 'playing' && !levelStartTimeRef.current) {
+  //     levelStartTimeRef.current = Date.now()
+  //     levelTimerRef.current = setInterval(() => {
+  //       if (levelStartTimeRef.current) {
+  //         const currentTime = Math.floor((Date.now() - levelStartTimeRef.current) / 1000)
+  //         setGameState(prev => ({ ...prev, levelTime: currentTime }))
+  //       }
+  //     }, 1000)
+  //   } else if (gameState.gameStatus !== 'playing' && levelTimerRef.current) {
+  //     clearInterval(levelTimerRef.current)
+  //     levelTimerRef.current = null
+  //   }
+  // }, [gameState.gameStatus])
 
   // Cleanup effect - освобождаем ресурсы при размонтировании
   useEffect(() => {
@@ -180,6 +190,11 @@ export const useGameEngine = (level) => {
       if (gameEngineRef.current) {
         console.log('🧹 USEGAMEENGINE: Cleanup - уничтожаем GameEngine')
         gameEngineRef.current = null
+      }
+      
+      if (circuitSimulatorRef.current) {
+        console.log('🧹 USEGAMEENGINE: Cleanup - уничтожаем CircuitSimulator')
+        circuitSimulatorRef.current = null
       }
       
       // Очищаем таймеры
@@ -193,26 +208,388 @@ export const useGameEngine = (level) => {
     }
   }, [])
   
+  // === BRIDGE ФУНКЦИИ: React ↔ CircuitSimulator ===
+  
+  // Синхронизация React компонентов с CircuitSimulator
+  const syncReactComponentsToSimulator = useCallback(() => {
+    console.error('🚨 SYNC START - syncReactComponentsToSimulator вызвана!')
+    
+    if (!circuitSimulatorRef.current || !level) return false
+    
+    console.log('🌉 BRIDGE: Синхронизация React → CircuitSimulator')
+    
+    // 1. КРИТИЧЕСКИ ВАЖНО: Загрузить level для preinstalled компонентов (SOURCE, TARGET_LED_*)
+    circuitSimulatorRef.current.loadLevel(level)
+    console.log('🔧 BRIDGE: Загружен level с preinstalled компонентами')
+    
+    // 2. Разместить пользовательские компоненты
+    let placedCount = 0
+    gameState.placedComponents.forEach(reactComp => {
+      if (!reactComp.isPreinstalled) { // Только пользовательские компоненты
+        const success = circuitSimulatorRef.current.placeComponent(
+          reactComp.originalComponentId || reactComp.id, 
+          reactComp.position,
+          reactComp.rotation || 0 // КРИТИЧЕСКИ ВАЖНО: Передаем rotation!
+        )
+        if (success) placedCount++
+      }
+    })
+    
+    // 3. Debug: показать все доступные компоненты в CircuitSimulator
+    const simulator = circuitSimulatorRef.current
+    const source = simulator.getSource()
+    const targets = simulator.getTargets()
+    const placedComponents = simulator.getPlacedComponents()
+    console.log('🔍 BRIDGE DEBUG: Доступные компоненты в CircuitSimulator:')
+    console.log('  SOURCE:', source?.id || 'не найден')
+    console.log('  TARGETS:', targets.map(t => t.id) || 'не найдены')
+    console.log('  PLACED:', placedComponents.map(p => p.id) || 'не найдены')
+    
+    // 4. Автоматически определить подключения
+    autoDetectConnections()
+    
+    console.log(`🌉 BRIDGE: Размещено ${placedCount} компонентов`)
+    return true
+  }, [gameState.placedComponents, level])
+  
+  // Ref для актуального gameState
+  const gameStateRef = useRef(gameState)
+  gameStateRef.current = gameState
+  
+  // Helper функция для унифицированного поиска компонентов в CircuitSimulator
+  const findComponentInSimulator = useCallback((simulator, searchId, reactComponent = null) => {
+    console.log(`🔍 HELPER: Ищем компонент searchId="${searchId}"`)
+    
+    // 1. Поиск preinstalled компонентов (SOURCE, TARGET_LED_*)
+    const source = simulator.getSource()
+    console.log(`🔍 HELPER: SOURCE: ${source?.id || 'не найден'}`)
+    if (source?.id === searchId) {
+      console.log(`✅ HELPER: Найден SOURCE с ID ${searchId}`)
+      return true
+    }
+    
+    const targets = simulator.getTargets()
+    console.log(`🔍 HELPER: TARGETS: [${targets.map(t => t.id).join(', ')}]`)
+    if (targets.some(t => t.id === searchId)) {
+      console.log(`✅ HELPER: Найден TARGET с ID ${searchId}`)
+      return true
+    }
+    
+    // 2. Поиск пользовательских компонентов (используем переданный searchId)
+    const placedComponents = simulator.getPlacedComponents()
+    console.log(`🔍 HELPER: PLACED COMPONENTS: [${placedComponents.map(p => p.id).join(', ')}]`)
+    const foundInPlaced = placedComponents.some(p => p.id === searchId)
+    if (foundInPlaced) {
+      console.log(`✅ HELPER: Найден PLACED компонент с ID ${searchId}`)
+    } else {
+      console.log(`❌ HELPER: НЕ найден компонент с ID ${searchId}`)
+    }
+    
+    return foundInPlaced
+  }, [])
+  
+  // Автоматическое определение подключений через магнитные точки
+  const autoDetectConnections = useCallback(() => {
+    if (!circuitSimulatorRef.current) return
+    
+    console.log('🔗 BRIDGE: Автоопределение магнитных соединений (Variant 2)...')
+    
+    const simulator = circuitSimulatorRef.current
+    const placedComponents = simulator.getPlacedComponents()
+    
+    // ВАРИАНТ 2: Использовать ВСЕ React компоненты (и preinstalled, и пользовательские)
+    const currentGameState = gameStateRef.current
+    const reactPreinstalled = currentGameState.placedComponents.filter(c => c.isPreinstalled)
+    const reactUser = currentGameState.placedComponents.filter(c => !c.isPreinstalled)
+    
+    console.log(`🧲 React preinstalled компонентов: ${reactPreinstalled.length}`)
+    console.log(`🧲 React пользовательских компонентов: ${reactUser.length}`)
+    console.log(`🧲 Simulator placed компонентов: ${placedComponents.length}`)
+    console.log('🔍 DEBUG: Все placedComponents из currentGameState:', currentGameState.placedComponents)
+    console.log('🔍 DEBUG: Отфильтрованные preinstalled:', reactPreinstalled)
+    console.log('🔍 DEBUG: Отфильтрованные пользовательские:', reactUser)
+    console.log('🔍 DEBUG: Simulator placed components:', placedComponents)
+    
+    // Конвертировать ВСЕ React компоненты в формат для магнитных точек
+    const reactForMagnetic = currentGameState.placedComponents.map(reactComp => ({
+      id: reactComp.id,
+      position: reactComp.position,
+      rotation: reactComp.rotation || 0
+    }))
+    
+    // Simulator компоненты не нужны, используем только React данные
+    // const simulatorForMagnetic = placedComponents.map(simComp => ({
+    //   id: simComp.id,
+    //   position: simComp.position,
+    //   rotation: simComp.rotation || 0
+    // }))
+    
+    // Массив всех компонентов для расчета магнитных точек (только React)
+    const allComponents = reactForMagnetic
+    
+    console.log('🔍 DEBUG: allComponents для магнитных точек:', allComponents)
+    
+    // 1. Собрать все магнитные точки всех компонентов
+    const allMagneticPoints = []
+    allComponents.forEach(comp => {
+      const points = calculateMagneticPoints(comp)
+      console.log(`🧲 Компонент ${comp.id} (${comp.position.x}, ${comp.position.y}) rotation=${comp.rotation} -> точки:`, points)
+      allMagneticPoints.push(...points)
+    })
+    
+    console.log('🔍 DEBUG: Все магнитные точки:', allMagneticPoints)
+    
+    // 2. Группировать точки по координатам
+    const pointGroups = new Map()
+    allMagneticPoints.forEach(point => {
+      const key = `${point.x},${point.y}`
+      if (!pointGroups.has(key)) {
+        pointGroups.set(key, [])
+      }
+      pointGroups.get(key).push(point)
+    })
+    
+    // 3. Создать соединения внутри каждой группы (2+ компонентов)
+    let connectionsCount = 0
+    const activeConnectionPoints = [] // Для визуализации
+    
+    pointGroups.forEach((group, coordinates) => {
+      if (group.length >= 2) {
+        console.log(`🧲 Магнитная точка ${coordinates}: ${group.length} компонентов`)
+        
+        // Добавить координаты для визуализации
+        const [x, y] = coordinates.split(',').map(Number)
+        activeConnectionPoints.push({ x, y })
+        console.log(`🟢 ДОБАВЛЯЕМ зеленый круг на координаты: x=${x}, y=${y}`)
+        
+        // Соединить каждый с каждым в группе
+        for (let i = 0; i < group.length; i++) {
+          for (let j = i + 1; j < group.length; j++) {
+            const comp1Id = group[i].componentId
+            const comp2Id = group[j].componentId
+            
+            if (comp1Id !== comp2Id) { // Защита от самосоединения
+              // Получить React компоненты для корректного поиска originalComponentId
+              const comp1React = allComponents.find(c => c.id === comp1Id)
+              const comp2React = allComponents.find(c => c.id === comp2Id)
+              
+              console.log(`🔗 MAPPING: comp1Id="${comp1Id}" -> comp1React:`, comp1React ? `FOUND (originalId=${comp1React.originalComponentId})` : 'NOT FOUND')
+              console.log(`🔗 MAPPING: comp2Id="${comp2Id}" -> comp2React:`, comp2React ? `FOUND (originalId=${comp2React.originalComponentId})` : 'NOT FOUND')
+              
+              // КРИТИЧЕСКИ ВАЖНО: Использовать правильные ID для поиска в CircuitSimulator
+              // Fallback: если originalComponentId undefined, извлечь из длинного ID
+              const extractBaseId = (longId) => {
+                // user_R_DIV_1_1755264744372 -> R_DIV_1
+                const match = longId.match(/^user_(.+)_\d+$/)
+                return match ? match[1] : longId
+              }
+              
+              const searchComp1Id = comp1React && comp1React.originalComponentId 
+                ? comp1React.originalComponentId  // user_R_DIV_1_XXX -> R_DIV_1
+                : comp1Id.startsWith('user_') ? extractBaseId(comp1Id) : comp1Id  // для preinstalled или fallback
+              const searchComp2Id = comp2React && comp2React.originalComponentId 
+                ? comp2React.originalComponentId  // user_R_DIV_2_XXX -> R_DIV_2  
+                : comp2Id.startsWith('user_') ? extractBaseId(comp2Id) : comp2Id  // для preinstalled или fallback
+                
+              console.log(`🔗 SEARCH: Будем искать comp1="${searchComp1Id}", comp2="${searchComp2Id}" в CircuitSimulator`)
+              
+              // Элегантная проверка существования через helper
+              const comp1Exists = findComponentInSimulator(simulator, searchComp1Id, comp1React)
+              const comp2Exists = findComponentInSimulator(simulator, searchComp2Id, comp2React)
+              
+              if (comp1Exists && comp2Exists) {
+                // Использовать те же ID что и для поиска
+                const success = simulator.connectComponents(searchComp1Id, searchComp2Id)
+                if (success) {
+                  connectionsCount++
+                  console.log(`⚡ Соединение: ${searchComp1Id} ↔ ${searchComp2Id}`)
+                } else {
+                  console.warn(`❌ FAILED соединение: ${searchComp1Id} ↔ ${searchComp2Id}`)
+                }
+              } else {
+                console.warn(`❌ SKIP соединение: ${comp1Id} (${comp1Exists}) ↔ ${comp2Id} (${comp2Exists}) - компонент не существует`)
+              }
+            }
+          }
+        }
+      }
+    })
+    
+    // Обновить React state с координатами активных соединений
+    setGameState(prev => ({
+      ...prev,
+      connectionPoints: activeConnectionPoints
+    }))
+    
+    console.log(`🔗 BRIDGE: Создано ${connectionsCount} магнитных соединений`)
+    console.log(`🟢 VISUAL: Активных точек соединения: ${activeConnectionPoints.length}`)
+  }, []) // Убираем dependency, используем gameStateRef
+  
+  // Расчет магнитных точек компонента с учетом поворота
+  const calculateMagneticPoints = (component) => {
+    const { x, y } = component.position
+    const rotation = component.rotation || 0
+    
+    switch (rotation) {
+      case 0:   // горизонтально → (исходное положение)
+      case 180: // горизонтально ← (тот же результат для магнитных точек)
+        return [
+          { x: x - 40, y, componentId: component.id },
+          { x: x + 40, y, componentId: component.id }
+        ]
+      case 90:  // вертикально ↓ (поворот на 90°)
+      case 270: // вертикально ↑ (поворот на 270°, тот же результат)
+        return [
+          { x, y: y - 40, componentId: component.id },
+          { x, y: y + 40, componentId: component.id }
+        ]
+      default:
+        console.warn(`Неизвестный поворот компонента: ${rotation}°`)
+        return []
+    }
+  }
+  
+  // Заполнение window.debugEfficiency для DebugPanel - СИНХРОНИЗИРОВАНО с новой логикой
+  const populateDebugEfficiency = useCallback((simulationResult) => {
+    if (!circuitSimulatorRef.current || !level) return
+    
+    const simulator = circuitSimulatorRef.current
+    const source = simulator.getSource()
+    const targets = simulator.getTargets()
+    const supercapacitor = simulator.getSupercapacitor()
+    
+    // Подготовить данные для каждой цели с СТРОГИМИ sweet spot правилами
+    const targetResults = targets.map(target => {
+      const deliveredEnergy = simulationResult.energyDistribution[target.id] || 0
+      const isConnected = simulationResult.targetsLit.includes(target.id) || deliveredEnergy > 0
+      
+      // СТРОГАЯ проверка sweet spot как в EnergyCalculator
+      let isInSweetSpot = false
+      if (target.energyRange && deliveredEnergy > 0) {
+        const [minEnergy, maxEnergy] = target.energyRange
+        isInSweetSpot = deliveredEnergy >= minEnergy && deliveredEnergy <= maxEnergy
+      }
+      
+      return {
+        targetId: target.id,
+        deliveredEnergy,
+        energyRange: target.energyRange,
+        isInSweetSpot,
+        usefulEnergy: isInSweetSpot ? deliveredEnergy : 0, // Только энергия в sweet spot полезна
+        heatLoss: isInSweetSpot ? 0 : deliveredEnergy, // Энергия вне sweet spot = heat loss
+        isConnected
+      }
+    })
+    
+    // Рассчитать efficiency ТОЧНО как в EnergyCalculator
+    // Total Useful Energy = только энергия в sweet spots + Energy in Supercapacitor
+    const usefulEnergyOnTargets = targetResults.reduce((sum, target) => sum + target.usefulEnergy, 0)
+    const heatLossFromTargets = targetResults.reduce((sum, target) => sum + target.heatLoss, 0)
+    const energyInSupercapacitor = supercapacitor ? supercapacitor.getScore() : 0
+    const totalUsefulEnergy = usefulEnergyOnTargets + energyInSupercapacitor
+    
+    // Efficiency (%) = (Total Useful Energy / Source Energy Output) * 100
+    const sourceEnergyOutput = source ? source.getAvailableEnergy() : 120
+    const efficiency = sourceEnergyOutput > 0 ? (totalUsefulEnergy / sourceEnergyOutput) * 100 : 0
+    
+    // Ожидаемый score из метаданных уровня (если есть)
+    const expectedScore = level.solution_data?.optimal_solution?.expected_score || 0
+    
+    // Заполнить window.debugEfficiency с расширенной информацией
+    window.debugEfficiency = {
+      sourceEnergyOutput,
+      usefulEnergyOnTargets,
+      heatLossFromTargets,
+      energyInSupercapacitor,
+      totalUsefulEnergy,
+      efficiency,
+      targetResults,
+      expectedScore
+    }
+    
+    console.log('🐛 DEBUG: window.debugEfficiency заполнен (новая логика):', window.debugEfficiency)
+  }, [level])
+  
+  // Обновление состояний компонентов после симуляции
+  const updateComponentStatesAfterSimulation = useCallback((simulationResult) => {
+    if (!gameEngineRef.current) return
+    
+    console.log('🎨 STATES: Обновление состояний компонентов после симуляции...')
+    
+    const gameEngine = gameEngineRef.current
+    
+    // Упрощенная логика: только компоненты с энергией > 0 считаются подключенными
+    const connectedComponentIds = new Set()
+    
+    if (simulationResult.energyDistribution) {
+      Object.keys(simulationResult.energyDistribution).forEach(componentId => {
+        if (simulationResult.energyDistribution[componentId] > 0) {
+          connectedComponentIds.add(componentId)
+        }
+      })
+    }
+    
+    // Обновить состояние каждого компонента в GameEngine
+    let updatedCount = 0
+    for (const [componentId, component] of gameEngine.components) {
+      const isConnected = connectedComponentIds.has(componentId)
+      
+      // Обновить данные компонента
+      component.data.isConnected = isConnected
+      
+      // Обновить визуальное состояние через GameEngine
+      if (gameEngine.updateComponentState) {
+        gameEngine.updateComponentState(componentId, null) // Автоматическое определение
+        updatedCount++
+      }
+    }
+    
+    console.log(`🎨 STATES: Обновлено состояний: ${updatedCount}, подключенных компонентов: ${connectedComponentIds.size}`)
+  }, [])
+  
   // === ИГРОВЫЕ ДЕЙСТВИЯ (вызываются из React UI) ===
   
   const simulateCircuit = () => {
-    if (!gameEngineRef.current) return
+    console.error('🚨 SIMULATE START - функция вызвана!')
     
-    console.log('useGameEngine: Starting simulation')
+    if (!gameEngineRef.current || !circuitSimulatorRef.current) return
+    
+    console.log('🔬 SIMULATION: Запуск реальной симуляции цепи')
     
     setGameState(prev => ({ ...prev, isSimulating: true }))
     
-    // Симуляция цепи (пока заглушка)
+    // Реальная симуляция с CircuitSimulator
     setTimeout(() => {
-      const currentScore = calculateScore(gameState.placedComponents)
+      // 1. Синхронизировать React → CircuitSimulator
+      const bridgeSuccess = syncReactComponentsToSimulator()
+      
+      if (!bridgeSuccess) {
+        console.error('❌ SIMULATION: Bridge sync failed')
+        setGameState(prev => ({ ...prev, isSimulating: false }))
+        return
+      }
+      
+      // 2. Запустить реальную симуляцию
+      const simulationResult = circuitSimulatorRef.current.simulate()
+      console.log('🔬 SIMULATION: Результат:', simulationResult)
+      
+      // 3. Извлечь efficiency score
+      const currentScore = simulationResult.finalScore || 0
+      const efficiency = simulationResult.finalScore || 0 // В CircuitSimulator finalScore = efficiency
+      
+      // 4. Заполнить window.debugEfficiency для DebugPanel
+      populateDebugEfficiency(simulationResult)
+      
+      // 5. Обновить состояния всех компонентов в GameEngine
+      updateComponentStatesAfterSimulation(simulationResult)
       
       setGameState(prev => {
         const newBestScore = Math.max(prev.bestScore, currentScore)
-        const newHasValidSolution = prev.hasValidSolution || currentScore > 50
+        const newHasValidSolution = prev.hasValidSolution || efficiency > 50
         const newAttemptCount = prev.attemptCount + 1
         const newCanFinishLevel = newHasValidSolution
         
-        console.log(`useGameEngine: Simulation complete. Score: ${currentScore}, Best: ${newBestScore}, Valid: ${newHasValidSolution}`)
+        console.log(`🔬 SIMULATION: Score=${currentScore.toFixed(1)}, Efficiency=${efficiency.toFixed(1)}%`)
         
         return {
           ...prev,
@@ -226,13 +603,13 @@ export const useGameEngine = (level) => {
           gameStatus: 'playing'
         }
       })
-    }, 2000)
+    }, 2000) // Реалистичная задержка для UX
   }
   
   const resetLevel = () => {
     if (!gameEngineRef.current || !level) return
     
-    console.log('useGameEngine: Resetting level')
+    // Resetting level
     
     const levelData = prepareLevelData(level)
     gameEngineRef.current.loadLevel(levelData)
@@ -247,12 +624,15 @@ export const useGameEngine = (level) => {
       isSimulating: false,
       hasValidSolution: false,
       attemptCount: 0,
-      canFinishLevel: false
+      canFinishLevel: false,
+      connectionPoints: []
     }))
   }
   
   const addComponentFromPalette = (componentId) => {
     if (!gameEngineRef.current || !level) return
+    
+    console.log(`🎯 PALETTE: addComponentFromPalette вызвана с componentId="${componentId}"`)
     
     // Найти определение компонента в уровне
     const componentDef = level.circuit_definition.available_components.find(c => c.id === componentId)
@@ -280,20 +660,31 @@ export const useGameEngine = (level) => {
       }
     }
     
+    console.log(`🎯 PALETTE: Создан новый компонент:`, newComponent)
+    console.log(`🎯 PALETTE: originalComponentId="${newComponent.originalComponentId}"`)
+    
     gameEngineRef.current.addComponent(newComponent)
     
-    setGameState(prev => ({
-      ...prev,
-      placedComponents: [...prev.placedComponents, newComponent]
-    }))
+    setGameState(prev => {
+      const updatedComponents = [...prev.placedComponents, newComponent]
+      console.log(`🎯 PALETTE: Обновляем React state. Новый компонент в массиве:`)
+      const addedComponent = updatedComponents[updatedComponents.length - 1]
+      console.log(`🎯 PALETTE: Последний компонент в state:`, addedComponent)
+      console.log(`🎯 PALETTE: originalComponentId в state="${addedComponent.originalComponentId}"`)
+      
+      return {
+        ...prev,
+        placedComponents: updatedComponents
+      }
+    })
     
-    console.log('useGameEngine: Added component from palette', {componentId, autoPosition, newComponent})
+    // Component added from palette
   }
   
   // НОВОЕ: Осознанное завершение уровня игроком
   const finishLevel = () => {
     if (!gameState.canFinishLevel) {
-      console.warn('useGameEngine: Cannot finish level - no valid solution found yet')
+      // Cannot finish level
       return
     }
     
@@ -315,7 +706,7 @@ export const useGameEngine = (level) => {
       showSuccessModal: true
     }))
     
-    console.log(`useGameEngine: Level finished by player! Best Score: ${gameState.bestScore}, Attempts: ${gameState.attemptCount}, Time: ${finalTime}s`)
+    // Level finished by player
   }
 
   // Actions для управления success modal
@@ -343,10 +734,11 @@ export const useGameEngine = (level) => {
       attemptCount: 0,
       canFinishLevel: false,
       placedComponents: [],
-      isSimulating: false
+      isSimulating: false,
+      connectionPoints: []
     }))
     
-    console.log('useGameEngine: Reset for next level')
+    // Reset for next level
   }
 
   return {
@@ -378,6 +770,7 @@ function prepareLevelData(level) {
       position: { x: 80, y: 200 }, // Правило: x всегда 80, y начинается с 200
       rotation: 0,
       isPreinstalled: true,
+      originalComponentId: source.id, // ИСПРАВЛЕНИЕ: добавлено для правильного ID mapping
       properties: {
         voltage: source.voltage,
         energyOutput: source.energy_output
@@ -393,6 +786,7 @@ function prepareLevelData(level) {
       position: { x: 80, y: 240 + (index * 40) }, // Правило: x всегда 80, y: 240, 280, 320, 360...
       rotation: 0,
       isPreinstalled: true,
+      originalComponentId: target.id, // ИСПРАВЛЕНИЕ: добавлено для правильного ID mapping
       properties: {
         energyRange: target.energy_range
       }
@@ -405,11 +799,7 @@ function prepareLevelData(level) {
   }
 }
 
-function calculateScore(components) {
-  // Простая логика подсчета очков
-  const userComponents = components.filter(c => !c.isPreinstalled)
-  return userComponents.length * 10 + Math.floor(Math.random() * 50)
-}
+// Старая заглушка calculateScore удалена - теперь используется реальная симуляция CircuitSimulator
 
 // === АВТОМАТИЧЕСКОЕ РАЗМЕЩЕНИЕ КОМПОНЕНТОВ ===
 
@@ -437,15 +827,15 @@ function findNextAvailablePosition(placedComponents) {
     })
     
     if (!isOccupied) {
-      console.log(`findNextAvailablePosition: Found free position at attempt ${attempt}:`, candidatePosition)
+      // Position found
       return candidatePosition
     }
     
-    console.log(`findNextAvailablePosition: Position occupied at attempt ${attempt}:`, candidatePosition)
+    // Position occupied
   }
   
   // Если все позиции заняты, вернуть позицию справа от последней попытки
   const fallbackPosition = { x: START_X + 40, y: START_Y }
-  console.warn('findNextAvailablePosition: All default positions occupied, using fallback:', fallbackPosition)
+  // Using fallback position
   return fallbackPosition
 }

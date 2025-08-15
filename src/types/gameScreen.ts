@@ -1,4 +1,4 @@
-import type { ComponentType, Terminal } from './enums'
+import type { ComponentType } from './enums'
 import type { Level } from './level'
 
 export interface Position {
@@ -28,22 +28,11 @@ export interface ComponentProperties {
   isClosed?: boolean // for switches
 }
 
-export interface WireConnection {
-  id: string
-  fromComponent: string
-  toComponent: string
-  fromTerminal: Terminal[keyof Terminal]
-  toTerminal: Terminal[keyof Terminal]
-  energyFlow?: number
-  isValid?: boolean
-}
 
 export interface GameScreenState {
   level: Level | null
   placedComponents: PlacedComponent[]
-  connections: WireConnection[]
   selectedComponent: string | null
-  selectedWire: string | null
   isSimulating: boolean
   score: number
   energyUsed: number
@@ -52,12 +41,6 @@ export interface GameScreenState {
     type: ComponentType[keyof ComponentType]
     sourceId?: string
     componentId?: string // Add componentId to track specific component
-  } | null
-  isDrawingWire: boolean
-  wireStartPoint: {
-    componentId: string
-    terminal: Terminal[keyof Terminal]
-    position: Position
   } | null
   // Note: drag-n-drop states moved to refs for performance
 }

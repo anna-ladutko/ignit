@@ -49,18 +49,29 @@ export class CircuitSimulator {
     return this.gameState
   }
 
-  placeComponent(componentId: string, position: { x: number; y: number }): boolean {
+  placeComponent(componentId: string, position: { x: number; y: number }, rotation: number = 0): boolean {
     if (!this.gameState) return false
 
+    console.log(`🔧 SIMULATOR: placeComponent вызван с componentId="${componentId}", position=`, position, `rotation=${rotation}`)
+
     const component = this.gameState.availableComponents.find(c => c.id === componentId)
-    if (!component) return false
+    console.log(`🔧 SIMULATOR: Найден компонент в availableComponents:`, component ? `YES (id=${component.id})` : `NO`)
+    
+    if (!component) {
+      console.log(`❌ SIMULATOR: Компонент ${componentId} не найден в availableComponents`)
+      console.log(`🔧 SIMULATOR: Доступные компоненты:`, this.gameState.availableComponents.map(c => c.id))
+      return false
+    }
 
     // Remove from available components
     this.gameState.availableComponents = this.gameState.availableComponents.filter(c => c.id !== componentId)
     
-    // Set position and add to placed components
+    // Set position and rotation, then add to placed components
     component.setPosition(position)
+    component.setRotation(rotation)
     this.gameState.placedComponents.push(component)
+    
+    console.log(`✅ SIMULATOR: Компонент ${componentId} размещен. Placed components теперь:`, this.gameState.placedComponents.map(c => c.id))
     
     // Add to energy calculator
     this.gameState.energyCalculator.addComponent(component)
@@ -91,14 +102,30 @@ export class CircuitSimulator {
   connectComponents(fromId: string, toId: string): boolean {
     if (!this.gameState) return false
 
+    console.log(`🔌 CIRCUIT: connectComponents вызван: ${fromId} -> ${toId}`)
+
     const fromComponent = this.findComponent(fromId)
     const toComponent = this.findComponent(toId)
 
-    if (!fromComponent || !toComponent) return false
-    if (fromId === toId) return false
+    console.log(`🔌 CIRCUIT: fromComponent (${fromId}):`, fromComponent ? `FOUND (id=${fromComponent.id})` : 'NOT FOUND')
+    console.log(`🔌 CIRCUIT: toComponent (${toId}):`, toComponent ? `FOUND (id=${toComponent.id})` : 'NOT FOUND')
+
+    if (!fromComponent || !toComponent) {
+      console.warn(`❌ CIRCUIT: Не найден компонент для соединения ${fromId} -> ${toId}`)
+      console.warn(`🔍 CIRCUIT: Available components:`)
+      console.warn(`  - SOURCE: ${this.gameState.source?.id || 'none'}`)
+      console.warn(`  - TARGETS: [${this.gameState.targets?.map(t => t.id).join(', ') || 'none'}]`)
+      console.warn(`  - PLACED: [${this.gameState.placedComponents?.map(p => p.id).join(', ') || 'none'}]`)
+      return false
+    }
+    if (fromId === toId) {
+      console.warn(`❌ CIRCUIT: Попытка соединить компонент сам с собой: ${fromId}`)
+      return false
+    }
 
     // Add connection to energy calculator
     this.gameState.energyCalculator.addConnection(fromId, toId)
+    console.log(`✅ CIRCUIT: Соединение успешно добавлено в EnergyCalculator: ${fromId} -> ${toId}`)
 
     return true
   }

@@ -55,17 +55,27 @@ export class GameEngine {
   // === ИГРОВАЯ МЕХАНИКА ===
   
   addComponent(componentData) {
+    console.log(`🎮 GAMEENGINE: addComponent вызвана с componentData:`, componentData)
+    console.log(`🎮 GAMEENGINE: originalComponentId="${componentData.originalComponentId}"`)
+    
     const element = this.createComponentElement(componentData)
     this.canvas.appendChild(element)
     
-    this.components.set(componentData.id, {
+    const componentRecord = {
       element,
       data: componentData,
       position: { ...componentData.position },
       rotation: componentData.rotation || 0
-    })
+    }
     
-    console.log(`GameEngine: Added component ${componentData.id}`)
+    this.components.set(componentData.id, componentRecord)
+    
+    console.log(`🎮 GAMEENGINE: Added component ${componentData.id}`)
+    console.log(`🎮 GAMEENGINE: componentRecord.data.originalComponentId="${componentRecord.data.originalComponentId}"`)
+    
+    // Debug: проверить что данные сохранились
+    const storedComponent = this.components.get(componentData.id)
+    console.log(`🎮 GAMEENGINE: Проверка сохранения - storedComponent.data.originalComponentId="${storedComponent.data.originalComponentId}"`)
   }
   
   createComponentElement(componentData) {
@@ -153,11 +163,31 @@ export class GameEngine {
       return this.getFallbackSVG(componentData)
     }
     
-    const isActive = componentData.isActive || false
+    // Определить состояние компонента
+    const isSource = componentData.type === 'voltage_source'
+    const isTarget = componentData.type === 'led' && componentData.isPreinstalled
+    const isSelected = false // Будет обновляться через setComponentState
+    const isConnected = componentData.isConnected || false
+    
+    // Получить ComponentState enum
+    const { ComponentState } = window.SVGConverter || {}
+    let componentState = 'disconnected' // fallback
+    
+    if (ComponentState) {
+      if (isSource || isTarget) {
+        // SOURCE и TARGETS всегда золотые (#FFBE4D)
+        componentState = ComponentState.SOURCE
+      } else if (isConnected) {
+        componentState = ComponentState.CONNECTED  
+      } else {
+        componentState = ComponentState.DISCONNECTED
+      }
+    }
+    
     const switchState = componentData.switchState || false
     
-    console.log(`✅ GameEngine: Calling getComponentSVGForGameEngine`)
-    const svgResult = getComponentSVGForGameEngine(componentType, isActive, switchState)
+    console.log(`✅ GameEngine: Calling getComponentSVGForGameEngine with state: ${componentState}`)
+    const svgResult = getComponentSVGForGameEngine(componentType, componentState, switchState)
     console.log(`📄 GameEngine: Generated SVG length:`, svgResult?.length)
     
     return svgResult
@@ -178,17 +208,8 @@ export class GameEngine {
     </svg>`
   }
   
-  getComponentColor(type) {
-    const colors = {
-      resistor: '#FF6B35',
-      capacitor: '#4ECDC4', 
-      inductor: '#45B7D1',
-      led: '#96CEB4',
-      voltage_source: '#FFEAA7',
-      switch: '#DDA0DD'
-    }
-    return colors[type] || '#FFFFFF'
-  }
+  // Старая type-based система цветов удалена
+  // Теперь используется state-based система через ComponentState
   
   // === DRAG & DROP ===
   
@@ -361,16 +382,93 @@ export class GameEngine {
     const currentRotation = component?.rotation || 0
     
     if (selected) {
-      element.style.filter = 'brightness(2) saturate(0)'
-      element.style.rotate = `${currentRotation}deg`  // Поворот отдельно
-      element.style.scale = '1.1'  // Масштаб отдельно  
+      // Обновить SVG с состоянием SELECTED (белый цвет)
+      this.updateComponentState(componentId, 'selected')
+      element.style.rotate = `${currentRotation}deg`
+      element.style.scale = '1.1'
       element.style.zIndex = '1000'
     } else {
-      element.style.filter = ''
-      element.style.rotate = `${currentRotation}deg`  // Только поворот
-      element.style.scale = '1'  // Сброс масштаба
-      element.style.translate = '0px 0px'  // Сброс перемещения
+      // Вернуть к обычному состоянию
+      this.updateComponentState(componentId, null) // Определится автоматически
+      element.style.rotate = `${currentRotation}deg`
+      element.style.scale = '1'
+      element.style.translate = '0px 0px'
       element.style.zIndex = '10'
+    }
+  }
+  
+  // Маппинг типов компонентов для SVGConverter
+  mapComponentType(type) {
+    const { ComponentType } = window.SVGConverter || {}
+    if (!ComponentType) return type
+    
+    const typeMap = {
+      'resistor': ComponentType.RESISTOR,
+      'capacitor': ComponentType.CAPACITOR,
+      'inductor': ComponentType.INDUCTOR,
+      'led': ComponentType.LED,
+      'voltage_source': ComponentType.VOLTAGE_SOURCE,
+      'switch': ComponentType.SWITCH,
+      'supercapacitor': ComponentType.SUPERCAPACITOR,
+      
+      // Палитные типы
+      'R_DIV_1': ComponentType.RESISTOR,
+      'R_DIV_2': ComponentType.RESISTOR,
+      'C_FILTER': ComponentType.CAPACITOR,
+      'C_WRONG_1': ComponentType.CAPACITOR,
+      'L_FILTER': ComponentType.INDUCTOR,
+      'TARGET_LED_1': ComponentType.LED,
+      'TARGET_LED_2': ComponentType.LED
+    }
+    
+    return typeMap[type] || type
+  }
+  
+  // Новый метод для обновления состояния компонента
+  updateComponentState(componentId, forceState = null) {
+    const component = this.components.get(componentId)
+    if (!component) return
+    
+    // Определить состояние
+    const isSource = component.data.type === 'voltage_source'
+    const isTarget = component.data.type === 'led' && component.data.isPreinstalled
+    const isConnected = component.data.isConnected || false
+    
+    let state = 'disconnected'
+    if (forceState) {
+      state = forceState
+    } else if (isSource || isTarget) {
+      // SOURCE и TARGETS всегда золотые
+      state = 'source'
+    } else if (isConnected) {
+      state = 'connected'
+    }
+    
+    // Получить ComponentState enum
+    const { ComponentState } = window.SVGConverter || {}
+    let componentState = state
+    
+    if (ComponentState) {
+      switch(state) {
+        case 'selected': componentState = ComponentState.SELECTED; break
+        case 'connected': componentState = ComponentState.CONNECTED; break
+        case 'source': componentState = ComponentState.SOURCE; break
+        default: componentState = ComponentState.DISCONNECTED; break
+      }
+    }
+    
+    // Обновить SVG с новым состоянием
+    const { getComponentSVGForGameEngine } = window.SVGConverter || {}
+    if (getComponentSVGForGameEngine) {
+      const componentType = this.mapComponentType(component.data.type)
+      const newSVG = getComponentSVGForGameEngine(componentType, componentState, false)
+      component.element.innerHTML = newSVG
+      
+      // Убедиться что SVG пропускает события
+      const svg = component.element.querySelector('svg')
+      if (svg) {
+        svg.style.pointerEvents = 'none'
+      }
     }
   }
   

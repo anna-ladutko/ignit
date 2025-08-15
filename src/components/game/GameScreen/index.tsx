@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from 'react'
+import React, { useCallback } from 'react'
 import { Box, useTheme } from '@mui/material'
 import type { Level } from '../../../types'
 import { useGameEngine } from '../../../hooks/useGameEngine.js'
@@ -6,6 +6,8 @@ import { TopGameBar } from './GameUI/TopGameBar'
 import { ComponentPalette } from './GameUI/ComponentPalette'
 import { GameControls } from './GameUI/GameControls'
 import { LevelCompleteModal } from './UI/LevelCompleteModal'
+import { DebugPanel } from './UI/DebugPanel'
+import { ConnectionIndicatorsLayer } from './GameCanvas/ConnectionIndicator'
 
 /**
  * GameScreen - Чистый UI Shell
@@ -31,13 +33,8 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   
   // Callback ref - инициализирует GameEngine когда canvas готов
   const canvasRef = useCallback((canvasElement: HTMLDivElement | null) => {
-    console.log('🔄 GAMESCREEN: Canvas ref callback triggered. Element:', !!canvasElement)
-    
     if (canvasElement) {
-      console.log('✅ GAMESCREEN: Canvas элемент смонтирован, инициализируем GameEngine...')
       initializeGameEngine(canvasElement)
-    } else {
-      console.log('❌ GAMESCREEN: Canvas элемент размонтирован')
     }
   }, [initializeGameEngine])
 
@@ -141,6 +138,11 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             }}
           />
           
+          {/* Connection Indicators Layer - Green dots for magnetic connections */}
+          <ConnectionIndicatorsLayer
+            connectionPoints={gameState.connectionPoints || []}
+          />
+          
           {/* Loading Overlay - показывается поверх canvas */}
           {gameState.gameStatus === 'loading' && (
             <Box
@@ -205,6 +207,9 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         onNextLevel={handleNextLevel}
         onMainScreen={handleMainScreen}
       />
+      
+      {/* Debug Panel для отображения Efficiency данных */}
+      <DebugPanel isVisible={true} />
     </Box>
   )
 }

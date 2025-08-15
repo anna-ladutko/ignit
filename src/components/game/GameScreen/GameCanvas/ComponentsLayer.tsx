@@ -8,14 +8,10 @@ import { GRID_SIZE } from '../../../../types/gameScreen'
 
 interface ComponentsLayerProps {
   placedComponents: PlacedComponent[]
-  selectedComponent: string | null
   draggedComponent: GameScreenState['draggedComponent']
   dragPosition: { x: number; y: number }
   isSimulating: boolean
   isDragging: boolean
-  dragComponentId: string | null
-  dragCurrentPosition: { x: number; y: number } | null
-  onWireStart: (componentId: string, terminal: string, position: { x: number; y: number }) => void
   onComponentTap: (componentId: string) => void
   onDragStart: (componentId: string, position: { x: number; y: number }) => void
   onDragMove: (componentId: string, position: { x: number; y: number }) => void
@@ -24,13 +20,9 @@ interface ComponentsLayerProps {
 
 export const ComponentsLayer: React.FC<ComponentsLayerProps> = ({
   placedComponents,
-  selectedComponent,
   draggedComponent,
   dragPosition,
   isSimulating,
-  dragComponentId,
-  dragCurrentPosition,
-  onWireStart,
   onComponentTap,
   onDragStart,
   onDragMove,
@@ -147,7 +139,6 @@ export const ComponentsLayer: React.FC<ComponentsLayerProps> = ({
     <>
       {/* Placed Components */}
       {placedComponents.map((component) => {
-        const isSelected = selectedComponent === component.id
         const isActive = isSimulating && Math.random() > 0.5 // TODO: Replace with actual simulation state
         const isPreinstalled = component.isPreinstalled
         // Note: White color is now handled via CSS .dragging class for instant response
@@ -191,11 +182,9 @@ export const ComponentsLayer: React.FC<ComponentsLayerProps> = ({
           >
             <ComponentIcon
               type={component.type}
-              size="large"
-              isActive={isActive}
+              componentState={isActive ? 'connected' : 'disconnected'}
               isSelected={false} // White color now handled via CSS .dragging class
               switchState={component.properties.isClosed}
-              useMagneticStyle={true}
             />
 
             {/* Connection points removed for cleaner interface */}
@@ -327,10 +316,8 @@ export const ComponentsLayer: React.FC<ComponentsLayerProps> = ({
           >
             <ComponentIcon
               type={draggedComponent.type}
-              size="large"
-              isActive={false}
+              componentState="selected"
               isSelected={true}
-              useMagneticStyle={true}
             />
           </Box>
         </motion.div>

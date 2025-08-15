@@ -73,13 +73,8 @@ export const themeIgnit = createTheme({
       },
     },
 
-    // Цвета схемы
+    // Цвета схемы (без проводов)
     circuit: {
-      wire: "#00FF88", // основной цвет проводов
-      wireActive: "#33FF99", // активированный провод
-      wireError: "#FF4444", // провод с ошибкой
-      connectionPoint: "#FFFFFF", // connection points
-      connectionPointActive: "#00DDFF", // active connection point
       grid: "transparent", // убрано для flat дизайна
       gridActive: "#3A3F5A", // активированная сетка
       selection: "#00DDFF", // component selection
@@ -131,8 +126,6 @@ export const themeIgnit = createTheme({
     componentSize: 36, // component size on board
     componentSizeSmall: 24, // small size
     componentSizeLarge: 48, // large size
-    wireThickness: 3, // толщина проводов
-    wireThicknessActive: 5, // толщина активных проводов
     gridSpacing: 44, // расстояние сетки (= touchTarget для точности)
     gridSpacingSmall: 32, // плотная сетка
     cornerRadius: 20, // радиус скругления
@@ -157,7 +150,6 @@ export const themeIgnit = createTheme({
   electronicZIndex: {
     background: 1,
     grid: 2,
-    wires: 3,
     components: 4,
     selection: 5,
     dragging: 6,

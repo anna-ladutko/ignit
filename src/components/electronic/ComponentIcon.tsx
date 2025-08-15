@@ -1,6 +1,6 @@
 import React from 'react'
-import { useTheme } from '@mui/material/styles'
-import { ComponentType } from '../../types'
+import { ComponentType, ComponentState } from '../../types'
+import { getComponentStateColor } from '../../utils/componentColors'
 import {
   ResistorMagneticSymbol,
   CapacitorMagneticSymbol,
@@ -14,25 +14,23 @@ import {
 interface ComponentIconProps {
   type: ComponentType[keyof ComponentType]
   size?: 'small' | 'medium' | 'large'
-  isActive?: boolean
+  componentState?: ComponentState
   isSelected?: boolean
   switchState?: boolean // For switches
   className?: string
   onClick?: () => void
-  // useMagneticStyle removed - now only uses magnetic symbols
+  // NEW: State-based coloring instead of type-based
 }
 
 const ComponentIconMemoized: React.FC<ComponentIconProps> = ({
   type,
-  size = 'medium',
-  isActive = false,
+  componentState = ComponentState.DISCONNECTED,
   isSelected = false,
   switchState = false,
   className,
   onClick,
-  // useMagneticStyle removed
+  // NEW: Uses state-based coloring
 }) => {
-  const theme = useTheme()
 
   const getSize = () => {
     // All symbols now use magnetic style with fixed size for proper magnetic point alignment
@@ -43,42 +41,10 @@ const ComponentIconMemoized: React.FC<ComponentIconProps> = ({
   }
 
   const getColor = () => {
-    if (isSelected) {
-      return '#ffffff' // White color for selected components
-    }
-    
-    switch (type) {
-      case ComponentType.RESISTOR:
-        return isActive 
-          ? theme.palette.electronicsComponents.resistor.active 
-          : theme.palette.electronicsComponents.resistor.main
-      case ComponentType.CAPACITOR:
-        return isActive 
-          ? theme.palette.electronicsComponents.capacitor.active 
-          : theme.palette.electronicsComponents.capacitor.main
-      case ComponentType.INDUCTOR:
-        return isActive 
-          ? theme.palette.electronicsComponents.inductor.active 
-          : theme.palette.electronicsComponents.inductor.main
-      case ComponentType.LED:
-        return isActive 
-          ? theme.palette.electronicsComponents.led.active 
-          : theme.palette.electronicsComponents.led.main
-      case ComponentType.VOLTAGE_SOURCE:
-        return isActive 
-          ? theme.palette.electronicsComponents.source.active 
-          : theme.palette.electronicsComponents.source.main
-      case ComponentType.SWITCH:
-        return isActive 
-          ? theme.palette.electronicsComponents.switch.active 
-          : theme.palette.electronicsComponents.switch.main
-      case ComponentType.SUPERCAPACITOR:
-        return isActive 
-          ? theme.palette.electronicsComponents.capacitor.active 
-          : theme.palette.electronicsComponents.capacitor.main
-      default:
-        return theme.palette.text.secondary
-    }
+    // NEW: State-based color system
+    // Override for selected state
+    const effectiveState = isSelected ? ComponentState.SELECTED : componentState
+    return getComponentStateColor(effectiveState)
   }
 
   const getSymbol = () => {
@@ -88,7 +54,8 @@ const ComponentIconMemoized: React.FC<ComponentIconProps> = ({
         ...sizeConfig,  // Use fixed width/height for all magnetic symbols
         color: getColor(),
         cursor: onClick ? 'pointer' : 'default',
-        filter: isActive ? `drop-shadow(0 0 6px ${getColor()})` : 'none',
+        filter: componentState === ComponentState.CONNECTED || componentState === ComponentState.SOURCE 
+          ? `drop-shadow(0 0 6px ${getColor()})` : 'none',
         transition: 'all 0.2s ease',
         '&:hover': onClick ? {
           filter: `drop-shadow(0 0 8px ${getColor()})`,

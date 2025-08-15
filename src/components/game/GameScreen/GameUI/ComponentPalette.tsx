@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Box, Typography, useTheme } from '@mui/material'
 import { motion } from 'framer-motion'
 import type { Level } from '../../../../types'
@@ -27,24 +27,22 @@ export const ComponentPalette: React.FC<ComponentPaletteProps> = ({
 }) => {
   const theme = useTheme()
 
-  if (!level) return null
-
   // Calculate remaining components (exclude preinstalled components from count)
-  const getRemainingCount = (componentId: string): number => {
-    const originalComponent = level.circuit_definition.available_components.find(c => c.id === componentId)
-    const usedCount = placedComponents.filter(pc => 
-      pc.originalComponentId === componentId && !pc.isPreinstalled
-    ).length
-    const remaining = (originalComponent?.quantity || 0) - usedCount
-    console.log(`getRemainingCount for ${componentId}:`, {
-      originalComponent: originalComponent,
-      quantity: originalComponent?.quantity,
-      usedCount,
-      remaining,
-      placedComponentsForThisId: placedComponents.filter(pc => pc.originalComponentId === componentId)
+  const getRemainingCount = useMemo(() => {
+    if (!level) return () => 0
+    const counts: Record<string, number> = {}
+    
+    level.circuit_definition.available_components.forEach(comp => {
+      const usedCount = placedComponents.filter(pc => 
+        pc.originalComponentId === comp.id && !pc.isPreinstalled
+      ).length
+      counts[comp.id] = (comp.quantity || 0) - usedCount
     })
-    return remaining
-  }
+    
+    return (componentId: string) => counts[componentId] || 0
+  }, [level?.circuit_definition?.available_components, placedComponents])
+
+  if (!level) return null
 
   const getComponentValue = (component: any): string => {
     switch (component.type) {

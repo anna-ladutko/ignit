@@ -10,6 +10,15 @@ export const ComponentType = {
 
 export type ComponentType = typeof ComponentType[keyof typeof ComponentType]
 
+export const ComponentState = {
+  DISCONNECTED: 'disconnected',
+  SELECTED: 'selected', 
+  CONNECTED: 'connected',
+  SOURCE: 'source'
+} as const
+
+export type ComponentState = typeof ComponentState[keyof typeof ComponentState]
+
 export const ArchetypeType = {
   STABILIZER: 'stabilizer',
   SPLITTER: 'splitter',

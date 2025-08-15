@@ -1,10 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react'
 import { Box, useTheme } from '@mui/material'
-import { BORDER_RADIUS } from '../../../../constants/design'
 import type { GameScreenState } from '../../../../types/gameScreen'
 import { GridLayer } from './GridLayer'
 import { ComponentsLayer } from './ComponentsLayer'
-import { WiresLayer } from './WiresLayer'
+import { ConnectionIndicatorsLayer } from './ConnectionIndicator'
 import { GRID_SIZE, GRID_COLS, GRID_ROWS, CANVAS_PADDING, MIN_TOUCH_AREA, pixelToGrid, gridToPixel, isValidGridPosition } from '../../../../types/gameScreen'
 
 interface GameCanvasProps {
@@ -12,12 +11,12 @@ interface GameCanvasProps {
   onComponentPlace: (componentType: string, position: { x: number; y: number }) => void
   onComponentSelect: (componentId: string) => void
   onComponentRemove: (componentId: string) => void
-  onWireStart: (componentId: string, terminal: string, position: { x: number; y: number }) => void
   onComponentTap: (componentId: string) => void
   onDragStart: (componentId: string, position: { x: number; y: number }) => void
   onDragMove: (componentId: string, position: { x: number; y: number }) => void
   onDragEnd: (componentId: string, position: { x: number; y: number }) => void
   isSimulating: boolean
+  connectionPoints?: Array<{ x: number; y: number }> // Координаты активных магнитных соединений
 }
 
 export const GameCanvas: React.FC<GameCanvasProps> = ({
@@ -25,12 +24,12 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   onComponentPlace,
   onComponentSelect,
   onComponentRemove,
-  onWireStart,
   onComponentTap,
   onDragStart,
   onDragMove,
   onDragEnd,
   isSimulating,
+  connectionPoints = [],
 }) => {
   const theme = useTheme()
   const canvasRef = useRef<HTMLDivElement>(null)
@@ -174,15 +173,6 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         canvasSize={canvasSize}
       />
 
-      {/* Wires Layer - Connection wires between components */}
-      <WiresLayer
-        connections={gameState.connections}
-        placedComponents={gameState.placedComponents}
-        isSimulating={isSimulating}
-        selectedWire={gameState.selectedWire}
-        wireStartPoint={gameState.wireStartPoint}
-        isDrawingWire={gameState.isDrawingWire}
-      />
 
       {/* Components Layer - Placed electronic components */}
       <ComponentsLayer
@@ -192,16 +182,17 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         dragPosition={dragPosition}
         isSimulating={isSimulating}
         isDragging={false} // Now handled via refs
-        dragComponentId={null} // Now handled via refs
-        dragCurrentPosition={null} // Now handled via refs
         onComponentSelect={onComponentSelect}
-        onWireStart={onWireStart}
         onComponentTap={onComponentTap}
         onDragStart={onDragStart}
         onDragMove={onDragMove}
         onDragEnd={onDragEnd}
       />
 
+      {/* Connection Indicators Layer - Green dots for magnetic connections */}
+      <ConnectionIndicatorsLayer
+        connectionPoints={connectionPoints}
+      />
 
       {/* Visual feedback for invalid drop areas */}
       {isDragging && (

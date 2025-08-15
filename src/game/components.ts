@@ -5,13 +5,15 @@ export abstract class GameComponent {
   public id: string
   public type: ComponentType
   public position: Position
+  public rotation: number = 0 // Поворот компонента в градусах (0, 90, 180, 270)
   public isConnected: boolean = false
   public connections: string[] = []
 
-  constructor(id: string, type: ComponentType, position: Position = { x: 0, y: 0 }) {
+  constructor(id: string, type: ComponentType, position: Position = { x: 0, y: 0 }, rotation: number = 0) {
     this.id = id
     this.type = type
     this.position = position
+    this.rotation = rotation
   }
 
   abstract clone(): GameComponent
@@ -29,6 +31,10 @@ export abstract class GameComponent {
   setPosition(position: Position): void {
     this.position = position
   }
+
+  setRotation(rotation: number): void {
+    this.rotation = rotation
+  }
 }
 
 export class GameVoltageSource extends GameComponent {
@@ -41,16 +47,17 @@ export class GameVoltageSource extends GameComponent {
     voltage: number,
     energyOutput: number,
     isStable: boolean,
-    position: Position = { x: 0, y: 0 }
+    position: Position = { x: 0, y: 0 },
+    rotation: number = 0
   ) {
-    super(id, ComponentType.VOLTAGE_SOURCE, position)
+    super(id, ComponentType.VOLTAGE_SOURCE, position, rotation)
     this.voltage = voltage
     this.energyOutput = energyOutput
     this.isStable = isStable
   }
 
   clone(): GameVoltageSource {
-    return new GameVoltageSource(this.id, this.voltage, this.energyOutput, this.isStable, { ...this.position })
+    return new GameVoltageSource(this.id, this.voltage, this.energyOutput, this.isStable, { ...this.position }, this.rotation)
   }
 
   getAvailableEnergy(): number {
@@ -67,15 +74,16 @@ export class GameLED extends GameComponent {
     id: string,
     energyRange: [number, number],
     color: LEDColor,
-    position: Position = { x: 0, y: 0 }
+    position: Position = { x: 0, y: 0 },
+    rotation: number = 0
   ) {
-    super(id, ComponentType.LED, position)
+    super(id, ComponentType.LED, position, rotation)
     this.energyRange = energyRange
     this.color = color
   }
 
   clone(): GameLED {
-    return new GameLED(this.id, [...this.energyRange], this.color, { ...this.position })
+    return new GameLED(this.id, [...this.energyRange], this.color, { ...this.position }, this.rotation)
   }
 
   isEnergyInRange(energy: number): boolean {
@@ -103,16 +111,17 @@ export class GameResistor extends GameComponent {
   constructor(
     id: string,
     resistance: number,
-    position: Position = { x: 0, y: 0 }
+    position: Position = { x: 0, y: 0 },
+    rotation: number = 0
   ) {
-    super(id, ComponentType.RESISTOR, position)
+    super(id, ComponentType.RESISTOR, position, rotation)
     this.resistance = resistance
     this.nominalValue = resistance
     this.actualValue = resistance
   }
 
   clone(): GameResistor {
-    return new GameResistor(this.id, this.resistance, { ...this.position })
+    return new GameResistor(this.id, this.resistance, { ...this.position }, this.rotation)
   }
 
   calculateVoltageDrop(current: number): number {
@@ -133,16 +142,17 @@ export class GameCapacitor extends GameComponent {
   constructor(
     id: string,
     capacitance: number,
-    position: Position = { x: 0, y: 0 }
+    position: Position = { x: 0, y: 0 },
+    rotation: number = 0
   ) {
-    super(id, ComponentType.CAPACITOR, position)
+    super(id, ComponentType.CAPACITOR, position, rotation)
     this.capacitance = capacitance
     this.nominalValue = capacitance
     this.actualValue = capacitance
   }
 
   clone(): GameCapacitor {
-    return new GameCapacitor(this.id, this.capacitance, { ...this.position })
+    return new GameCapacitor(this.id, this.capacitance, { ...this.position }, this.rotation)
   }
 
   charge(energy: number): void {
@@ -222,12 +232,12 @@ export class GameSwitch extends GameComponent {
 export class GameSupercapacitor extends GameComponent {
   public storedEnergy: number = 0
 
-  constructor(id: string = 'SUPER', position: Position = { x: 0, y: 0 }) {
-    super(id, ComponentType.SUPERCAPACITOR, position)
+  constructor(id: string = 'SUPER', position: Position = { x: 0, y: 0 }, rotation: number = 0) {
+    super(id, ComponentType.SUPERCAPACITOR, position, rotation)
   }
 
   clone(): GameSupercapacitor {
-    return new GameSupercapacitor(this.id, { ...this.position })
+    return new GameSupercapacitor(this.id, { ...this.position }, this.rotation)
   }
 
   store(energy: number): void {
