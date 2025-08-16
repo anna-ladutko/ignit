@@ -19,7 +19,8 @@ export const useGameEngine = (level) => {
     gameStatus: 'loading', // loading | playing (убрали auto-complete)
     placedComponents: [], // Финальные позиции для сохранения
     isSimulating: false,
-    levelTime: 0, // время прохождения уровня в секундах
+    levelTime: 0, // время последней попытки в секундах
+    bestTime: 0, // время лучшего score в секундах
     showSuccessModal: false, // показывать ли success модал
     hasValidSolution: false, // есть ли проходное решение (score > 50)
     attemptCount: 0, // количество симуляций
@@ -145,6 +146,10 @@ export const useGameEngine = (level) => {
         circuitSimulatorRef.current.loadLevel(level)
       }
       
+      // Запустить таймер уровня
+      levelStartTimeRef.current = Date.now()
+      console.log('⏱️ TIMER: Level timer started at', new Date(levelStartTimeRef.current).toLocaleTimeString())
+      
       // Обновить React state
       // Обновляем React state
       setGameState(prev => ({
@@ -154,6 +159,8 @@ export const useGameEngine = (level) => {
         currentScore: 0,
         bestScore: 0,
         energyUsed: 0,
+        levelTime: 0,
+        bestTime: 0,
         hasValidSolution: false,
         attemptCount: 0,
         canFinishLevel: false,
@@ -611,6 +618,9 @@ export const useGameEngine = (level) => {
     
     // Resetting level
     
+    // Перезапустить таймер уровня
+    levelStartTimeRef.current = Date.now()
+    
     const levelData = prepareLevelData(level)
     gameEngineRef.current.loadLevel(levelData)
     
@@ -619,8 +629,9 @@ export const useGameEngine = (level) => {
       placedComponents: levelData.preinstalledComponents || [],
       gameStatus: 'playing',
       currentScore: 0,
-      bestScore: 0,
+      // НЕ сбрасываем bestScore и bestTime при reset
       energyUsed: 0,
+      levelTime: 0,
       isSimulating: false,
       hasValidSolution: false,
       attemptCount: 0,
@@ -688,23 +699,32 @@ export const useGameEngine = (level) => {
       return
     }
     
-    // Останавливаем таймер
-    if (levelTimerRef.current) {
-      clearInterval(levelTimerRef.current)
-      levelTimerRef.current = null
-    }
-    
+    // Рассчитать финальное время
     const finalTime = levelStartTimeRef.current 
       ? Math.floor((Date.now() - levelStartTimeRef.current) / 1000)
-      : gameState.levelTime
+      : 0
       
-    // Обновляем состояние для завершения
-    setGameState(prev => ({
-      ...prev,
-      gameStatus: 'complete', // Теперь официально завершен
-      levelTime: finalTime,
-      showSuccessModal: true
-    }))
+    console.log('⏱️ TIMER: Level finished!')
+    console.log('⏱️ TIMER: Final time:', finalTime, 'seconds')
+    console.log('⏱️ TIMER: Current score:', gameState.currentScore)
+    console.log('⏱️ TIMER: Previous best score:', gameState.bestScore)
+    
+    // Обновляем состояние для завершения с правильной логикой рекордов
+    setGameState(prev => {
+      const isNewRecord = prev.currentScore > prev.bestScore
+      
+      console.log('⏱️ TIMER: Is new record?', isNewRecord)
+      console.log('⏱️ TIMER: Will save - bestScore:', isNewRecord ? prev.currentScore : prev.bestScore, 'bestTime:', isNewRecord ? finalTime : prev.bestTime)
+      
+      return {
+        ...prev,
+        gameStatus: 'complete', // Теперь официально завершен
+        levelTime: finalTime,
+        bestScore: isNewRecord ? prev.currentScore : prev.bestScore,
+        bestTime: isNewRecord ? finalTime : prev.bestTime,
+        showSuccessModal: true
+      }
+    })
     
     // Level finished by player
   }
@@ -716,10 +736,6 @@ export const useGameEngine = (level) => {
   
   const resetForNextLevel = () => {
     // Сброс состояния для следующего уровня
-    if (levelTimerRef.current) {
-      clearInterval(levelTimerRef.current)
-      levelTimerRef.current = null
-    }
     levelStartTimeRef.current = null
     
     setGameState(prev => ({
@@ -729,6 +745,7 @@ export const useGameEngine = (level) => {
       bestScore: 0,
       energyUsed: 0,
       levelTime: 0,
+      bestTime: 0,
       showSuccessModal: false,
       hasValidSolution: false,
       attemptCount: 0,

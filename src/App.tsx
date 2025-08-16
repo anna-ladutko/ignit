@@ -6,8 +6,9 @@ import { CircuitSimulator } from './game/circuitSimulator'
 import { loadLevel } from './utils/levelLoader'
 import { LevelLoader } from './components/LevelLoader'
 import { ThemeDemo } from './components/ThemeDemo'
+import { SemanticThemeDemo } from './components/SemanticThemeDemo'
 import { ModalDemo } from './components/ModalDemo'
-import { MainScreen, SettingsScreen, GameScreen } from './components/game'
+import { MainScreen, SettingsScreen, LevelsScreen, GameScreen } from './components/game'
 import { levelManager } from './services/LevelManager'
 import ColorPalette from './pages/ColorPalette'
 import type { Level } from './types'
@@ -111,8 +112,9 @@ function App() {
   const [gameState, setGameState] = useState(simulator.getGameState())
   const [simulationResult, setSimulationResult] = useState<any>(null)
   const [currentTab, setCurrentTab] = useState(0)
-  const [currentScreen, setCurrentScreen] = useState<'main' | 'settings' | 'game'>('main')
+  const [currentScreen, setCurrentScreen] = useState<'main' | 'settings' | 'levels' | 'game'>('main')
   const [testLevel, setTestLevel] = useState<Level | null>(null)
+  const [currentLevelOrder, setCurrentLevelOrder] = useState<number>(1)
 
   const loadTestLevel = async () => {
     try {
@@ -142,6 +144,57 @@ function App() {
     simulator.loadLevel(loadedLevel)
     setLevel(loadedLevel)
     setGameState(simulator.getGameState())
+  }
+
+  const handleNextLevel = async (score: number = 100) => {
+    console.log('🎮 APP: handleNextLevel вызвана, текущий уровень:', currentLevelOrder, 'score:', score)
+    
+    try {
+      // Отметить текущий уровень как завершенный с реальным score
+      levelManager.completeLevelWithScore(currentLevelOrder, score)
+      console.log('✅ APP: Уровень', currentLevelOrder, 'отмечен как завершенный с score', score)
+      
+      // Получить следующий уровень
+      const nextLevelOrder = currentLevelOrder + 1
+      console.log('🔄 APP: Пытаемся загрузить уровень', nextLevelOrder)
+      
+      const nextLevel = await levelManager.loadLevelByOrder(nextLevelOrder)
+      
+      if (nextLevel) {
+        console.log('✅ APP: Следующий уровень загружен:', nextLevel.metadata)
+        setTestLevel(nextLevel)
+        setCurrentLevelOrder(nextLevelOrder)
+      } else {
+        console.log('🏁 APP: Следующий уровень не найден - все уровни пройдены')
+        // Показать сообщение о завершении всех уровней
+        alert('Поздравляем! Все уровни пройдены!')
+        setCurrentScreen('main')
+      }
+    } catch (error) {
+      console.error('❌ APP: Ошибка загрузки следующего уровня:', error)
+      alert('Ошибка загрузки следующего уровня: ' + error.message)
+    }
+  }
+
+  const handleLevelSelect = async (levelNumber: number) => {
+    console.log('🎮 APP: handleLevelSelect вызвана для уровня:', levelNumber)
+    
+    try {
+      const selectedLevel = await levelManager.loadLevelByOrder(levelNumber)
+      
+      if (selectedLevel) {
+        console.log('✅ APP: Уровень', levelNumber, 'загружен для игры:', selectedLevel.metadata)
+        setTestLevel(selectedLevel)
+        setCurrentLevelOrder(levelNumber)
+        setCurrentScreen('game')
+      } else {
+        console.error('❌ APP: Не удалось загрузить уровень', levelNumber)
+        alert('Ошибка: уровень недоступен')
+      }
+    } catch (error) {
+      console.error('❌ APP: Ошибка загрузки уровня', levelNumber, ':', error)
+      alert('Ошибка загрузки уровня: ' + error.message)
+    }
   }
 
   const runSimulation = () => {
@@ -180,6 +233,7 @@ function App() {
                 if (firstLevel) {
                   console.log('✅ ДИАГНОСТИКА: Level-001 загружен успешно:', firstLevel.metadata)
                   setTestLevel(firstLevel)
+                  setCurrentLevelOrder(1)
                   setCurrentScreen('game')
                 } else {
                   console.error('❌ ДИАГНОСТИКА: levelManager.loadLevelByOrder(1) returned null')
@@ -205,6 +259,7 @@ function App() {
                 }
               }
             }}
+            onLevelsClick={() => setCurrentScreen('levels')}
             onSettingsClick={() => setCurrentScreen('settings')}
             onDevModeClick={() => setCurrentTab(1)}
           />
@@ -212,11 +267,17 @@ function App() {
           <SettingsScreen
             onBackClick={() => setCurrentScreen('main')}
           />
+        ) : currentScreen === 'levels' ? (
+          <LevelsScreen
+            onBackClick={() => setCurrentScreen('main')}
+            onSettingsClick={() => setCurrentScreen('settings')}
+            onLevelClick={handleLevelSelect}
+          />
         ) : currentScreen === 'game' && testLevel ? (
           <GameScreen
             level={testLevel}
             onBackToMain={() => setCurrentScreen('main')}
-            onNextLevel={() => console.log('Next level not implemented')}
+            onNextLevel={handleNextLevel}
           />
         ) : null}
       </Box>
@@ -265,6 +326,7 @@ function App() {
             <Tab label="Game" />
             <Tab label="Game Engine" />
             <Tab label="Theme Demo" />
+            <Tab label="NEW THEME" />
             <Tab label="Color Palette" />
             <Tab label="Modal Demo" />
           </Tabs>
@@ -363,9 +425,11 @@ function App() {
 
           {currentTab === 2 && <ThemeDemo />}
           
-          {currentTab === 3 && <ColorPalette />}
+          {currentTab === 3 && <SemanticThemeDemo />}
+          
+          {currentTab === 4 && <ColorPalette />}
 
-          {currentTab === 4 && <ModalDemo />}
+          {currentTab === 5 && <ModalDemo />}
         </Box>
       </Container>
     </Box>

@@ -1,4 +1,5 @@
 export { MainScreen } from './MainScreen'
 export { SettingsScreen } from './SettingsScreen'
+export { LevelsScreen } from './LevelsScreen'
 export { TopBar } from './TopBar'
 export { default as GameScreen } from './GameScreen'

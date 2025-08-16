@@ -2,119 +2,68 @@ import '@mui/material/styles'
 
 declare module '@mui/material/styles' {
   interface Palette {
-    // Цвета электронных компонентов
-    electronicsComponents: {
-      resistor: { main: string; active: string; disabled: string }
-      capacitor: { main: string; active: string; disabled: string }
-      inductor: { main: string; active: string; disabled: string }
-      led: { main: string; active: string; disabled: string }
-      source: { main: string; active: string; disabled: string }
-      switch: { main: string; active: string; disabled: string }
-      ground: { main: string; active: string; disabled: string }
-    }
+    // Новая семантическая система (только для обратной совместимости на время миграции)
+    semantic?: any
+    components?: any
     
-    // Цвета схемы
-    circuit: {
-      grid: string
-      gridActive: string
-      selection: string
-      selectionSecondary: string
-      boardBackground: string
-    }
-    
-    // Анимация симуляции
-    simulation: {
-      energyFlow: string
-      energyFlowHigh: string
-      energyFlowLow: string
-      highVoltage: string
-      lowVoltage: string
-      success: string
-      successGlow: string
-      error: string
-      errorGlow: string
-      warning: string
-    }
-    
-    // Существующие расширения из sudoku темы
-    gradients: {
-      backgroundPrimary: string
-      backgroundSecondary: string
-      backgroundAccent: string
-      backgroundTransparent: string
-      accentGradient: string
-    }
-    
-    customColors: {
-      uiTextSecondary: string
-      uiTextSecondaryDark: string
-      uiTextForWhiteBg: string
-      uiTextLight: string
-      uiIcon: string
-      borderTransparent: string
-    }
-    
+    // Кастомные тени
     customShadows: {
       mainShadow: string
+    }
+    
+    // Временная обратная совместимость - будет удалена после рефакторинга всех компонентов
+    circuit?: {
+      boardBackground: string
+      selection: string
+      grid: string
+    }
+    
+    simulation?: {
+      energyFlow: string
+      success: string
+    }
+    
+    gradients?: {
+      accentGradient: string
+      backgroundPrimary: string
+    }
+    
+    customColors?: {
+      softShadow: string
     }
   }
 
   interface PaletteOptions {
-    electronicsComponents?: {
-      resistor?: { main?: string; active?: string; disabled?: string }
-      capacitor?: { main?: string; active?: string; disabled?: string }
-      inductor?: { main?: string; active?: string; disabled?: string }
-      led?: { main?: string; active?: string; disabled?: string }
-      source?: { main?: string; active?: string; disabled?: string }
-      switch?: { main?: string; active?: string; disabled?: string }
-      ground?: { main?: string; active?: string; disabled?: string }
-    }
-    
-    circuit?: {
-      grid?: string
-      gridActive?: string
-      selection?: string
-      selectionSecondary?: string
-      boardBackground?: string
-    }
-    
-    simulation?: {
-      energyFlow?: string
-      energyFlowHigh?: string
-      energyFlowLow?: string
-      highVoltage?: string
-      lowVoltage?: string
-      success?: string
-      successGlow?: string
-      error?: string
-      errorGlow?: string
-      warning?: string
-    }
-    
-    gradients?: {
-      backgroundPrimary?: string
-      backgroundSecondary?: string
-      backgroundAccent?: string
-      backgroundTransparent?: string
-      accentGradient?: string
-    }
-    
-    customColors?: {
-      uiTextSecondary?: string
-      uiTextSecondaryDark?: string
-      uiTextForWhiteBg?: string
-      uiTextLight?: string
-      uiIcon?: string
-      borderTransparent?: string
-    }
+    semantic?: any
+    components?: any
     
     customShadows?: {
       mainShadow?: string
     }
+    
+    circuit?: {
+      boardBackground?: string
+      selection?: string
+      grid?: string
+    }
+    
+    simulation?: {
+      energyFlow?: string
+      success?: string
+    }
+    
+    gradients?: {
+      accentGradient?: string
+      backgroundPrimary?: string
+    }
+    
+    customColors?: {
+      softShadow?: string
+    }
   }
 
   interface Theme {
-    // Мобильные размеры
+    // Мобильные размеры (актуальные)
     mobile: {
       touchTarget: number
       componentSize: number
@@ -126,7 +75,7 @@ declare module '@mui/material/styles' {
       animationDuration: number
     }
     
-    // Размеры компонентов
+    // Размеры компонентов (актуальные)
     componentSizes: {
       icon: {
         small: number
@@ -140,7 +89,7 @@ declare module '@mui/material/styles' {
       }
     }
     
-    // Электронные z-index слои
+    // Электронные z-index слои (актуальные)
     electronicZIndex: {
       background: number
       grid: number

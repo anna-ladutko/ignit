@@ -18,7 +18,7 @@ import { ConnectionIndicatorsLayer } from './GameCanvas/ConnectionIndicator'
 interface GameScreenProps {
   level: Level
   onBackToMain: () => void
-  onNextLevel?: () => void
+  onNextLevel?: (score: number) => void
 }
 
 export const GameScreen: React.FC<GameScreenProps> = ({
@@ -54,8 +54,9 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   // Обработчики Success Modal
   const handleNextLevel = () => {
     if (_onNextLevel) {
+      const finalScore = gameState.bestScore || gameState.currentScore || 0
       actions.resetForNextLevel() // Сначала сбрасываем состояние
-      _onNextLevel() // Потом переходим к следующему уровню
+      _onNextLevel(finalScore) // Потом переходим к следующему уровню с реальным score
     } else {
       console.warn('GameScreen: onNextLevel callback не предоставлен')
     }

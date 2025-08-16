@@ -9,6 +9,7 @@ interface MainScreenProps {
   playerName?: string
   levelsCompleted?: number
   onPlayClick?: () => void
+  onLevelsClick?: () => void
   onSettingsClick: () => void
   onDevModeClick?: () => void
 }
@@ -17,6 +18,7 @@ export const MainScreen: React.FC<MainScreenProps> = ({
   playerName = "Hello Stranger",
   levelsCompleted = 0,
   onPlayClick,
+  onLevelsClick,
   onSettingsClick,
   onDevModeClick,
 }) => {
@@ -116,6 +118,33 @@ export const MainScreen: React.FC<MainScreenProps> = ({
             {onPlayClick ? 'Play' : 'Coming Soon'}
           </TouchButton>
         </motion.div>
+
+        {/* Levels Button */}
+        {onLevelsClick && (
+          <motion.div
+            initial={{ y: 30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.8, ease: 'easeOut' }}
+            style={{ width: '100%', maxWidth: '280px' }}
+          >
+            <TouchButton
+              variant="secondary"
+              size="large"
+              fullWidth
+              onClick={onLevelsClick}
+              sx={{
+                py: theme.spacing(1.5),
+                fontSize: '18px',
+                fontWeight: 600,
+                letterSpacing: '0.05em',
+                textTransform: 'uppercase',
+                mt: 2,
+              }}
+            >
+              Levels
+            </TouchButton>
+          </motion.div>
+        )}
 
         {/* Status Message */}
         {!onPlayClick && (

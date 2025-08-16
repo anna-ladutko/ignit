@@ -22,10 +22,10 @@ export const TopBar: React.FC<TopBarProps> = ({
         justifyContent: 'space-between',
         alignItems: 'center',
         p: theme.spacing(2),
-        background: theme.palette.circuit.boardBackground,
+        background: theme.palette.background.paper,
         borderRadius: "20px !important", // Принудительно 20px для панели
         mb: theme.spacing(3),
-        boxShadow: theme.palette.customShadows.softShadow,
+        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
       }}
     >
       {/* Left side - Player info */}
