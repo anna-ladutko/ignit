@@ -7,6 +7,7 @@ import {
 } from '@mui/icons-material'
 import { motion } from 'framer-motion'
 import { TouchButton } from '../../../ui'
+import { GameSounds } from '../../../../utils/gameAudio'
 
 interface GameControlsProps {
   gameStatus: 'loading' | 'playing' | 'complete' | 'failed'
@@ -65,6 +66,12 @@ export const GameControls: React.FC<GameControlsProps> = ({
 
   const simulateProps = getSimulateButtonProps()
 
+  // Handle simulate button click with sound
+  const handleSimulateClick = () => {
+    GameSounds.simulate()
+    onSimulate()
+  }
+
   return (
     <motion.div
       initial={{ y: 20, opacity: 0 }}
@@ -91,7 +98,7 @@ export const GameControls: React.FC<GameControlsProps> = ({
             variant={simulateProps.variant}
             size="large"
             disabled={simulateProps.disabled}
-            onClick={onSimulate}
+            onClick={handleSimulateClick}
             startIcon={<PlayIcon />}
             sx={{
               minWidth: 140,

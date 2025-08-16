@@ -6,12 +6,16 @@ interface TopBarProps {
   playerName: string
   levelsCompleted: number
   onSettingsClick: () => void
+  transparent?: boolean
+  noShadow?: boolean
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
   playerName,
   levelsCompleted,
   onSettingsClick,
+  transparent = true,
+  noShadow = false,
 }) => {
   const theme = useTheme()
 
@@ -22,10 +26,10 @@ export const TopBar: React.FC<TopBarProps> = ({
         justifyContent: 'space-between',
         alignItems: 'center',
         p: theme.spacing(2),
-        background: theme.palette.background.paper,
+        background: transparent ? 'transparent' : theme.palette.background.paper,
         borderRadius: "20px !important", // Принудительно 20px для панели
         mb: theme.spacing(3),
-        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
+        boxShadow: noShadow ? 'none' : '0 4px 8px rgba(0, 0, 0, 0.3)',
       }}
     >
       {/* Left side - Player info */}
@@ -42,21 +46,13 @@ export const TopBar: React.FC<TopBarProps> = ({
       <IconButton
         onClick={onSettingsClick}
         sx={{
-          color: theme.palette.primary.main,
-          backgroundColor: `${theme.palette.primary.main}15`,
-          width: theme.mobile.touchTarget,
-          height: theme.mobile.touchTarget,
+          color: '#E5DFD1',
           '&:hover': {
-            backgroundColor: `${theme.palette.primary.main}25`,
-            transform: 'scale(1.05)',
+            backgroundColor: 'rgba(229, 223, 209, 0.1)',
           },
-          '&:active': {
-            transform: 'scale(0.95)',
-          },
-          transition: 'all 0.2s ease',
         }}
       >
-        <SettingsIcon />
+        <SettingsIcon fontSize="large" />
       </IconButton>
     </Box>
   )

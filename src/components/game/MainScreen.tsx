@@ -29,7 +29,7 @@ export const MainScreen: React.FC<MainScreenProps> = ({
       sx={{
         minHeight: '100vh',
         backgroundColor: 'background.default',
-        p: theme.spacing(2),
+        p: '20px',
         display: 'flex',
         flexDirection: 'column',
       }}
@@ -39,6 +39,7 @@ export const MainScreen: React.FC<MainScreenProps> = ({
         playerName={playerName}
         levelsCompleted={levelsCompleted}
         onSettingsClick={onSettingsClick}
+        noShadow={true}
       />
 
       {/* Main Content */}
@@ -52,28 +53,6 @@ export const MainScreen: React.FC<MainScreenProps> = ({
           gap: theme.spacing(4),
         }}
       >
-        {/* Game Title */}
-        <motion.div
-          initial={{ opacity: 0, y: -30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
-        >
-          <Typography variant="electronicTitle" sx={{ textAlign: 'center', mb: 2 }}>
-            IGNIT
-          </Typography>
-          <Typography
-            variant="circuitInfo"
-            sx={{
-              textAlign: 'center',
-              color: 'text.secondary',
-              fontSize: '16px',
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-            }}
-          >
-            Electronic Circuit Puzzle
-          </Typography>
-        </motion.div>
 
 
         {/* Play Button */}

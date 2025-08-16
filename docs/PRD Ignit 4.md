@@ -295,7 +295,73 @@ The collected data will power the `Analytics Widgets` available in the `Ignit Pr
     - **`Archetype Mastery`**: Analyzes player performance across different puzzle types.
 - **Reference:** See the `Analytics Specification: Ignit` document for detailed technical specifications.
 
-## **11. Level Design Framework**
+## **11. Audio System & Settings**
+
+### **11.1. Audio Architecture**
+
+The game implements a **centralized audio system** with user-controlled settings that persist across sessions.
+
+**Core Components:**
+- **Sound Settings Utility** (`utils/soundSettings.ts`): Centralized management of audio preferences
+- **Game Audio System** (`utils/gameAudio.ts`): Audio playback with automatic settings integration
+- **Settings Screen Integration**: User-facing toggle for audio control
+
+### **11.2. User Audio Controls**
+
+**Settings Interface:**
+- **Audio Toggle Switch**: Material-UI Switch component styled with Ignit theme colors
+- **Persistent Storage**: Settings saved to localStorage as `ignit-sound-enabled` key
+- **Real-time Updates**: Settings changes apply immediately without requiring app restart
+
+**User Experience:**
+- **Default State**: Audio enabled by default for new users
+- **Visual Feedback**: Clear switch state indication in Settings screen
+- **Accessibility**: Standard toggle interaction patterns for screen readers
+
+### **11.3. Technical Implementation**
+
+**Storage System:**
+```typescript
+// Settings persistence
+localStorage.setItem('ignit-sound-enabled', JSON.stringify(enabled))
+
+// Cross-component access
+const soundEnabled = getSoundEnabled()
+```
+
+**Audio Playback Integration:**
+```typescript
+// Automatic settings checking
+const playSound = (audioUrl: string, volume: number = 0.5): void => {
+  if (!getSoundEnabled()) return // Respects user preference
+  // Audio playback logic...
+}
+```
+
+**Available APIs:**
+- **React Hook**: `useSoundSettings()` for React components
+- **Vanilla JS**: `SoundSettings` object for non-React game logic
+- **Game Sounds**: Pre-configured sound effects library (`GameSounds`)
+
+### **11.4. Planned Audio Content**
+
+**UI Sound Effects:**
+- Button interactions (click, hover)
+- Menu transitions and navigation feedback
+
+**Gameplay Audio:**
+- Component placement and removal
+- Circuit completion notifications
+- Level completion celebration
+- Error and success feedback
+
+**Technical Requirements:**
+- **Format Support**: MP3 audio files for broad compatibility
+- **Volume Control**: Standardized volume levels (0.2-0.8 range)
+- **Performance**: Lazy loading and efficient audio management
+- **Platform Integration**: Respects system audio settings and hardware controls
+
+## **12. Level Design Framework**
 
 *(This section remains unchanged)*
 

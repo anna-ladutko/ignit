@@ -43,6 +43,28 @@
 - Component labels: Medium weight, uppercase
 - Button text: Bold, capitalize (not uppercase)
 
+### Icon Standards
+
+#### Settings Icon (⚙️)
+- **Standard style**: Material-UI `Settings` icon with `fontSize="large"`
+- **Color**: `#E5DFD1` (Creamy white from Ignit palette)
+- **Hover**: `backgroundColor: 'rgba(229, 223, 209, 0.1)'`
+- **Usage**: TopBar, LevelsScreen, all settings contexts
+- **No variants**: Always use this exact style - no background circles, no different colors
+
+#### Back Arrow (←)
+- **Standard style**: Material-UI `ArrowBack` icon with `fontSize="large"`
+- **Color**: `#E5DFD1` (Creamy white from Ignit palette)  
+- **Hover**: `backgroundColor: 'rgba(229, 223, 209, 0.1)'`
+- **Usage**: All navigation contexts (TopGameBar, SettingsScreen, etc.)
+- **No variants**: Always use this exact style - no background circles, no different colors
+
+#### Icon Implementation Rules
+- **Library**: Always use `@mui/icons-material`
+- **Size**: Use `fontSize="large"` for all navigation icons
+- **Consistency**: All icons follow the same hover and color pattern
+- **No customization**: Do not create custom background styles for standard navigation icons
+
 ## Design Philosophy
 
 This design system prioritizes:

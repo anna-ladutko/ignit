@@ -42,17 +42,14 @@ export const TopGameBar: React.FC<TopGameBarProps> = ({
         <IconButton
           onClick={onBackClick}
           sx={{
-            color: theme.palette.primary.main,
-            backgroundColor: `${theme.palette.primary.main}15`,
-            width: theme.mobile.touchTarget,
-            height: theme.mobile.touchTarget,
+            color: '#E5DFD1',
             mr: theme.spacing(1.5),
             '&:hover': {
-              backgroundColor: `${theme.palette.primary.main}25`,
+              backgroundColor: 'rgba(229, 223, 209, 0.1)',
             },
           }}
         >
-          <ArrowBackIcon />
+          <ArrowBackIcon fontSize="large" />
         </IconButton>
 
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>

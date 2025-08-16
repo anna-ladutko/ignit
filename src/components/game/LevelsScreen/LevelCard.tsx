@@ -41,7 +41,7 @@ export const LevelCard: React.FC<LevelCardProps> = ({
       case 'passed':
         return {
           backgroundColor: 'transparent',
-          border: '1px solid rgba(52, 54, 53, 0.4)', // #343635 (surface) opacity 0.4
+          border: '1px solid rgba(32, 34, 33, 0.7)', // #202221 (ignit coal) opacity 0.7
           showPlayIcon: false,
         }
       case 'completed':
@@ -68,7 +68,7 @@ export const LevelCard: React.FC<LevelCardProps> = ({
       sx={{
         width: '100%', // Заполняет колонку grid
         aspectRatio: '1', // Квадратная карточка
-        borderRadius: `${BORDER_RADIUS.PANEL}px !important`,
+        borderRadius: `${BORDER_RADIUS.PANEL} !important`,
         backgroundColor: cardStyles.backgroundColor,
         border: cardStyles.border,
         cursor: 'pointer',

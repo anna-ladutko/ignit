@@ -1,8 +1,9 @@
 import React from 'react'
-import { Box, Typography, IconButton, useTheme } from '@mui/material'
-import { ArrowBack as ArrowBackIcon } from '@mui/icons-material'
+import { Box, Typography, IconButton, useTheme, Switch, FormControlLabel } from '@mui/material'
+import { ArrowBack as ArrowBackIcon, VolumeUp, Email, Language, GitHub } from '@mui/icons-material'
 import { motion } from 'framer-motion'
-import { MobilePanel } from '../ui'
+import { MobilePanel, TouchButton } from '../ui'
+import { getSoundEnabled, setSoundEnabled } from '../../utils/soundSettings'
 
 interface SettingsScreenProps {
   onBackClick: () => void
@@ -12,6 +13,18 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   onBackClick,
 }) => {
   const theme = useTheme()
+  const [soundEnabled, setSoundEnabledState] = React.useState(getSoundEnabled())
+
+  // Handle sound toggle using utility
+  const handleSoundToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = event.target.checked
+    setSoundEnabled(newValue)
+    setSoundEnabledState(newValue)
+  }
+
+  const handleLinkClick = (url: string) => {
+    window.open(url, '_blank')
+  }
 
   return (
     <Box
@@ -27,30 +40,21 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
         sx={{
           display: 'flex',
           alignItems: 'center',
-          p: theme.spacing(2),
-          background: theme.palette.circuit.boardBackground,
-          boxShadow: theme.palette.customShadows.softShadow,
+          p: '20px',
+          background: 'transparent',
         }}
       >
         <IconButton
           onClick={onBackClick}
           sx={{
-            color: theme.palette.primary.main,
-            backgroundColor: `${theme.palette.primary.main}15`,
-            width: theme.mobile.touchTarget,
-            height: theme.mobile.touchTarget,
+            color: '#E5DFD1',
             mr: theme.spacing(2),
             '&:hover': {
-              backgroundColor: `${theme.palette.primary.main}25`,
-              transform: 'scale(1.05)',
+              backgroundColor: 'rgba(229, 223, 209, 0.1)',
             },
-            '&:active': {
-              transform: 'scale(0.95)',
-            },
-            transition: 'all 0.2s ease',
           }}
         >
-          <ArrowBackIcon />
+          <ArrowBackIcon fontSize="large" />
         </IconButton>
 
         <Typography variant="electronicTitle" sx={{ fontSize: '24px' }}>
@@ -59,52 +63,114 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
       </Box>
 
       {/* Settings Content */}
-      <Box sx={{ flex: 1, p: theme.spacing(2) }}>
+      <Box 
+        sx={{ 
+          flex: 1, 
+          p: '20px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '20px',
+        }}
+      >
+        {/* Audio Settings Panel */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <MobilePanel variant="primary" sx={{ textAlign: 'center', py: 4 }}>
-            <Box
-              sx={{
-                color: theme.palette.primary.main,
-                fontSize: '64px',
-                mb: 2,
-              }}
-            >
-              ⚙️
+          <MobilePanel variant="primary">
+            <Box sx={{ p: '20px' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                <VolumeUp sx={{ color: '#D84205', fontSize: '28px', mr: 2 }} />
+                <Typography variant="componentLabel" sx={{ fontSize: '18px' }}>
+                  AUDIO SETTINGS
+                </Typography>
+              </Box>
+              
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={soundEnabled}
+                    onChange={handleSoundToggle}
+                    sx={{
+                      '& .MuiSwitch-switchBase.Mui-checked': {
+                        color: '#D84205',
+                      },
+                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                        backgroundColor: '#D84205',
+                      },
+                      '& .MuiSwitch-track': {
+                        backgroundColor: '#343635',
+                      },
+                    }}
+                  />
+                }
+                label={
+                  <Typography variant="body1" sx={{ color: '#E5DFD1', fontSize: '16px' }}>
+                    Enable Sound Effects
+                  </Typography>
+                }
+                sx={{ ml: 0 }}
+              />
             </Box>
-            <Typography variant="componentLabel" sx={{ fontSize: '18px', mb: 2 }}>
-              Settings
-            </Typography>
-            <Typography
-              variant="circuitInfo"
-              sx={{
-                color: 'text.secondary',
-                opacity: 0.8,
-              }}
-            >
-              Settings functionality will be implemented here.
-              <br />
-              This could include:
-            </Typography>
-            <Box sx={{ mt: 3, textAlign: 'left', maxWidth: '300px', mx: 'auto' }}>
-              <Typography variant="circuitInfo" sx={{ mb: 1, opacity: 0.7 }}>
-                • Sound & Music settings
-              </Typography>
-              <Typography variant="circuitInfo" sx={{ mb: 1, opacity: 0.7 }}>
-                • Display preferences
-              </Typography>
-              <Typography variant="circuitInfo" sx={{ mb: 1, opacity: 0.7 }}>
-                • Difficulty options
-              </Typography>
-              <Typography variant="circuitInfo" sx={{ mb: 1, opacity: 0.7 }}>
-                • Account management
-              </Typography>
-              <Typography variant="circuitInfo" sx={{ mb: 1, opacity: 0.7 }}>
-                • About & Help
-              </Typography>
+          </MobilePanel>
+        </motion.div>
+
+        {/* Links & Contacts Panel */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <MobilePanel variant="primary">
+            <Box sx={{ p: '20px' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                <Language sx={{ color: '#D84205', fontSize: '28px', mr: 2 }} />
+                <Typography variant="componentLabel" sx={{ fontSize: '18px' }}>
+                  LINKS & CONTACTS
+                </Typography>
+              </Box>
+              
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <TouchButton
+                  variant="accent"
+                  fullWidth
+                  onClick={() => handleLinkClick('mailto:support@ignit-game.com')}
+                  sx={{
+                    justifyContent: 'flex-start',
+                    pl: 2,
+                  }}
+                >
+                  <Email sx={{ mr: 2 }} />
+                  Contact Support
+                </TouchButton>
+                
+                <TouchButton
+                  variant="accent"
+                  fullWidth
+                  onClick={() => handleLinkClick('https://ignit-game.com')}
+                  sx={{
+                    justifyContent: 'flex-start',
+                    pl: 2,
+                  }}
+                >
+                  <Language sx={{ mr: 2 }} />
+                  Visit Website
+                </TouchButton>
+                
+                <TouchButton
+                  variant="accent"
+                  fullWidth
+                  onClick={() => handleLinkClick('https://github.com/ignit-game')}
+                  sx={{
+                    justifyContent: 'flex-start',
+                    pl: 2,
+                  }}
+                >
+                  <GitHub sx={{ mr: 2 }} />
+                  GitHub Repository
+                </TouchButton>
+              </Box>
             </Box>
           </MobilePanel>
         </motion.div>
@@ -113,9 +179,9 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
         >
-          <Box sx={{ mt: 4, textAlign: 'center' }}>
+          <Box sx={{ mt: 2, textAlign: 'center' }}>
             <Typography
               variant="componentValue"
               sx={{
