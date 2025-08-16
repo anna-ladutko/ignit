@@ -13,6 +13,9 @@
 4. [Паттерны и решения](#паттерны-и-решения)
 5. [Best Practices](#best-practices)
 6. [Альтернативы и trade-offs](#альтернативы-и-trade-offs)
+7. [Система управления уровнями](#система-управления-уровнями)
+8. [Система навигации и экранов](#система-навигации-и-экранов)
+9. [Производительность и оптимизация](#производительность-и-оптимизация)
 
 ---
 
@@ -613,6 +616,268 @@ const useGameEngine = (level) => {
 - ❌ НЕ использовать `theme.mobile.cornerRadius` 
 - ✅ Использовать константы из `src/constants/design.ts`
 - ✅ `styleOverrides` вместо `variants` для MUI
+
+---
+
+## 🗂️ Система управления уровнями
+
+### LevelManager - Центральная система управления контентом
+
+```typescript
+// src/services/LevelManager.ts
+export class LevelManager {
+  private playerProgress: PlayerProgress
+  private loadedLevels: Map<number, Level> = new Map()
+  
+  constructor() {
+    this.playerProgress = this.loadPlayerProgress()
+  }
+  
+  // Динамическая загрузка уровней из JSON
+  async loadLevelByOrder(levelOrder: number): Promise<Level | null>
+  
+  // Управление прогрессией игрока
+  completeLevelWithScore(levelOrder: number, score: number): void
+  getNextAvailableLevel(completedLevelOrder?: number): number | null
+  
+  // Персистентность данных
+  private loadPlayerProgress(): PlayerProgress
+  private savePlayerProgress(): void
+}
+```
+
+### Принципы архитектуры LevelManager
+
+**Кэширование и производительность:**
+- ✅ Map<number, Level> для кэширования загруженных уровней
+- ✅ Проверка кэша перед fetch запросами
+- ✅ Детальное логирование для отладки загрузки
+
+**Система прогрессии:**
+- ✅ Free Progression - нелинейная прогрессия с replay возможностями
+- ✅ Level Registry автогенерируемый из Prometheus Studio
+- ✅ Unlocking logic основанная на completedLevels и totalScore
+
+**Персистентность:**
+- ✅ localStorage для сохранения прогресса игрока
+- ✅ Graceful fallback при ошибках чтения
+- ✅ Автоматическое сохранение при изменениях прогресса
+
+### Level Registry System
+
+```typescript
+// src/levels/level-registry.ts (автогенерируемый)
+export interface LevelRegistryEntry {
+  id: number
+  filename: string  // 'level-001.json'
+  displayName: string
+  description: string
+  unlockRequirements: {
+    completedLevels: number[]
+    minScore: number
+  }
+}
+
+export const LEVEL_REGISTRY: LevelRegistryEntry[] = [
+  // Автоматически генерируется Prometheus Studio
+]
+```
+
+**Ключевые функции:**
+- `getLevelByOrder(order: number)` - поиск уровня по порядку
+- `getNextLevel(currentOrder: number)` - следующий уровень в последовательности  
+- `isLevelUnlocked(levelOrder, completedLevels, playerScore)` - проверка доступности
+- `getLevelPath(levelOrder: number)` - путь к JSON файлу уровня
+
+---
+
+## 🖥️ Система навигации и экранов
+
+### Screen Architecture
+
+Приложение использует **четырехэкранную навигационную архитектуру** с четким разделением ответственности:
+
+```typescript
+// src/App.tsx - центральный роутер
+const [currentScreen, setCurrentScreen] = useState<'main' | 'settings' | 'levels' | 'game'>('main')
+
+// Навигационные экраны
+- MainScreen     // Входная точка, Play кнопка
+- LevelsScreen   // Сетка уровней для выбора
+- GameScreen     // Активный геймплей
+- SettingsScreen // Настройки игры
+```
+
+### MainScreen - Entry Point
+
+```tsx
+// src/components/game/MainScreen.tsx
+export const MainScreen = ({ onPlayClick, onLevelsClick, onSettingsClick }) => {
+  // Фокус на primary action - Play кнопке
+  // Загружает playerProgress.currentLevel (не hardcoded level-001)
+}
+```
+
+**Ответственности:**
+- ✅ Primary CTA для продолжения прогрессии
+- ✅ Быстрый доступ к level selection и settings
+- ✅ Clean, uncluttered design для новых пользователей
+
+### LevelsScreen - Free Progression Interface
+
+```tsx
+// src/components/game/LevelsScreen/
+├── LevelsScreen.tsx    // Контейнер с header и background
+├── LevelGrid.tsx       // 3-колоночная адаптивная сетка  
+└── LevelCard.tsx       // Карточки уровней с 3 состояниями
+```
+
+**LevelCard States:**
+- **Current:** `backgroundColor: '#D84205'` с play иконкой (▶)
+- **Passed:** `transparent background` с серой рамкой + статистика
+- **Completed:** `темный фон` с белым текстом + статистика
+
+**Grid Layout Pattern:**
+```css
+/* 3-колоночная responsive grid */
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 16px;
+padding: 0 20px; /* 125% от gap размера */
+
+/* Square cards с aspect-ratio */
+aspect-ratio: 1;
+border-radius: 20px !important; /* Фиксированное значение */
+```
+
+### GameScreen - Hybrid Architecture Integration
+
+```tsx
+// src/components/game/GameScreen/index.tsx
+export const GameScreen = ({ level, onBackToMain, onNextLevel }) => {
+  const { gameState, initializeGameEngine } = useGameEngine(level)
+  
+  // Callback ref для правильной инициализации GameEngine
+  const canvasRef = useCallback((element) => {
+    if (element) initializeGameEngine(element)
+  }, [initializeGameEngine])
+  
+  return (
+    <Box>
+      <TopGameBar {...gameState} />
+      <div ref={canvasRef} /> {/* GameEngine mount point */}
+      <ComponentPalette {...gameState} />
+      <GameControls {...gameState} />
+    </Box>
+  )
+}
+```
+
+### Navigation Flow Patterns
+
+**Level Completion Flow:**
+```typescript
+// После завершения уровня
+const handleNextLevel = async (score: number) => {
+  const currentLevelOrder = testLevel.registryOrder || 1
+  
+  // 1. Отметить текущий уровень как завершенный
+  levelManager.completeLevelWithScore(currentLevelOrder, score)
+  
+  // 2. Найти следующий доступный уровень  
+  const nextLevelOrder = levelManager.getNextAvailableLevel(currentLevelOrder)
+  
+  // 3. Загрузить следующий уровень или показать завершение
+  if (nextLevelOrder) {
+    const nextLevel = await levelManager.loadLevelByOrder(nextLevelOrder)
+    setTestLevel(nextLevel)
+  } else {
+    alert('Поздравляем! Все уровни пройдены!')
+    setCurrentScreen('main')
+  }
+}
+```
+
+---
+
+## ⚡ Производительность и оптимизация
+
+### Timer System - Zero Performance Impact
+
+**Проблема:** Live timers обновляющиеся каждую секунду создают ненужные re-renders и ухудшают производительность.
+
+**Решение:** Lazy Timer Calculation
+
+```javascript
+// src/hooks/useGameEngine.js
+const levelStartTimeRef = useRef(null)
+
+// Запуск таймера (без live updates)
+const initializeGameEngine = (canvasElement) => {
+  levelStartTimeRef.current = Date.now()  // Один capture timestamp
+  // ... остальная инициализация
+}
+
+// Расчет времени ТОЛЬКО при завершении
+const finishLevel = () => {
+  const finalTime = levelStartTimeRef.current 
+    ? Math.floor((Date.now() - levelStartTimeRef.current) / 1000) : 0
+    
+  // Linked bestTime/bestScore logic
+  const isNewRecord = prev.currentScore > prev.bestScore
+  setGameState(prev => ({
+    ...prev,
+    levelTime: finalTime,
+    bestScore: isNewRecord ? prev.currentScore : prev.bestScore,
+    bestTime: isNewRecord ? finalTime : prev.bestTime,
+  }))
+}
+```
+
+**Benefits:**
+- ✅ Нет performance impact во время геймплея
+- ✅ Точная интеграция с scoring system
+- ✅ Linked record tracking (bestScore + bestTime)
+
+### Level Caching Strategy
+
+```typescript
+// LevelManager.ts - Intelligent caching
+private loadedLevels: Map<number, Level> = new Map()
+
+async loadLevelByOrder(levelOrder: number): Promise<Level | null> {
+  // 1. Проверка кэша
+  if (this.loadedLevels.has(levelOrder)) {
+    return this.loadedLevels.get(levelOrder)!
+  }
+  
+  // 2. Fetch только если нет в кэше
+  const response = await fetch(`/levels/level-${levelOrder.toString().padStart(3, '0')}.json`)
+  const levelData = await response.json()
+  const level = await loadLevel(levelData)
+  
+  // 3. Кэширование результата
+  this.loadedLevels.set(levelOrder, level)
+  return level
+}
+```
+
+### Border Radius Performance Issue
+
+**⚠️ КРИТИЧЕСКАЯ ПРОБЛЕМА:** Theme values превращаются в гигантские размеры
+
+```typescript
+// ❌ ПРОБЛЕМА
+borderRadius: theme.mobile.cornerRadius // 20px → 400px в браузере
+
+// ✅ РЕШЕНИЕ  
+borderRadius: `${BORDER_RADIUS.PANEL}px !important` // Принудительно 20px
+```
+
+**Архитектурное решение:**
+- Constants файл: `src/constants/design.ts`
+- `styleOverrides` вместо `variants` для MUI компонентов
+- `!important` для критических border-radius значений
 
 ---
 

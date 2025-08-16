@@ -114,7 +114,6 @@ function App() {
   const [currentTab, setCurrentTab] = useState(0)
   const [currentScreen, setCurrentScreen] = useState<'main' | 'settings' | 'levels' | 'game'>('main')
   const [testLevel, setTestLevel] = useState<Level | null>(null)
-  const [currentLevelOrder, setCurrentLevelOrder] = useState<number>(1)
 
   const loadTestLevel = async () => {
     try {
@@ -147,6 +146,10 @@ function App() {
   }
 
   const handleNextLevel = async (score: number = 100) => {
+    if (!testLevel) return
+    
+    // Получить номер текущего играемого уровня
+    const currentLevelOrder = testLevel.registryOrder || 1
     console.log('🎮 APP: handleNextLevel вызвана, текущий уровень:', currentLevelOrder, 'score:', score)
     
     try {
@@ -154,19 +157,22 @@ function App() {
       levelManager.completeLevelWithScore(currentLevelOrder, score)
       console.log('✅ APP: Уровень', currentLevelOrder, 'отмечен как завершенный с score', score)
       
-      // Получить следующий уровень
-      const nextLevelOrder = currentLevelOrder + 1
-      console.log('🔄 APP: Пытаемся загрузить уровень', nextLevelOrder)
+      // Получить следующий доступный уровень через LevelManager
+      const nextLevelOrder = levelManager.getNextAvailableLevel(currentLevelOrder)
+      console.log('🔄 APP: LevelManager предлагает следующий уровень:', nextLevelOrder)
       
-      const nextLevel = await levelManager.loadLevelByOrder(nextLevelOrder)
-      
-      if (nextLevel) {
-        console.log('✅ APP: Следующий уровень загружен:', nextLevel.metadata)
-        setTestLevel(nextLevel)
-        setCurrentLevelOrder(nextLevelOrder)
+      if (nextLevelOrder) {
+        const nextLevel = await levelManager.loadLevelByOrder(nextLevelOrder)
+        
+        if (nextLevel) {
+          console.log('✅ APP: Следующий уровень загружен:', nextLevel.metadata)
+          setTestLevel(nextLevel)
+        } else {
+          console.error('❌ APP: Не удалось загрузить уровень', nextLevelOrder)
+          alert('Ошибка загрузки следующего уровня')
+        }
       } else {
         console.log('🏁 APP: Следующий уровень не найден - все уровни пройдены')
-        // Показать сообщение о завершении всех уровней
         alert('Поздравляем! Все уровни пройдены!')
         setCurrentScreen('main')
       }
@@ -185,7 +191,6 @@ function App() {
       if (selectedLevel) {
         console.log('✅ APP: Уровень', levelNumber, 'загружен для игры:', selectedLevel.metadata)
         setTestLevel(selectedLevel)
-        setCurrentLevelOrder(levelNumber)
         setCurrentScreen('game')
       } else {
         console.error('❌ APP: Не удалось загрузить уровень', levelNumber)
@@ -224,38 +229,48 @@ function App() {
             playerName="Hello Stranger"
             levelsCompleted={7}
             onPlayClick={async () => {
-              console.log('🎮 ДИАГНОСТИКА: Запуск игры, начинаем загрузку уровня...')
+              console.log('🎮 APP: Play button clicked, loading current progression level...')
               
               try {
-                console.log('🔄 ДИАГНОСТИКА: Пытаемся загрузить level-001 через levelManager...')
-                const firstLevel = await levelManager.loadLevelByOrder(1)
+                // Получить текущий уровень из прогрессии игрока
+                const playerProgress = levelManager.getPlayerProgress()
+                console.log('🔄 APP: Player progress:', playerProgress)
                 
-                if (firstLevel) {
-                  console.log('✅ ДИАГНОСТИКА: Level-001 загружен успешно:', firstLevel.metadata)
-                  setTestLevel(firstLevel)
-                  setCurrentLevelOrder(1)
+                const currentLevel = await levelManager.loadLevelByOrder(playerProgress.currentLevel)
+                
+                if (currentLevel) {
+                  console.log('✅ APP: Current level loaded successfully:', currentLevel.metadata)
+                  setTestLevel(currentLevel)
                   setCurrentScreen('game')
                 } else {
-                  console.error('❌ ДИАГНОСТИКА: levelManager.loadLevelByOrder(1) returned null')
-                  console.log('🔄 ДИАГНОСТИКА: Пытаемся загрузить sampleLevelData...')
-                  const loadedLevel = await loadLevel(sampleLevelData)
-                  console.log('✅ ДИАГНОСТИКА: sampleLevelData загружен:', loadedLevel.metadata)
-                  setTestLevel(loadedLevel)
-                  setCurrentScreen('game')
+                  console.error('❌ APP: Failed to load current level:', playerProgress.currentLevel)
+                  console.log('🔄 APP: Fallback to level 1...')
+                  const fallbackLevel = await levelManager.loadLevelByOrder(1)
+                  
+                  if (fallbackLevel) {
+                    console.log('✅ APP: Fallback level 1 loaded:', fallbackLevel.metadata)
+                    setTestLevel(fallbackLevel)
+                    setCurrentScreen('game')
+                  } else {
+                    console.log('🔄 APP: Final fallback to sample data...')
+                    const loadedLevel = await loadLevel(sampleLevelData)
+                    console.log('✅ APP: Sample data loaded:', loadedLevel.metadata)
+                    setTestLevel(loadedLevel)
+                    setCurrentScreen('game')
+                  }
                 }
               } catch (error) {
-                console.error('❌ ДИАГНОСТИКА: Ошибка загрузки level-001:', error)
-                console.error('❌ ДИАГНОСТИКА: Error details:', error.message, error.stack)
+                console.error('❌ APP: Error loading level:', error)
                 
                 try {
-                  console.log('🔄 ДИАГНОСТИКА: Fallback на sampleLevelData...')
+                  console.log('🔄 APP: Emergency fallback to sample data...')
                   const loadedLevel = await loadLevel(sampleLevelData)
-                  console.log('✅ ДИАГНОСТИКА: Fallback успешен:', loadedLevel.metadata)
+                  console.log('✅ APP: Emergency fallback successful:', loadedLevel.metadata)
                   setTestLevel(loadedLevel)
                   setCurrentScreen('game')
                 } catch (fallbackError) {
-                  console.error('❌ ДИАГНОСТИКА: Критическая ошибка - даже fallback не работает:', fallbackError)
-                  alert('Критическая ошибка загрузки уровня: ' + fallbackError.message)
+                  console.error('❌ APP: Critical error - emergency fallback failed:', fallbackError)
+                  alert('Critical error loading level: ' + fallbackError.message)
                 }
               }
             }}

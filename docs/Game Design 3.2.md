@@ -4,7 +4,7 @@
 **Date:** 15.08.2025
 **Owner:** Luminoa
 
-**Latest Update:** Added comprehensive technical implementation specification for energy calculation system, including detailed algorithms, formulas, and validation requirements. This update documents the complete energy distribution physics model and Sweet Spot efficiency rules as implemented in the production system.
+**Latest Update:** Added comprehensive technical implementation specification for energy calculation system, timer mechanics, level progression system, and navigation flow. This update documents the complete energy distribution physics model, Sweet Spot efficiency rules, non-performance-impacting timer system, and free progression mechanics as implemented in the production system.
 
 ## **1. Core Philosophy & Player Experience**
 
@@ -134,6 +134,65 @@ The gameplay is designed to give the player full control over their problem-solv
 - **The `Simulate` Button (Exploration Phase):** The player's primary tool for experimentation. It runs a simulation and provides immediate feedback on the outcome (e.g., current `Efficiency`), but **never** ends the level. The system tracks the `bestScore` achieved across all simulations.
 - **The `Finish Level` Button (Completion Phase):** This button becomes active only after the player achieves a `Minimal Pass` (fulfills the basic level objectives). Pressing it officially ends the level and displays the `Success Modal`, which shows the `bestScore` from the entire session.
 
+### **3.1. Timer System & Performance Optimization**
+
+The game includes a **non-performance-impacting timer system** that tracks level completion time without affecting gameplay smoothness:
+
+**Timer Implementation Principles:**
+- **No Live Updates:** Timer does not update during gameplay to prevent performance impact
+- **Lazy Calculation:** Time is calculated only when the level is completed using `Date.now()`
+- **Start Recording:** Timer starts when the level begins loading: `levelStartTimeRef.current = Date.now()`
+- **End Calculation:** Time is calculated in `finishLevel()`: `Math.floor((Date.now() - levelStartTimeRef.current) / 1000)`
+
+**bestTime Logic:**
+- **Linked to bestScore:** New personal best score automatically updates both `bestScore` and `bestTime`
+- **Time-Score Coupling:** If the current attempt doesn't beat the best score, the time is ignored (maintains previous `bestTime`)
+- **Single Record System:** One record tracks both the best efficiency and the time it was achieved
+
+**Example Implementation:**
+```javascript
+const finishLevel = () => {
+  const finalTime = levelStartTimeRef.current 
+    ? Math.floor((Date.now() - levelStartTimeRef.current) / 1000) : 0
+  
+  const isNewRecord = prev.currentScore > prev.bestScore
+  setGameState(prev => ({
+    ...prev,
+    levelTime: finalTime,
+    bestScore: isNewRecord ? prev.currentScore : prev.bestScore,
+    bestTime: isNewRecord ? finalTime : prev.bestTime,
+  }))
+}
+```
+
+### **3.2. Level Progression & Navigation System**
+
+The game implements a **Free Progression System** that allows players to replay any unlocked level while maintaining overall progression:
+
+**Navigation Screens:**
+- **MainScreen:** Entry point with Play button (loads current progression level)
+- **LevelsScreen:** Grid of available levels for selection and replay
+- **GameScreen:** Active gameplay with level completion and progression
+- **SettingsScreen:** Game configuration and preferences
+
+**Free Progression Principles:**
+- **Non-Linear Access:** Players can select any unlocked level from the Levels Screen
+- **Replay Capability:** Previously completed levels remain accessible for replay and improvement
+- **Progression Tracking:** `LevelManager` maintains player progress and unlocks new levels
+- **Current Level Logic:** "Play" button loads the next unfinished level in progression
+
+**Level Completion Flow:**
+1. Player completes level → `completeLevelWithScore()` marks level as finished
+2. System calculates next available level → `getNextAvailableLevel()`
+3. If next level exists → Load next level automatically
+4. If no next level → Show "All levels completed!" message
+5. Player can return to Levels Screen for replay or main menu
+
+**Level State Management:**
+- **Current:** Next level to be completed in progression (orange background, play icon)
+- **Passed:** Completed but sub-optimal performance (<85% efficiency, transparent background)
+- **Completed:** Optimal performance achieved (≥85% efficiency, dark background)
+
 ## **4. Level & Component Design**
 
 *(This section remains largely unchanged but is included for completeness.)*
@@ -178,6 +237,43 @@ Animation is a core feedback tool, not a decoration.
 
 - **`Simulate` Button:** This is the "test hypothesis" button. It should provide immediate feedback (e.g., show the `Efficiency` of the last run for a few seconds) and then reset, inviting further experimentation.
 - **`Finish Level` Button:** This button should be disabled (`greyed out`) by default. It becomes active and visually distinct only after the player achieves the `Minimal Pass` condition, clearly signaling that they now have the *option* to end the level.
+
+### **5.4. Levels Screen Design**
+
+The Levels Screen provides an overview of player progression and level selection:
+
+**Grid Layout:**
+- **3-Column Responsive Grid:** Adaptive layout that maintains 3 columns across different screen sizes
+- **Square Cards:** Each level card uses `aspect-ratio: 1` for consistent square appearance
+- **Visual Hierarchy:** Clear differentiation between current, passed, and completed levels
+
+**Level Card States:**
+- **Current Level:** Orange background (#D84205), white text, play icon (▶) in bottom-right
+- **Passed Level:** Transparent background, gray border, shows efficiency% and time
+- **Completed Level:** Dark semi-transparent background, shows efficiency% and time in white text
+
+**Level Card Content:**
+- **Level Number:** Displayed as zero-padded format (001, 002, etc.)
+- **Efficiency Percentage:** Shows best efficiency achieved (e.g., "88.6%")
+- **Completion Time:** Shows time in MM:SS format (e.g., "03:03")
+- **Visual Feedback:** Hover effects with `transform: scale(1.02)` and tap feedback
+
+**Navigation Flow:**
+- **Back Button:** Returns to MainScreen
+- **Settings Access:** Quick access to settings from levels overview
+- **Level Selection:** Tap any unlocked level to start playing immediately
+
+### **5.5. Timer Display & Statistics**
+
+**In-Game Timer Display:**
+- **No Live Timer:** Timer is not displayed during gameplay to avoid distraction
+- **Post-Completion Display:** Time is shown only in the success modal after level completion
+- **Time Format:** Displays in minutes:seconds format (MM:SS) for readability
+
+**Statistics Integration:**
+- **Level Cards:** Show both efficiency and time for completed levels
+- **Personal Records:** Clear indication when a new best time or score is achieved
+- **Progress Tracking:** Visual progression through efficiency and time improvements
 
 ---
 
@@ -299,3 +395,125 @@ abs(totalEnergyIn - totalEnergyOut) < 0.01
 
 **Test Case Reference:**
 The system has been validated against the worked example in Section 2.3.4, producing expected efficiency values of ~75.9% for the test circuit configuration.
+
+### **6.7. Level Management System**
+
+The game implements a comprehensive level management system for handling Prometheus-generated content:
+
+#### **LevelManager Architecture**
+```typescript
+// Core data structures
+interface PlayerProgress {
+  completedLevels: number[]     // List of completed level IDs
+  currentLevel: number         // Next level in progression sequence
+  totalScore: number          // Cumulative score across all levels
+}
+
+class LevelManager {
+  private playerProgress: PlayerProgress
+  private loadedLevels: Map<number, Level>  // Level caching system
+  
+  // Key methods
+  async loadLevelByOrder(levelOrder: number): Promise<Level | null>
+  completeLevelWithScore(levelOrder: number, score: number): void
+  getNextAvailableLevel(completedLevelOrder?: number): number | null
+}
+```
+
+#### **Level Loading & Caching**
+```javascript
+// Dynamic level loading from JSON files
+const levelPath = `/levels/level-${levelOrder.toString().padStart(3, '0')}.json`
+const response = await fetch(levelPath)
+const levelData = await response.json()
+const level = await loadLevel(levelData)
+
+// Level caching for performance
+this.loadedLevels.set(levelOrder, level)  // Cache loaded level
+return this.loadedLevels.get(levelOrder)  // Return cached version
+```
+
+#### **Progression Logic**
+```javascript
+// Free progression implementation
+getNextAvailableLevel(completedLevelOrder?: number): number | null {
+  const baseLevel = completedLevelOrder || this.playerProgress.currentLevel
+  const nextLevel = getNextLevel(baseLevel)
+  
+  if (nextLevel && isLevelUnlocked(nextLevel.id, completedLevels, totalScore)) {
+    return nextLevel.id
+  }
+  return null  // No more levels available
+}
+
+// Level completion handling
+completeLevelWithScore(levelOrder: number, score: number): void {
+  if (!this.playerProgress.completedLevels.includes(levelOrder)) {
+    this.playerProgress.completedLevels.push(levelOrder)
+  }
+  this.playerProgress.totalScore += score
+  
+  // Advance progression if this was the current level
+  if (levelOrder === this.playerProgress.currentLevel) {
+    const nextLevel = this.getNextAvailableLevel(levelOrder)
+    if (nextLevel) {
+      this.playerProgress.currentLevel = nextLevel
+    }
+  }
+  this.savePlayerProgress()  // Persist to localStorage
+}
+```
+
+#### **Persistence & Data Management**
+```javascript
+// localStorage integration
+private loadPlayerProgress(): PlayerProgress {
+  const saved = localStorage.getItem('ignit_player_progress')
+  return saved ? JSON.parse(saved) : {
+    completedLevels: [],
+    currentLevel: 1,
+    totalScore: 0
+  }
+}
+
+private savePlayerProgress(): void {
+  localStorage.setItem('ignit_player_progress', JSON.stringify(this.playerProgress))
+}
+```
+
+### **6.8. Timer Implementation Specification**
+
+The timer system is implemented to provide accurate time tracking without performance impact:
+
+#### **Timer Initialization**
+```javascript
+// Start timer when level loading begins
+const initializeGameEngine = (canvasElement) => {
+  levelStartTimeRef.current = Date.now()  // Capture start timestamp
+  // ... other initialization
+}
+```
+
+#### **Time Calculation**
+```javascript
+// Calculate final time only on level completion
+const finishLevel = () => {
+  const finalTime = levelStartTimeRef.current 
+    ? Math.floor((Date.now() - levelStartTimeRef.current) / 1000) : 0
+    
+  // Update state with linked bestTime/bestScore logic
+  const isNewRecord = currentScore > bestScore
+  setGameState(prev => ({
+    ...prev,
+    levelTime: finalTime,
+    bestScore: isNewRecord ? currentScore : prev.bestScore,
+    bestTime: isNewRecord ? finalTime : prev.bestTime,
+  }))
+}
+```
+
+#### **Performance Considerations**
+- **No setInterval or continuous updates**: Prevents performance degradation
+- **Single timestamp capture**: Minimal memory overhead
+- **Lazy calculation**: Time computed only when needed
+- **Atomic updates**: State changes happen together to prevent inconsistencies

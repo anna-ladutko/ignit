@@ -45,8 +45,9 @@ export class LevelManager {
     
     // Check if already loaded and cached
     if (this.loadedLevels.has(levelOrder)) {
-      console.log(`✅ LEVELMANAGER: Уровень ${levelOrder} найден в кэше`)
-      return this.loadedLevels.get(levelOrder)!;
+      const cachedLevel = this.loadedLevels.get(levelOrder)!;
+      console.log(`✅ LEVELMANAGER: Уровень ${levelOrder} найден в кэше. UUID: ${cachedLevel.metadata.level_id}`)
+      return cachedLevel;
     }
 
     // Check if level exists in registry
@@ -83,12 +84,13 @@ export class LevelManager {
 
       console.log(`🔄 LEVELMANAGER: Парсим JSON...`)
       const levelData = await response.json();
-      console.log(`✅ LEVELMANAGER: JSON распарсен. Metadata:`, levelData.metadata)
+      console.log(`✅ LEVELMANAGER: JSON распарсен. Уровень ${levelOrder} UUID:`, levelData.metadata.level_id)
+      console.log(`📄 LEVELMANAGER: Полные метаданные:`, levelData.metadata)
       
       // Use existing loadLevel utility to convert JSON to Level object
       console.log(`🔄 LEVELMANAGER: Конвертируем через loadLevel()...`)
       const level = await loadLevel(levelData);
-      console.log(`✅ LEVELMANAGER: loadLevel() выполнен успешно`)
+      console.log(`✅ LEVELMANAGER: loadLevel() выполнен успешно. UUID после конвертации:`, level.metadata.level_id)
       
       // Add game-specific metadata
       level.metadata = {
@@ -100,6 +102,9 @@ export class LevelManager {
 
       // Add registry order for UI display
       level.registryOrder = levelOrder;
+
+      console.log(`📝 LEVELMANAGER: Финальные метаданные уровня ${levelOrder}:`, level.metadata)
+      console.log(`💾 LEVELMANAGER: Кэшируем уровень ${levelOrder} с UUID ${level.metadata.level_id}`)
 
       // Cache the loaded level
       this.loadedLevels.set(levelOrder, level);
@@ -115,14 +120,27 @@ export class LevelManager {
   }
 
   /**
-   * Get the next available level
+   * Get the next available level (for completing the current level)
    */
-  getNextAvailableLevel(): number | null {
-    const currentLevel = this.playerProgress.currentLevel;
-    const nextLevel = getNextLevel(currentLevel);
+  getNextAvailableLevel(completedLevelOrder?: number): number | null {
+    // Если передан завершенный уровень, ищем следующий относительно него
+    // Иначе ищем относительно текущего уровня игрока
+    const baseLevel = completedLevelOrder || this.playerProgress.currentLevel;
+    console.log(`🔄 LEVELMANAGER: getNextAvailableLevel() ищет следующий после уровня ${baseLevel}`);
     
-    if (nextLevel && isLevelUnlocked(nextLevel.id, this.playerProgress.completedLevels, this.playerProgress.totalScore)) {
-      return nextLevel.id;
+    const nextLevel = getNextLevel(baseLevel);
+    console.log(`📋 LEVELMANAGER: getNextLevel(${baseLevel}) вернул:`, nextLevel);
+    
+    if (nextLevel) {
+      const isUnlocked = isLevelUnlocked(nextLevel.id, this.playerProgress.completedLevels, this.playerProgress.totalScore);
+      console.log(`🔓 LEVELMANAGER: Уровень ${nextLevel.id} разблокирован: ${isUnlocked}`);
+      
+      if (isUnlocked) {
+        console.log(`✅ LEVELMANAGER: Возвращаем следующий доступный уровень: ${nextLevel.id}`);
+        return nextLevel.id;
+      }
+    } else {
+      console.log(`🏁 LEVELMANAGER: Следующий уровень не найден - достигнут конец (всего уровней: ${TOTAL_LEVELS})`);
     }
     
     return null;
@@ -142,9 +160,12 @@ export class LevelManager {
 
     // Advance current level if this was the current level
     if (levelOrder === this.playerProgress.currentLevel) {
-      const nextLevel = this.getNextAvailableLevel();
+      const nextLevel = this.getNextAvailableLevel(levelOrder);
       if (nextLevel) {
         this.playerProgress.currentLevel = nextLevel;
+        console.log(`✅ LEVELMANAGER: Текущий уровень обновлен до ${nextLevel}`);
+      } else {
+        console.log(`🏁 LEVELMANAGER: Больше нет доступных уровней`);
       }
     }
 
@@ -183,6 +204,14 @@ export class LevelManager {
       totalScore: 0
     };
     this.savePlayerProgress();
+    this.loadedLevels.clear();
+  }
+
+  /**
+   * Clear level cache (for debugging)
+   */
+  clearCache(): void {
+    console.log(`🗑️ LEVELMANAGER: Очищаем кэш уровней (было кэшировано: ${this.loadedLevels.size} уровней)`);
     this.loadedLevels.clear();
   }
 
