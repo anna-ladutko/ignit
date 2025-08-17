@@ -35,20 +35,21 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
         flexDirection: 'column',
       }}
     >
-      {/* Top Bar with Back Button */}
+      {/* Header */}
       <Box
         sx={{
           display: 'flex',
+          justifyContent: 'space-between',
           alignItems: 'center',
-          p: '20px',
-          background: 'transparent',
+          padding: '16px 20px',
+          backgroundColor: 'transparent',
         }}
       >
+        {/* Back Button */}
         <IconButton
           onClick={onBackClick}
           sx={{
             color: '#E5DFD1',
-            mr: theme.spacing(2),
             '&:hover': {
               backgroundColor: 'rgba(229, 223, 209, 0.1)',
             },
@@ -57,9 +58,20 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           <ArrowBackIcon fontSize="large" />
         </IconButton>
 
-        <Typography variant="electronicTitle" sx={{ fontSize: '24px' }}>
+        {/* Settings Title */}
+        <Typography 
+          variant="electronicTitle" 
+          sx={{ 
+            fontSize: '24px',
+            color: '#E5DFD1',
+            fontWeight: 600,
+          }}
+        >
           SETTINGS
         </Typography>
+
+        {/* Empty space for balance */}
+        <Box sx={{ width: 48 }} />
       </Box>
 
       {/* Settings Content */}

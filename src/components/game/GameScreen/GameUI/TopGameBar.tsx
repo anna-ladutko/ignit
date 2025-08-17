@@ -28,10 +28,10 @@ export const TopGameBar: React.FC<TopGameBarProps> = ({
     <Box
       sx={{
         display: 'flex',
-        alignItems: 'center',
         justifyContent: 'space-between',
-        px: theme.spacing(2),
-        py: theme.spacing(1),
+        alignItems: 'center',
+        padding: '16px 20px',
+        backgroundColor: 'transparent',
         background: theme.palette.circuit.boardBackground,
         boxShadow: theme.palette.customShadows.softShadow,
         minHeight: theme.mobile.touchTarget,
@@ -43,7 +43,6 @@ export const TopGameBar: React.FC<TopGameBarProps> = ({
           onClick={onBackClick}
           sx={{
             color: '#E5DFD1',
-            mr: theme.spacing(1.5),
             '&:hover': {
               backgroundColor: 'rgba(229, 223, 209, 0.1)',
             },
@@ -52,7 +51,7 @@ export const TopGameBar: React.FC<TopGameBarProps> = ({
           <ArrowBackIcon fontSize="large" />
         </IconButton>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', ml: 1.5 }}>
           <Typography
             variant="componentLabel"
             sx={{

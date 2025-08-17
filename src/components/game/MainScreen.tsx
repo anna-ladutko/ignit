@@ -1,7 +1,7 @@
 import React from 'react'
-import { Box, Typography, useTheme } from '@mui/material'
+import { Box, Typography, IconButton, useTheme } from '@mui/material'
+import { Settings } from '@mui/icons-material'
 import { motion } from 'framer-motion'
-import { TopBar } from './TopBar'
 import { TouchButton } from '../ui'
 import { MobilePanel } from '../ui'
 
@@ -27,32 +27,114 @@ export const MainScreen: React.FC<MainScreenProps> = ({
   return (
     <Box
       sx={{
-        minHeight: '100vh',
-        backgroundColor: 'background.default',
-        p: '20px',
-        display: 'flex',
-        flexDirection: 'column',
+        width: '100vw',
+        height: '100vh',
+        position: 'relative',
+        overflow: 'hidden',
       }}
     >
-      {/* Top Bar */}
-      <TopBar
-        playerName={playerName}
-        levelsCompleted={levelsCompleted}
-        onSettingsClick={onSettingsClick}
-        noShadow={true}
-      />
-
-      {/* Main Content */}
+      {/* Fixed Background */}
       <Box
         sx={{
-          flex: 1,
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundImage: 'url(/theme-fire-bg1.webp)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          zIndex: -1,
+        }}
+      />
+
+      {/* Header */}
+      <Box
+        sx={{
           display: 'flex',
-          flexDirection: 'column',
+          justifyContent: 'space-between',
           alignItems: 'center',
-          justifyContent: 'center',
-          gap: theme.spacing(4),
+          padding: '16px 20px',
+          backgroundColor: 'transparent',
         }}
       >
+        {/* Player Info */}
+        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+          <Typography
+            variant="electronicTitle"
+            sx={{
+              fontSize: '18px',
+              fontWeight: 600,
+              color: '#E5DFD1',
+              lineHeight: 1,
+            }}
+          >
+            {playerName}
+          </Typography>
+          <Typography
+            variant="componentValue"
+            sx={{
+              fontSize: '12px',
+              color: '#E5DFD1',
+              opacity: 0.7,
+              lineHeight: 1,
+              mt: 0.25,
+            }}
+          >
+            {levelsCompleted} levels completed
+          </Typography>
+        </Box>
+
+        {/* Settings Button */}
+        <IconButton
+          onClick={onSettingsClick}
+          sx={{
+            color: '#E5DFD1',
+            '&:hover': {
+              backgroundColor: 'rgba(229, 223, 209, 0.1)',
+            },
+          }}
+        >
+          <Settings fontSize="large" />
+        </IconButton>
+      </Box>
+
+      {/* Scrollable Content */}
+      <Box
+        sx={{
+          height: 'calc(100vh - 80px)',
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          paddingTop: '20px',
+          // Custom scrollbar styles
+          '&::-webkit-scrollbar': {
+            width: '6px',
+          },
+          '&::-webkit-scrollbar-track': {
+            backgroundColor: 'transparent',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: 'rgba(229, 223, 209, 0.3)',
+            borderRadius: '3px',
+            '&:hover': {
+              backgroundColor: 'rgba(229, 223, 209, 0.5)',
+            },
+          },
+        }}
+      >
+        {/* Main Content */}
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: theme.spacing(4),
+            minHeight: 'calc(100vh - 120px)',
+            px: '20px',
+          }}
+        >
 
 
         {/* Play Button */}
@@ -175,6 +257,7 @@ export const MainScreen: React.FC<MainScreenProps> = ({
             </TouchButton>
           </motion.div>
         )}
+        </Box>
       </Box>
     </Box>
   )
