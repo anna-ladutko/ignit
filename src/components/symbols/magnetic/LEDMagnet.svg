@@ -1,17 +1,10 @@
 <svg width="100" height="40" viewBox="0 0 100 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Магнитные точки -->
-  <circle cx="10" cy="20" r="6" fill="currentColor"/>
-  <circle cx="90" cy="20" r="6" fill="currentColor"/>
-
-  <!-- Соединительные линии -->
-  <line x1="10" y1="20" x2="35" y2="20" stroke="currentColor" stroke-width="2"/>
-  <line x1="65" y1="20" x2="90" y2="20" stroke="currentColor" stroke-width="2"/>
-
-  <!-- LED диод - треугольник с линией -->
-  <path d="M35 10 L35 30 L65 20 Z" stroke="currentColor" stroke-width="2" fill="none"/>
-  <line x1="65" y1="10" x2="65" y2="30" stroke="currentColor" stroke-width="2"/>
-
-  <!-- Стрелки излучения -->
-  <path d="M45 8 L48 5 M46 5 L48 5 L48 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
-  <path d="M52 12 L55 9 M53 9 L55 9 L55 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+<circle cx="12" cy="20" r="2" fill="currentColor"/>
+<circle cx="86" cy="20" r="2" fill="currentColor"/>
+<path d="M39.5 21C40.0523 21 40.5 20.5523 40.5 20C40.5 19.4477 40.0523 19 39.5 19V20V21ZM60 19C59.4477 19 59 19.4477 59 20C59 20.5523 59.4477 21 60 21V20V19ZM13 20V21H39.5V20V19H13V20ZM60 20V21H87V20V19H60V20Z" fill="currentColor"/>
+<path d="M40 11V29.5" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+<path d="M40 11L60 20L40 30" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+<path d="M60 11V29.5" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+<path d="M45.825 9.53009L48.3607 4.09225M48.3607 4.09225L45.2802 5.96593M48.3607 4.09225L48.9055 7.65641" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+<path d="M52.1692 12.4884L54.7049 7.05056M54.7049 7.05056L51.6245 8.92425M54.7049 7.05056L55.2497 10.6147" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
 </svg>

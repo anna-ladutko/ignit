@@ -18,22 +18,23 @@ export const TouchButton: React.FC<TouchButtonProps> = ({
   const theme = useTheme()
 
   const getSizeStyles = () => {
+    const touchTarget = theme.mobile?.touchTarget || 48 // Fallback to 48px
     switch (size) {
       case 'small':
         return {
-          minHeight: theme.mobile.touchTarget * 0.8,
+          minHeight: touchTarget * 0.8,
           fontSize: '14px',
           px: theme.spacing(2),
         }
       case 'large':
         return {
-          minHeight: theme.mobile.touchTarget * 1.2,
+          minHeight: touchTarget * 1.2,
           fontSize: '18px',
           px: theme.spacing(4),
         }
       default:
         return {
-          minHeight: theme.mobile.touchTarget,
+          minHeight: touchTarget,
           fontSize: '16px',
           px: theme.spacing(3),
         }
@@ -46,19 +47,19 @@ export const TouchButton: React.FC<TouchButtonProps> = ({
       fontWeight: 600,
       textTransform: 'capitalize' as const,
       transition: 'all 0.2s ease',
-      boxShadow: theme.palette.customShadows.componentShadow,
+      boxShadow: theme.palette.customShadows?.componentShadow || '0 2px 8px rgba(0,0,0,0.1)',
     }
 
     switch (variant) {
       case 'accent':
         return {
           ...baseStyles,
-          background: theme.palette.gradients.accentGradient,
+          background: theme.palette.gradients?.accentGradient || theme.palette.primary.main,
           color: theme.palette.text.primary,
           border: 'none',
           '&:hover': {
-            background: theme.palette.gradients.accentGradient,
-            boxShadow: theme.palette.customShadows.glow,
+            background: theme.palette.gradients?.accentGradient || theme.palette.primary.dark,
+            boxShadow: theme.palette.customShadows?.glow || '0 4px 16px rgba(0,0,0,0.2)',
           },
         }
       case 'danger':
@@ -79,7 +80,7 @@ export const TouchButton: React.FC<TouchButtonProps> = ({
           border: 'none',
           '&:hover': {
             background: theme.palette.secondary.main,
-            boxShadow: theme.palette.customShadows.glow,
+            boxShadow: theme.palette.customShadows?.glow || '0 4px 16px rgba(0,0,0,0.2)',
           },
         }
     }

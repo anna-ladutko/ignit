@@ -1,11 +1,11 @@
 {
   "metadata": {
-    "level_id": "c372ae45-b2df-4b79-9626-255619e80a0b",
+    "level_id": "a04b37fe-3a95-465b-98e9-96a5ede2fdea",
     "difficulty": 1,
     "primary_archetype": "splitter",
     "secondary_archetype": null,
     "mutator": null,
-    "generation_timestamp": "2025-08-10T19:10:15.128063Z",
+    "generation_timestamp": "2025-08-17T12:29:05.502830Z",
     "generator_version": "1.0.0"
   },
   "circuit_definition": {
@@ -686,17 +686,17 @@
           "to_terminal": "in"
         }
       ],
-      "expected_score": 71.725,
+      "expected_score": 0,
       "simulation_result": {
         "targets_satisfied": {
-          "TARGET_LED_1": true,
+          "TARGET_LED_1": false,
           "TARGET_LED_2": true
         },
         "energy_distribution": {
-          "TARGET_LED_1": 16.5,
-          "TARGET_LED_2": 22.0
+          "TARGET_LED_1": 68.14814814814815,
+          "TARGET_LED_2": 19.4962962962963
         },
-        "total_losses": 9.774999999999999
+        "total_losses": 32.355555555555554
       }
     },
     "validation_results": {

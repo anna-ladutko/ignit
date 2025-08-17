@@ -15,76 +15,60 @@ import { ComponentColors } from './componentColors'
 const MAGNETIC_SVG_TEMPLATES = {
   [ComponentType.RESISTOR]: `<svg width="100" height="40" viewBox="0 0 100 40">
     <g>
-      <!-- Магнитные точки -->
-      <circle cx="10" cy="20" r="6" fill="currentColor"/>
-      <circle cx="90" cy="20" r="6" fill="currentColor"/>
-      <!-- Соединительные линии -->
-      <line x1="10" y1="20" x2="25" y2="20" stroke="currentColor" stroke-width="2"/>
-      <line x1="73" y1="20" x2="90" y2="20" stroke="currentColor" stroke-width="2"/>
-      <!-- Зигзаг резистора -->
-      <path d="M25 20L29 11L37 29L45 11L53 29L61 11L69 29L73 20" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <!-- Обновленный дизайн резистора v03 -->
+      <path d="M10 22C11.1046 22 12 21.1046 12 20C12 18.8954 11.1046 18 10 18C8.89543 18 8 18.8954 8 20C8 21.1046 8.89543 22 10 22Z" fill="currentColor"/>
+      <path d="M90 22C91.1046 22 92 21.1046 92 20C92 18.8954 91.1046 18 90 18C88.8954 18 88 18.8954 88 20C88 21.1046 88.8954 22 90 22Z" fill="currentColor"/>
+      <path d="M10 20H25" stroke="currentColor" stroke-width="2"/>
+      <path d="M76 20H90.5" stroke="currentColor" stroke-width="2"/>
+      <rect x="26" y="13" width="48" height="14" stroke="currentColor" stroke-width="4" stroke-linejoin="round" fill="none"/>
     </g>
   </svg>`,
   
   [ComponentType.CAPACITOR]: `<svg width="100" height="40" viewBox="0 0 100 40">
     <g>
-      <!-- Магнитные точки -->
-      <circle cx="10" cy="20" r="6" fill="currentColor"/>
-      <circle cx="90" cy="20" r="6" fill="currentColor"/>
-      <!-- Соединительные линии -->
-      <line x1="10" y1="20" x2="42" y2="20" stroke="currentColor" stroke-width="2"/>
-      <line x1="58" y1="20" x2="90" y2="20" stroke="currentColor" stroke-width="2"/>
-      <!-- Конденсатор - две параллельные пластины -->
-      <line x1="42" y1="8" x2="42" y2="32" stroke="currentColor" stroke-width="3"/>
-      <line x1="58" y1="8" x2="58" y2="32" stroke="currentColor" stroke-width="3"/>
+      <!-- Обновленный дизайн конденсатора v03 -->
+      <circle cx="10" cy="20" r="2" fill="currentColor"/>
+      <circle cx="90" cy="20" r="2" fill="currentColor"/>
+      <path d="M45 21C45.5523 21 46 20.5523 46 20C46 19.4477 45.5523 19 45 19V20V21ZM53 19C52.4477 19 52 19.4477 52 20C52 20.5523 52.4477 21 53 21V20V19ZM10.5 20V21H45V20V19H10.5V20ZM53 20V21H90V20V19H53V20Z" fill="currentColor"/>
+      <path d="M46 11V29.5" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+      <path d="M54 11V29.5" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
     </g>
   </svg>`,
   
   [ComponentType.INDUCTOR]: `<svg width="100" height="40" viewBox="0 0 100 40">
     <g>
-      <!-- Магнитные точки -->
-      <circle cx="10" cy="20" r="6" fill="currentColor"/>
-      <circle cx="90" cy="20" r="6" fill="currentColor"/>
-      <!-- Соединительные линии -->
-      <line x1="10" y1="20" x2="22" y2="20" stroke="currentColor" stroke-width="2"/>
-      <line x1="78" y1="20" x2="90" y2="20" stroke="currentColor" stroke-width="2"/>
-      <!-- Индуктор - спирали -->
-      <path d="M22 20Q26 10 30 20Q34 10 38 20Q42 10 46 20Q50 10 54 20Q58 10 62 20Q66 10 70 20Q74 10 78 20" stroke="currentColor" stroke-width="2" fill="none"/>
+      <!-- Обновленный дизайн индуктора v03 -->
+      <circle cx="10" cy="20" r="2" fill="currentColor"/>
+      <circle cx="90" cy="20" r="2" fill="currentColor"/>
+      <path d="M24.2396 21C24.7919 21 25.2396 20.5523 25.2396 20C25.2396 19.4477 24.7919 19 24.2396 19L24.2396 20L24.2396 21ZM73.1981 19C72.6459 19 72.1981 19.4477 72.1981 20C72.1981 20.5523 72.6459 21 73.1981 21L73.1981 20L73.1981 19ZM10.5 20L10.5 21L24.2396 21L24.2396 20L24.2396 19L10.5 19L10.5 20ZM73.1981 20L73.1981 21L91 21L91 20L91 19L73.1981 19L73.1981 20Z" fill="currentColor"/>
+      <path d="M38 21C38 16.5817 35.3137 13 32 13C28.6863 13 26 16.5817 26 21" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+      <path d="M50 21C50 16.5817 47.3137 13 44 13C40.6863 13 38 16.5817 38 21" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+      <path d="M62 21C62 16.5817 59.3137 13 56 13C52.6863 13 50 16.5817 50 21" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+      <path d="M74 21C74 16.5817 71.3137 13 68 13C64.6863 13 62 16.5817 62 21" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
     </g>
   </svg>`,
   
   [ComponentType.LED]: `<svg width="100" height="40" viewBox="0 0 100 40">
     <g>
-      <!-- Магнитные точки -->
-      <circle cx="10" cy="20" r="6" fill="currentColor"/>
-      <circle cx="90" cy="20" r="6" fill="currentColor"/>
-      <!-- Соединительные линии -->
-      <line x1="10" y1="20" x2="35" y2="20" stroke="currentColor" stroke-width="2"/>
-      <line x1="65" y1="20" x2="90" y2="20" stroke="currentColor" stroke-width="2"/>
-      <!-- LED диод - треугольник с линией -->
-      <path d="M35 10 L35 30 L65 20 Z" stroke="currentColor" stroke-width="2" fill="none"/>
-      <line x1="65" y1="10" x2="65" y2="30" stroke="currentColor" stroke-width="2"/>
-      <!-- Стрелки излучения -->
-      <path d="M45 8 L48 5 M46 5 L48 5 L48 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
-      <path d="M52 12 L55 9 M53 9 L55 9 L55 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+      <!-- Обновленный дизайн LED v03 -->
+      <circle cx="10" cy="20" r="2" fill="currentColor"/>
+      <circle cx="90" cy="20" r="2" fill="currentColor"/>
+      <path d="M38.5 21C39.0523 21 39.5 20.5523 39.5 20C39.5 19.4477 39.0523 19 38.5 19V20V21ZM59 19C58.4477 19 58 19.4477 58 20C58 20.5523 58.4477 21 59 21V20V19ZM10 20V21H38.5V20V19H10V20ZM59 20V21H90V20V19H59V20Z" fill="currentColor"/>
+      <path d="M40 11V29.5" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+      <path d="M40 11L60 20L40 30" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+      <path d="M60 11V29.5" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+      <path d="M45.825 9.53009L48.3607 4.09225M48.3607 4.09225L45.2802 5.96593M48.3607 4.09225L48.9055 7.65641" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+      <path d="M52.1692 12.4884L54.7049 7.05056M54.7049 7.05056L51.6245 8.92425M54.7049 7.05056L55.2497 10.6147" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
     </g>
   </svg>`,
   
   [ComponentType.VOLTAGE_SOURCE]: `<svg width="100" height="40" viewBox="0 0 100 40">
     <g>
-      <!-- Магнитные точки -->
-      <circle cx="10" cy="20" r="6" fill="currentColor"/>
-      <circle cx="90" cy="20" r="6" fill="currentColor"/>
-      <!-- Соединительные линии -->
-      <line x1="10" y1="20" x2="35" y2="20" stroke="currentColor" stroke-width="2"/>
-      <line x1="65" y1="20" x2="90" y2="20" stroke="currentColor" stroke-width="2"/>
-      <!-- Источник напряжения - круг с + и - -->
-      <circle cx="50" cy="20" r="15" stroke="currentColor" stroke-width="2" fill="none"/>
-      <!-- Плюс (длинная вертикальная линия) -->
-      <line x1="43" y1="12" x2="43" y2="28" stroke="currentColor" stroke-width="2"/>
-      <line x1="39" y1="20" x2="47" y2="20" stroke="currentColor" stroke-width="2"/>
-      <!-- Минус (короткая горизонтальная линия) -->
-      <line x1="53" y1="20" x2="61" y2="20" stroke="currentColor" stroke-width="2"/>
+      <!-- Обновленный дизайн источника напряжения v03 -->
+      <circle cx="10" cy="20" r="2" fill="currentColor"/>
+      <circle cx="90" cy="20" r="2" fill="currentColor"/>
+      <path d="M9 20H34.5M64 20H89M58 17V23M42.5 17V23M39.5 20H45.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="50" cy="20" r="15" stroke="currentColor" stroke-width="4" fill="none"/>
     </g>
   </svg>`,
   

@@ -5,15 +5,7 @@ export { LEVEL_REGISTRY, TOTAL_LEVELS, getLevelByOrder, getNextLevel, isLevelUnl
 
 // Level file paths for dynamic loading
 export const LEVEL_PATHS = {
-  1: '/levels/level-001.json',
-  2: '/levels/level-002.json',
-  3: '/levels/level-003.json',
-  4: '/levels/level-004.json',
-  5: '/levels/level-005.json',
-  6: '/levels/level-006.json',
-  7: '/levels/level-007.json',
-  8: '/levels/level-008.json',
-  9: '/levels/level-009.json'
+  3: '/levels/level-003.json'
 };
 
 export function getLevelPath(levelOrder: number): string | undefined {
