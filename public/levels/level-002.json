@@ -1,11 +1,11 @@
 {
   "metadata": {
-    "level_id": "f2d3108c-02de-4e47-b012-82f7b5e0e064",
+    "level_id": "aa0aa64f-00a0-441f-8135-b7bbcec0f24a",
     "difficulty": 1,
     "primary_archetype": "splitter",
     "secondary_archetype": null,
     "mutator": null,
-    "generation_timestamp": "2025-08-17T12:29:05.509103Z",
+    "generation_timestamp": "2025-08-18T08:05:09.877451Z",
     "generator_version": "1.0.0"
   },
   "circuit_definition": {
@@ -24,8 +24,8 @@
         "id": "TARGET_LED_1",
         "type": "led",
         "energy_range": [
-          13.5,
-          16.5
+          11.366976897617723,
+          17.050465346426584
         ],
         "color": "red",
         "position": [
@@ -37,8 +37,8 @@
         "id": "TARGET_LED_2",
         "type": "led",
         "energy_range": [
-          18.0,
-          22.0
+          17.537519890732447,
+          26.306279836098675
         ],
         "color": "red",
         "position": [
@@ -51,6 +51,19 @@
       {
         "id": "R_DIV_1",
         "type": "resistor",
+        "nominal_value": 1000,
+        "actual_value": 1000,
+        "quantity": 1,
+        "is_red_herring": false,
+        "position": [
+          0,
+          0
+        ],
+        "resistance": 1000
+      },
+      {
+        "id": "R_DIV_2",
+        "type": "resistor",
         "nominal_value": 470,
         "actual_value": 470,
         "quantity": 1,
@@ -60,19 +73,6 @@
           0
         ],
         "resistance": 470
-      },
-      {
-        "id": "R_DIV_2",
-        "type": "resistor",
-        "nominal_value": 680,
-        "actual_value": 680,
-        "quantity": 1,
-        "is_red_herring": false,
-        "position": [
-          0,
-          0
-        ],
-        "resistance": 680
       }
     ],
     "board_layout": {
@@ -686,17 +686,17 @@
           "to_terminal": "in"
         }
       ],
-      "expected_score": 0,
+      "expected_score": 23.319838056680158,
       "simulation_result": {
         "targets_satisfied": {
           "TARGET_LED_1": false,
           "TARGET_LED_2": true
         },
         "energy_distribution": {
-          "TARGET_LED_1": 68.14814814814815,
-          "TARGET_LED_2": 19.4962962962963
+          "TARGET_LED_1": 42.850202429149796,
+          "TARGET_LED_2": 23.319838056680158
         },
-        "total_losses": 32.355555555555554
+        "total_losses": 53.82995951417004
       }
     },
     "validation_results": {

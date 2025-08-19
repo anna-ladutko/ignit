@@ -210,7 +210,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
       />
       
       {/* Debug Panel для отображения Efficiency данных */}
-      <DebugPanel isVisible={true} />
+      <DebugPanel isVisible={true} level={level} />
     </Box>
   )
 }

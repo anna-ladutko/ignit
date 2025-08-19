@@ -14,18 +14,138 @@ export interface LevelRegistryEntry {
 
 export const LEVEL_REGISTRY: LevelRegistryEntry[] = [
   {
+    id: 1,
+    filename: 'level-001.json',
+    displayName: 'Level 1',
+    description: 'First circuit challenge',
+    unlockRequirements: {
+      completedLevels: [],
+      minScore: 0
+    }
+  },
+  {
+    id: 2,
+    filename: 'level-002.json',
+    displayName: 'Level 2',
+    description: 'Voltage divider basics',
+    unlockRequirements: {
+      completedLevels: [1],
+      minScore: 0
+    }
+  },
+  {
     id: 3,
     filename: 'level-003.json',
     displayName: 'Level 3',
-    description: '',
+    description: 'Advanced circuit design',
     unlockRequirements: {
       completedLevels: [2],
+      minScore: 0
+    }
+  },
+  {
+    id: 4,
+    filename: 'level-004.json',
+    displayName: 'Level 4',
+    description: 'Complex resistor networks',
+    unlockRequirements: {
+      completedLevels: [3],
+      minScore: 0
+    }
+  },
+  {
+    id: 5,
+    filename: 'level-005.json',
+    displayName: 'Level 5',
+    description: 'Multi-LED circuits',
+    unlockRequirements: {
+      completedLevels: [4],
+      minScore: 0
+    }
+  },
+  {
+    id: 6,
+    filename: 'level-006.json',
+    displayName: 'Level 6',
+    description: 'Parallel circuit mastery',
+    unlockRequirements: {
+      completedLevels: [5],
+      minScore: 0
+    }
+  },
+  {
+    id: 7,
+    filename: 'level-007.json',
+    displayName: 'Level 7',
+    description: 'Power optimization',
+    unlockRequirements: {
+      completedLevels: [6],
+      minScore: 0
+    }
+  },
+  {
+    id: 8,
+    filename: 'level-008.json',
+    displayName: 'Level 8',
+    description: 'Master electrician',
+    unlockRequirements: {
+      completedLevels: [7],
+      minScore: 0
+    }
+  },
+  {
+    id: 9,
+    filename: 'level-009.json',
+    displayName: 'Level 9',
+    description: 'Advanced power management',
+    unlockRequirements: {
+      completedLevels: [8],
+      minScore: 0
+    }
+  },
+  {
+    id: 10,
+    filename: 'level-010.json',
+    displayName: 'Level 10',
+    description: 'Complex circuit analysis',
+    unlockRequirements: {
+      completedLevels: [9],
+      minScore: 0
+    }
+  },
+  {
+    id: 11,
+    filename: 'level-011.json',
+    displayName: 'Level 11',
+    description: 'Expert circuit design',
+    unlockRequirements: {
+      completedLevels: [10],
+      minScore: 0
+    }
+  },
+  {
+    id: 12,
+    filename: 'level-012.json',
+    displayName: 'Level 12',
+    description: 'Professional challenges',
+    unlockRequirements: {
+      completedLevels: [11],
+      minScore: 0
+    }
+  },
+  {
+    id: 13,
+    filename: 'level-013.json',
+    displayName: 'Level 13',
+    description: 'Ultimate circuit master',
+    unlockRequirements: {
+      completedLevels: [12],
       minScore: 0
     }
   }
 ];
 
-export const TOTAL_LEVELS = 1;
+export const TOTAL_LEVELS = 13;
 
 export function getLevelByOrder(order: number): LevelRegistryEntry | undefined {
   return LEVEL_REGISTRY.find(level => level.id === order);
