@@ -1,36 +1,109 @@
-# Game Design 3.2
+# Game Design 3.2 - Standardized Component System
 
-**Version:** 3.2.1 (Updated)
-**Date:** 15.08.2025
+**Version:** 3.2.2 (Constructor Update)
+**Date:** 19.08.2025
 **Owner:** Luminoa
 
-**Latest Update:** Added comprehensive technical implementation specification for energy calculation system, timer mechanics, level progression system, and navigation flow. This update documents the complete energy distribution physics model, Sweet Spot efficiency rules, non-performance-impacting timer system, and free progression mechanics as implemented in the production system.
+**Latest Update:** Major restructuring to document the new **Standardized Component System** implemented via Prometheus Constructor Mode. This update introduces fixed component catalogs, universal Sweet Spot tolerance, and predictable level balancing that replaces the previous random generation system.
 
 ## **1. Core Philosophy & Player Experience**
 
 ### **1.1. Product Vision**
 
-Our goal is to create a deep puzzle game that organically **combines an engaging gameplay experience with an effective "brain trainer"**, focusing on problem-solving and achieving a **"flow state"**.
+Our goal is to create a deep puzzle game that organically **combines an engaging gameplay experience with an effective "brain trainer"**, focusing on problem-solving and achieving a **"flow state"** through consistent, balanced challenges.
 
 ### **1.2. Player Fantasy**
 
-The player is a talented engineer, capable of finding not just working solutions, but truly elegant and efficient ones for complex challenges.
+The player is a talented engineer, capable of finding not just working solutions, but truly elegant and efficient ones for complex challenges using **familiar, standardized components** that become trusted tools across multiple levels.
 
 ### **1.3. Core Principle**
 
-**"Challenge Logic, Reward Elegance."** The gameplay encourages **experimentation and discovery** over rote calculation.
+**"Challenge Logic, Reward Elegance."** The gameplay encourages **experimentation and discovery** using consistent component behavior and predictable Sweet Spot ranges.
 
-## **2. Core Mechanic: The Energy Economy & Universal Scoring**
+## **2. Standardized Component System (Constructor Mode)**
+
+### **2.1. Philosophy: From Random to Predictable**
+
+The game now uses a **Standardized Component System** that replaces random value generation with fixed catalogs of components. This ensures:
+
+- **Predictable Balance:** All levels use consistent Sweet Spot tolerances and component values
+- **Component Familiarity:** Players learn standard values and can apply knowledge across levels
+- **Fair Progression:** Difficulty comes from circuit complexity, not arbitrary precision requirements
+
+### **2.2. Universal Sweet Spot Rule**
+
+All LED targets now use a **fixed tolerance system**:
+
+**Sweet Spot Formula: `[Nominal Energy - 2.0, Nominal Energy + 2.0]`**
+
+**Examples:**
+- 15 EU LED → Sweet Spot: [13.0, 17.0] EU
+- 25 EU LED → Sweet Spot: [23.0, 27.0] EU  
+- 50 EU LED → Sweet Spot: [48.0, 52.0] EU
+
+This eliminates the previous difficulty-based precision scaling (±20% to ±2%) in favor of consistent, fair tolerances.
+
+### **2.3. LED Series (Target Components)**
+
+LEDs are organized into power categories with fixed nominal values:
+
+**Power Categories:**
+- **Low Power (5-15 EU):** 5 EU, 10 EU, 15 EU
+- **Medium Power (20-30 EU):** 20 EU, 25 EU, 30 EU
+- **High Power (40-50 EU):** 40 EU, 50 EU  
+- **Very High Power (75-100 EU):** 75 EU, 100 EU
+
+**Difficulty Scaling:**
+- **Levels 1-2:** Low/Medium Power LEDs only
+- **Levels 3:** All categories available
+- **Levels 4-5:** High/Very High Power emphasis
+
+### **2.4. R-Series (Resistors)**
+
+Standard resistance values replace random generation:
+
+**Low Value (Fine Tuning):**
+- 22Ω, 47Ω
+
+**Core Set (Primary Values):**
+- 100Ω, 220Ω, 470Ω, 680Ω, 1kΩ, 2.2kΩ, 4.7kΩ, 10kΩ
+
+**Component Loss Model (Updated):**
+- ≤100Ω: 5% loss
+- 101-300Ω: 10% loss
+- 301-500Ω: 20% loss
+- 501-700Ω: 30% loss
+- >700Ω: 40% loss
+
+### **2.5. C-Series (Capacitors)**
+
+Standard capacitance values in microfarads:
+- 10µF, 47µF, 100µF, 220µF, 470µF, 1000µF
+- **Loss:** Fixed 1% loss per component
+
+### **2.6. L-Series (Inductors)**
+
+Standard inductance values in millihenries:
+- 1mH, 5mH, 10mH, 22mH, 50mH, 100mH
+- **Loss:** Fixed 1% loss per component
+
+### **2.7. Voltage Source Series**
+
+Standard voltages only:
+- **Available Values:** 5V, 9V, 12V, 24V
+- **Energy Output:** Dynamic (calculated by generator based on level requirements)
+
+## **3. Core Mechanic: The Energy Economy & Universal Scoring**
 
 The foundation of every level is a resource management puzzle centered around **Energy (EU)**. The player's success is measured by a single, universal metric: **`Efficiency`**.
 
-### **2.1. The Universal `Efficiency` Formula**
+### **3.1. The Universal `Efficiency` Formula**
 
 `Efficiency` is the Coefficient of Power Utilization (КПД) of the player's circuit. It answers the question: "What percentage of the total energy from the `Source` was used for productive work, rather than lost as heat?"
 
 **`Efficiency (%) = (Total Useful Energy / Source Energy Output) * 100`**
 
-### **2.2. Defining `Useful Energy`**
+### **3.2. Defining `Useful Energy`**
 
 `Useful Energy` is the sum of all energy that has been productively used in the circuit. There are only two types of productive use:
 
@@ -41,28 +114,28 @@ The foundation of every level is a resource management puzzle centered around **
 
 This single formula elegantly handles all level types. On levels without a `Supercapacitor`, the goal becomes minimizing waste (`Power Consumption`). On levels with a `Supercapacitor`, the goal becomes intelligently managing and storing surplus energy.
 
-#### **2.2.1. The Sweet Spot Rule (Critical Implementation Detail)**
+#### **3.2.1. The Sweet Spot Rule (Critical Implementation Detail)**
 
-The **Sweet Spot Rule** is strictly enforced during efficiency calculation:
+The **Sweet Spot Rule** is strictly enforced during efficiency calculation using the standardized tolerance:
 
-- **Target Component Definition:** Each `Target` (LED) has an energy range `[minEnergy, maxEnergy]` defined in its properties.
+- **Target Component Definition:** Each `Target` (LED) has a fixed energy range using the formula `[nominal - 2.0, nominal + 2.0]`.
 - **Delivered Energy Check:** After simulation, the system checks if `deliveredEnergy >= minEnergy AND deliveredEnergy <= maxEnergy`.
 - **Useful Energy Assignment:**
   - **IF in Sweet Spot:** `usefulEnergy = deliveredEnergy` (full value counted)
   - **IF outside Sweet Spot:** `usefulEnergy = 0` (energy becomes Heat Loss)
 
-**Example:**
+**Standardized Example:**
 ```
-Target LED: Sweet Spot [38-102] EU
-Delivered: 96 EU → In range → Useful Energy = 96 EU ✅
-Delivered: 34 EU → Out of range → Useful Energy = 0 EU ❌ (Heat Loss)
+Target LED: 25 EU nominal → Sweet Spot [23.0, 27.0] EU
+Delivered: 24.5 EU → In range → Useful Energy = 24.5 EU ✅
+Delivered: 28.2 EU → Out of range → Useful Energy = 0 EU ❌ (Heat Loss)
 ```
 
-### **2.3. Energy Distribution Physics Model**
+### **3.3. Energy Distribution Physics Model**
 
 The game implements a **realistic energy distribution model** for parallel circuits that governs how the Source Energy Output is allocated across different circuit paths.
 
-#### **2.3.1. Parallel Circuit Energy Distribution**
+#### **3.3.1. Parallel Circuit Energy Distribution**
 
 When a circuit has multiple parallel paths from the source to different targets, the energy is distributed **inversely proportional to the path resistance**:
 
@@ -73,33 +146,12 @@ When a circuit has multiple parallel paths from the source to different targets,
 - **Total distributed energy equals Source Energy Output** (energy conservation)
 - **Each path operates with its allocated energy budget**
 
-#### **2.3.2. Path Energy Calculation Process**
-
-1. **Path Identification:** System identifies all paths from Source to each Target
-2. **Resistance Calculation:** Sum of all component resistances in each path
-3. **Energy Distribution:** Calculate energy allocation using inverse proportionality
-4. **Component Losses:** Apply percentage-based losses for each component type
-5. **Energy Delivery:** Calculate final energy delivered to each target
-
-#### **2.3.3. Component Loss Model**
-
-Components consume energy based on **game-balanced percentage losses**:
-
-- **Resistors:** 5-40% loss based on resistance value
-  - ≤100Ω: 5% loss
-  - 101-300Ω: 10% loss  
-  - 301-500Ω: 20% loss
-  - 501-700Ω: 30% loss
-  - >700Ω: 40% loss
-- **Capacitors/Inductors:** 1% loss (minimal)
-- **Switches:** 0% loss when closed, 100% loss when open
-
-#### **2.3.4. Worked Example**
+#### **3.3.2. Worked Example with Standardized Components**
 
 **Circuit Setup:**
-- Source: 120 EU output
-- PATH1: Source → Resistor(470Ω) → LED1 [Sweet Spot: 38-102 EU]
-- PATH2: Source → Resistor(680Ω) → LED2 [Sweet Spot: 18-29 EU]
+- Source: 120 EU output, 12V (standard voltage)
+- PATH1: Source → Resistor(470Ω) → LED1 [15 EU nominal → Sweet Spot: 13.0-17.0]
+- PATH2: Source → Resistor(680Ω) → LED2 [25 EU nominal → Sweet Spot: 23.0-27.0]
 
 **Energy Distribution:**
 - PATH1 conductance: 1/470 = 0.00213
@@ -108,18 +160,20 @@ Components consume energy based on **game-balanced percentage losses**:
 - PATH1 energy: (0.00213/0.00360) * 120 = 71.0 EU
 - PATH2 energy: (0.00147/0.00360) * 120 = 49.0 EU
 
-**Energy Processing:**
-- PATH1: 71.0 EU → -20% loss = 56.8 EU delivered to LED1
-- PATH2: 49.0 EU → -30% loss = 34.3 EU delivered to LED2
+**Energy Processing with Standard Loss Values:**
+- PATH1: 71.0 EU → -20% loss (470Ω standard loss) = 56.8 EU delivered to LED1
+- PATH2: 49.0 EU → -30% loss (680Ω standard loss) = 34.3 EU delivered to LED2
 
 **Useful Energy Calculation:**
-- LED1: 56.8 EU in [38-102] → Useful = 56.8 EU ✅
-- LED2: 34.3 EU outside [18-29] → Useful = 0 EU ❌ (Heat Loss)
+- LED1: 56.8 EU outside [13.0-17.0] → Useful = 0 EU ❌ (Heat Loss)
+- LED2: 34.3 EU outside [23.0-27.0] → Useful = 0 EU ❌ (Heat Loss)
 - Supercapacitor: 28.9 EU remaining → Useful = 28.9 EU
-- **Total Useful Energy: 56.8 + 0 + 28.9 = 85.7 EU**
-- **Efficiency: (85.7/120) * 100 = 71.4%**
+- **Total Useful Energy: 0 + 0 + 28.9 = 28.9 EU**
+- **Efficiency: (28.9/120) * 100 = 24.1%**
 
-### **2.4. Calculating the Final `Score`**
+*Note: This example demonstrates a poorly optimized circuit where the standard component values don't match the LED requirements, teaching players to select appropriate components.*
+
+### **3.4. Calculating the Final `Score`**
 
 The `Final Score` (reward in coins/points) is calculated based on the player's `Efficiency`:
 
@@ -127,14 +181,61 @@ The `Final Score` (reward in coins/points) is calculated based on the player's `
 
 The `Base Reward` is determined by the level's `Difficulty`. The `Efficiency Multiplier` is a non-linear curve that disproportionately rewards solutions closer to 100% `Efficiency`.
 
-## **3. Core Gameplay Loop: Player-Driven Completion**
+## **4. Level Architecture & Prometheus Integration**
 
-The gameplay is designed to give the player full control over their problem-solving process.
+### **4.1. Level Generation Philosophy**
+
+Levels are now generated using **Prometheus Constructor Mode**, which:
+
+- **Eliminates Random Values:** Uses only standardized component catalogs
+- **Disables Sweet Spot Optimization:** Preserves universal ±2.0 EU tolerance
+- **Ensures Component Compliance:** Validates all components against standard catalogs
+- **Maintains Archetype Variety:** Uses different circuit patterns for complexity
+
+### **4.2. Level Metadata Enhancement**
+
+All levels now include constructor mode metadata:
+
+```json
+{
+  "metadata": {
+    "generator_version": "2.0.0-constructor",
+    "difficulty": 1,
+    "primary_archetype": "splitter"
+  },
+  "validation_results": {
+    "validation_performed": true,
+    "constructor_mode": true,
+    "standardized_ranges": "Nominal ± 2.0 EU"
+  }
+}
+```
+
+### **4.3. Archetype Patterns Using Standardized Components**
+
+**Splitter Archetype:**
+- Uses standard resistor values for voltage division
+- LED selection based on difficulty level
+- Component count scales with difficulty (2-6 components)
+
+**Stabilizer Archetype:**
+- LC filter circuits using standard L/C values
+- Focuses on smoothing unstable power sources
+- Higher difficulty adds multiple filter stages
+
+**Protector Archetype:**
+- Current limiting using standard resistor combinations
+- Shunt circuits with supercapacitor energy storage
+- Component selection emphasizes power handling
+
+## **5. Core Gameplay Loop: Player-Driven Completion**
+
+The gameplay is designed to give the player full control over their problem-solving process with consistent, predictable component behavior.
 
 - **The `Simulate` Button (Exploration Phase):** The player's primary tool for experimentation. It runs a simulation and provides immediate feedback on the outcome (e.g., current `Efficiency`), but **never** ends the level. The system tracks the `bestScore` achieved across all simulations.
 - **The `Finish Level` Button (Completion Phase):** This button becomes active only after the player achieves a `Minimal Pass` (fulfills the basic level objectives). Pressing it officially ends the level and displays the `Success Modal`, which shows the `bestScore` from the entire session.
 
-### **3.1. Timer System & Performance Optimization**
+### **5.1. Timer System & Performance Optimization**
 
 The game includes a **non-performance-impacting timer system** that tracks level completion time without affecting gameplay smoothness:
 
@@ -149,23 +250,7 @@ The game includes a **non-performance-impacting timer system** that tracks level
 - **Time-Score Coupling:** If the current attempt doesn't beat the best score, the time is ignored (maintains previous `bestTime`)
 - **Single Record System:** One record tracks both the best efficiency and the time it was achieved
 
-**Example Implementation:**
-```javascript
-const finishLevel = () => {
-  const finalTime = levelStartTimeRef.current 
-    ? Math.floor((Date.now() - levelStartTimeRef.current) / 1000) : 0
-  
-  const isNewRecord = prev.currentScore > prev.bestScore
-  setGameState(prev => ({
-    ...prev,
-    levelTime: finalTime,
-    bestScore: isNewRecord ? prev.currentScore : prev.bestScore,
-    bestTime: isNewRecord ? finalTime : prev.bestTime,
-  }))
-}
-```
-
-### **3.2. Level Progression & Navigation System**
+### **5.2. Level Progression & Navigation System**
 
 The game implements a **Free Progression System** that allows players to replay any unlocked level while maintaining overall progression:
 
@@ -181,339 +266,138 @@ The game implements a **Free Progression System** that allows players to replay 
 - **Progression Tracking:** `LevelManager` maintains player progress and unlocks new levels
 - **Current Level Logic:** "Play" button loads the next unfinished level in progression
 
-**Level Completion Flow:**
-1. Player completes level → `completeLevelWithScore()` marks level as finished
-2. System calculates next available level → `getNextAvailableLevel()`
-3. If next level exists → Load next level automatically
-4. If no next level → Show "All levels completed!" message
-5. Player can return to Levels Screen for replay or main menu
+## **6. UI/UX Brief for Standardized Component System**
 
-**Level State Management:**
-- **Current:** Next level to be completed in progression (orange background, play icon)
-- **Passed:** Completed but sub-optimal performance (<85% efficiency, transparent background)
-- **Completed:** Optimal performance achieved (≥85% efficiency, dark background)
+### **6.1. Component Recognition & Learning**
 
-## **4. Level & Component Design**
+The standardized system requires enhanced UI to help players learn and recognize component values:
 
-*(This section remains largely unchanged but is included for completeness.)*
+**Component Labeling:**
+- **Clear Value Display:** All resistors show their standard values (470Ω, 1kΩ, etc.)
+- **LED Nominal Values:** Target LEDs display their nominal energy (15 EU, 25 EU, etc.)
+- **Voltage Source Labels:** Sources clearly show standard voltages (5V, 12V, etc.)
 
-### **4.1. Level Architecture**
+**Sweet Spot Visualization:**
+- **Universal Range Indicators:** All LED gauges use consistent ±2.0 EU range visualization
+- **Color Coding:** Green zone for Sweet Spot, red zones for over/under energy
+- **Numeric Feedback:** Display exact delivered energy vs. required range
 
-Levels are constructed based on a combination of three key entities, as defined by the "Prometheus" generator:
+### **6.2. Progressive Component Introduction**
 
-- **`Difficulty`**: A 5-level scale defining the overall challenge.
-- **`Archetype`**: The core puzzle logic (e.g., `Voltage Divider`, `LC Filter`).
-- **`Mutator`**: A global rule that alters the level's physics or constraints.
+**Difficulty-Based Component Availability:**
+- **Levels 1-2:** Limited to core resistor values (100Ω, 220Ω, 470Ω, 1kΩ)
+- **Levels 3-4:** Full resistor catalog becomes available
+- **Levels 4-5:** Complex component combinations (RC, LC circuits)
 
-### **4.2. Component Types**
+**Component Familiarity System:**
+- **Consistent Values:** Same component values appear across multiple levels
+- **Progressive Complexity:** New component types introduced gradually
+- **Value Recognition:** Players learn to associate standard values with typical applications
 
-- **Standard Components:** Predictable, foundational components.
-- **"Imperfect Parts":** Components with slight, non-linear deviations.
-- **"Black Box" Components:** Unmarked components for `Expert` difficulty levels.
+### **6.3. Levels Screen Design Enhancement**
 
-## **5. UI/UX Brief for Intuitive Gameplay**
+The Levels Screen now emphasizes the standardized system:
 
-This section outlines the key principles for creating an interface that teaches the player through interaction, not text.
+**Level Card Enhancements:**
+- **Component Indicators:** Icons showing which component types are featured
+- **Difficulty Progression:** Visual indication of component complexity increase
+- **Standardization Badges:** Special indicators for Constructor Mode levels
 
-### **5.1. Visualize the Goal & State**
+## **7. Technical Implementation Specification**
 
-- **`Source` → `Energy Hub`:** The `Source` component must clearly display its total **`Output: [value] EU`**.
-- **`Target` → `Target Gauge`:** Each `Target` component must have a visual gauge (e.g., a circular progress bar) that clearly marks the required energy range (the **`Sweet Spot`**). The gauge should fill in real-time during simulation.
-- **`Supercapacitor` → `Energy Well`:** The `Supercapacitor` must have a clear fill indicator that shows how much energy has been stored.
-- **Main UI Metric:** The primary metric displayed on the main game screen should be **`Best Efficiency: [value]%`**, which updates whenever the player achieves a new best result.
+### **7.1. Constructor Mode Integration**
 
-### **5.2. Animate for Feedback**
+The system now operates in Constructor Mode by default:
 
-Animation is a core feedback tool, not a decoration.
+```javascript
+// Constructor mode validation
+const isConstructorMode = levelData.validation_results?.constructor_mode === true
+const hasStandardizedRanges = levelData.validation_results?.standardized_ranges === "Nominal ± 2.0 EU"
 
-- **Energy Flow:** During simulation, an animated texture or particles must flow through the wires. The density/speed of the flow should visually represent the amount of current.
-- **Component States:**
-    - **`Target`:** Must have clear visual states for underpowered (dim), correctly powered (stable bright glow), and overpowered (flickering, shaking).
-    - **`Resistor`:** Can emit a subtle heat-haze effect under high load.
-    - **`Supercapacitor`:** Should have a satisfying "fill" animation.
-- **Positive Reinforcement:** The `Best Efficiency` text in the UI should have a prominent "pop" or "shine" animation when the player sets a new personal best for the level.
+// Sweet Spot calculation for standardized components
+function calculateSweetSpot(nominalEnergy) {
+    const tolerance = 2.0  // Universal tolerance
+    return [nominalEnergy - tolerance, nominalEnergy + tolerance]
+}
+```
 
-### **5.3. Interaction & Control**
+### **7.2. Component Catalog Validation**
 
-- **`Simulate` Button:** This is the "test hypothesis" button. It should provide immediate feedback (e.g., show the `Efficiency` of the last run for a few seconds) and then reset, inviting further experimentation.
-- **`Finish Level` Button:** This button should be disabled (`greyed out`) by default. It becomes active and visually distinct only after the player achieves the `Minimal Pass` condition, clearly signaling that they now have the *option* to end the level.
+```javascript
+// Standard component catalogs
+const STANDARD_RESISTORS = [22, 47, 100, 220, 470, 680, 1000, 2200, 4700, 10000]
+const STANDARD_CAPACITORS = [0.00001, 0.000047, 0.0001, 0.00022, 0.00047, 0.001]
+const STANDARD_VOLTAGES = [5, 9, 12, 24]
+const STANDARD_LED_NOMINALS = [5, 10, 15, 20, 25, 30, 40, 50, 75, 100]
 
-### **5.4. Levels Screen Design**
+// Validation function
+function validateStandardizedLevel(levelData) {
+    // Check all components are from standard catalogs
+    // Verify Sweet Spot ranges use ±2.0 EU formula
+    // Ensure generator_version indicates constructor mode
+}
+```
 
-The Levels Screen provides an overview of player progression and level selection:
+### **7.3. Energy Calculation with Standardized Components**
 
-**Grid Layout:**
-- **3-Column Responsive Grid:** Adaptive layout that maintains 3 columns across different screen sizes
-- **Square Cards:** Each level card uses `aspect-ratio: 1` for consistent square appearance
-- **Visual Hierarchy:** Clear differentiation between current, passed, and completed levels
+The energy calculation system now optimizes for standardized component behavior:
 
-**Level Card States:**
-- **Current Level:** Orange background (#D84205), white text, play icon (▶) in bottom-right
-- **Passed Level:** Transparent background, gray border, shows efficiency% and time
-- **Completed Level:** Dark semi-transparent background, shows efficiency% and time in white text
+```javascript
+// Component loss calculation using standard values
+function getStandardizedLoss(component) {
+    if (component.type === 'resistor') {
+        const resistance = component.actualValue
+        if (resistance <= 100) return 0.05
+        else if (resistance <= 300) return 0.10
+        else if (resistance <= 500) return 0.20
+        else if (resistance <= 700) return 0.30
+        else return 0.40
+    }
+    // Standard losses for other components...
+}
+```
 
-**Level Card Content:**
-- **Level Number:** Displayed as zero-padded format (001, 002, etc.)
-- **Efficiency Percentage:** Shows best efficiency achieved (e.g., "88.6%")
-- **Completion Time:** Shows time in MM:SS format (e.g., "03:03")
-- **Visual Feedback:** Hover effects with `transform: scale(1.02)` and tap feedback
+### **7.4. Level Loading & Validation**
 
-**Navigation Flow:**
-- **Back Button:** Returns to MainScreen
-- **Settings Access:** Quick access to settings from levels overview
-- **Level Selection:** Tap any unlocked level to start playing immediately
+```javascript
+// Enhanced level loading with constructor mode detection
+async function loadStandardizedLevel(levelOrder) {
+    const levelData = await fetch(`/levels/level-${levelOrder.toString().padStart(3, '0')}.json`)
+    const level = await levelData.json()
+    
+    // Validate standardized components
+    if (!validateStandardizedLevel(level)) {
+        console.error('Level contains non-standard components')
+        return null
+    }
+    
+    return processStandardizedLevel(level)
+}
+```
 
-### **5.5. Timer Display & Statistics**
+## **8. Benefits of the Standardized System**
 
-**In-Game Timer Display:**
-- **No Live Timer:** Timer is not displayed during gameplay to avoid distraction
-- **Post-Completion Display:** Time is shown only in the success modal after level completion
-- **Time Format:** Displays in minutes:seconds format (MM:SS) for readability
+### **8.1. For Players**
 
-**Statistics Integration:**
-- **Level Cards:** Show both efficiency and time for completed levels
-- **Personal Records:** Clear indication when a new best time or score is achieved
-- **Progress Tracking:** Visual progression through efficiency and time improvements
+- **Predictable Learning Curve:** Consistent Sweet Spot tolerances across all levels
+- **Component Mastery:** Standard values become familiar tools for problem-solving
+- **Fair Challenge Scaling:** Difficulty increases through circuit complexity, not arbitrary precision
+- **Transferable Knowledge:** Skills learned in early levels apply throughout the game
+
+### **8.2. For Designers**
+
+- **Balanced Content Pipeline:** Automated generation produces consistently balanced levels
+- **Predictable Difficulty:** Component complexity directly correlates with challenge level
+- **Quality Assurance:** No random outliers or impossible precision requirements
+- **Maintainable Content:** Centralized component catalogs enable easy updates
+
+### **8.3. For Development**
+
+- **Debugging Efficiency:** Standard values make level behavior predictable and testable
+- **Performance Optimization:** Component caching and validation simplified
+- **Content Validation:** Automated checks prevent non-standard component usage
+- **Future-Proof Architecture:** Easy to add new standard components to catalogs
 
 ---
 
-## **6. Technical Implementation Specification**
-
-This section provides exact technical requirements for implementing the energy calculation system described above. **These specifications are critical for correct game behavior and must be followed precisely.**
-
-### **6.1. Energy Distribution Algorithm**
-
-The energy distribution system operates in the following sequence:
-
-#### **Step 1: Path Discovery**
-- Identify all paths from Source to each Target using graph traversal
-- Each path is represented as an array: `[SOURCE, component1, component2, ..., TARGET]`
-
-#### **Step 2: Resistance Calculation**
-```
-For each path:
-  totalResistance = 0
-  For each component in path (excluding Source and Target):
-    If component.type == RESISTOR:
-      totalResistance += component.actualValue
-  pathResistances.push(totalResistance)
-```
-
-#### **Step 3: Energy Distribution**
-```
-conductances = pathResistances.map(r => r > 0 ? 1/r : 1)
-totalConductance = sum(conductances)
-sourceEnergy = source.getAvailableEnergy()
-
-For each path:
-  pathEnergy = (conductances[i] / totalConductance) * sourceEnergy
-```
-
-#### **Step 4: Component Loss Processing**
-```
-For each path:
-  energyFlow = pathEnergyBudget
-  For each component in path (excluding Source and Target):
-    loss = calculateComponentLoss(component, energyFlow)
-    energyFlow -= loss
-  deliveredEnergy = max(0, energyFlow)
-```
-
-### **6.2. Useful Energy Calculation Algorithm**
-
-#### **Step 1: Sweet Spot Validation**
-```
-totalUsefulEnergy = 0
-
-For each target in energyDistribution:
-  deliveredEnergy = energyDistribution[target.id]
-  If target.energyRange exists:
-    [minEnergy, maxEnergy] = target.energyRange
-    isInSweetSpot = (deliveredEnergy >= minEnergy && deliveredEnergy <= maxEnergy)
-    If isInSweetSpot:
-      totalUsefulEnergy += deliveredEnergy
-    Else:
-      // Energy becomes Heat Loss, contributes 0 to useful energy
-```
-
-#### **Step 2: Supercapacitor Energy**
-```
-supercapacitorEnergy = supercapacitor.getScore()
-totalUsefulEnergy += supercapacitorEnergy
-```
-
-#### **Step 3: Final Efficiency**
-```
-efficiency = (totalUsefulEnergy / sourceEnergyOutput) * 100
-```
-
-### **6.3. Component Loss Calculation**
-
-**Resistor Loss Formula:**
-```
-If resistance <= 100: lossPercentage = 0.05
-Else If resistance <= 300: lossPercentage = 0.10
-Else If resistance <= 500: lossPercentage = 0.20
-Else If resistance <= 700: lossPercentage = 0.30
-Else: lossPercentage = 0.40
-
-loss = energyIn * lossPercentage
-```
-
-**Other Components:**
-- Capacitors/Inductors: `loss = energyIn * 0.01`
-- Switches: `loss = isClosed ? 0 : energyIn`
-- All others: `loss = 0`
-
-### **6.4. Energy Conservation Validation**
-
-The system must maintain energy conservation at all times:
-
-**Energy Balance Check:**
-```
-totalEnergyIn = sourceEnergyOutput
-totalEnergyOut = sum(allComponentLosses) + sum(energyDeliveredToTargets) + supercapacitorEnergy
-
-// This equation must always be true (within floating point precision):
-abs(totalEnergyIn - totalEnergyOut) < 0.01
-```
-
-### **6.5. Implementation Notes**
-
-1. **Precision:** Use floating-point arithmetic with at least 2 decimal places precision
-2. **Edge Cases:** Handle zero resistance paths with default conductance = 1
-3. **Path Validation:** Ensure all paths are electrically valid (no open switches)
-4. **Debug Logging:** Implement comprehensive logging for energy flow tracking
-5. **Unit Testing:** All formulas must be validated with known test cases
-
-### **6.6. Reference Implementation**
-
-**Files implementing this specification:**
-- `src/game/energyEconomy.ts` - Core energy calculation engine
-- `src/hooks/useGameEngine.js` - React integration and debug utilities
-- `src/game/components.ts` - Component definitions and properties
-
-**Test Case Reference:**
-The system has been validated against the worked example in Section 2.3.4, producing expected efficiency values of ~75.9% for the test circuit configuration.
-
-### **6.7. Level Management System**
-
-The game implements a comprehensive level management system for handling Prometheus-generated content:
-
-#### **LevelManager Architecture**
-```typescript
-// Core data structures
-interface PlayerProgress {
-  completedLevels: number[]     // List of completed level IDs
-  currentLevel: number         // Next level in progression sequence
-  totalScore: number          // Cumulative score across all levels
-}
-
-class LevelManager {
-  private playerProgress: PlayerProgress
-  private loadedLevels: Map<number, Level>  // Level caching system
-  
-  // Key methods
-  async loadLevelByOrder(levelOrder: number): Promise<Level | null>
-  completeLevelWithScore(levelOrder: number, score: number): void
-  getNextAvailableLevel(completedLevelOrder?: number): number | null
-}
-```
-
-#### **Level Loading & Caching**
-```javascript
-// Dynamic level loading from JSON files
-const levelPath = `/levels/level-${levelOrder.toString().padStart(3, '0')}.json`
-const response = await fetch(levelPath)
-const levelData = await response.json()
-const level = await loadLevel(levelData)
-
-// Level caching for performance
-this.loadedLevels.set(levelOrder, level)  // Cache loaded level
-return this.loadedLevels.get(levelOrder)  // Return cached version
-```
-
-#### **Progression Logic**
-```javascript
-// Free progression implementation
-getNextAvailableLevel(completedLevelOrder?: number): number | null {
-  const baseLevel = completedLevelOrder || this.playerProgress.currentLevel
-  const nextLevel = getNextLevel(baseLevel)
-  
-  if (nextLevel && isLevelUnlocked(nextLevel.id, completedLevels, totalScore)) {
-    return nextLevel.id
-  }
-  return null  // No more levels available
-}
-
-// Level completion handling
-completeLevelWithScore(levelOrder: number, score: number): void {
-  if (!this.playerProgress.completedLevels.includes(levelOrder)) {
-    this.playerProgress.completedLevels.push(levelOrder)
-  }
-  this.playerProgress.totalScore += score
-  
-  // Advance progression if this was the current level
-  if (levelOrder === this.playerProgress.currentLevel) {
-    const nextLevel = this.getNextAvailableLevel(levelOrder)
-    if (nextLevel) {
-      this.playerProgress.currentLevel = nextLevel
-    }
-  }
-  this.savePlayerProgress()  // Persist to localStorage
-}
-```
-
-#### **Persistence & Data Management**
-```javascript
-// localStorage integration
-private loadPlayerProgress(): PlayerProgress {
-  const saved = localStorage.getItem('ignit_player_progress')
-  return saved ? JSON.parse(saved) : {
-    completedLevels: [],
-    currentLevel: 1,
-    totalScore: 0
-  }
-}
-
-private savePlayerProgress(): void {
-  localStorage.setItem('ignit_player_progress', JSON.stringify(this.playerProgress))
-}
-```
-
-### **6.8. Timer Implementation Specification**
-
-The timer system is implemented to provide accurate time tracking without performance impact:
-
-#### **Timer Initialization**
-```javascript
-// Start timer when level loading begins
-const initializeGameEngine = (canvasElement) => {
-  levelStartTimeRef.current = Date.now()  // Capture start timestamp
-  // ... other initialization
-}
-```
-
-#### **Time Calculation**
-```javascript
-// Calculate final time only on level completion
-const finishLevel = () => {
-  const finalTime = levelStartTimeRef.current 
-    ? Math.floor((Date.now() - levelStartTimeRef.current) / 1000) : 0
-    
-  // Update state with linked bestTime/bestScore logic
-  const isNewRecord = currentScore > bestScore
-  setGameState(prev => ({
-    ...prev,
-    levelTime: finalTime,
-    bestScore: isNewRecord ? currentScore : prev.bestScore,
-    bestTime: isNewRecord ? finalTime : prev.bestTime,
-  }))
-}
-```
-
-#### **Performance Considerations**
-- **No setInterval or continuous updates**: Prevents performance degradation
-- **Single timestamp capture**: Minimal memory overhead
-- **Lazy calculation**: Time computed only when needed
-- **Atomic updates**: State changes happen together to prevent inconsistencies
+**This Game Design document reflects the evolution from random generation to a sophisticated, standardized component system that ensures consistent, balanced, and fair gameplay experiences across all difficulty levels while maintaining the core puzzle-solving challenge that defines the Ignit experience.**

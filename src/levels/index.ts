@@ -17,7 +17,8 @@ export const LEVEL_PATHS = {
   10: '/levels/level-010.json',
   11: '/levels/level-011.json',
   12: '/levels/level-012.json',
-  13: '/levels/level-013.json'
+  13: '/levels/level-013.json',
+  14: '/levels/level-014.json'
 };
 
 export function getLevelPath(levelOrder: number): string | undefined {

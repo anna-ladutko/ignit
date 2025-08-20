@@ -1,12 +1,12 @@
 {
   "metadata": {
-    "level_id": "a87c3ff1-2eb6-4221-ac73-880af1de13ea",
-    "difficulty": 1,
+    "level_id": "107cc003-307d-432b-b376-bf7a6b71c941",
+    "difficulty": 2,
     "primary_archetype": "splitter",
     "secondary_archetype": null,
     "mutator": null,
-    "generation_timestamp": "2025-08-18T09:31:38.311447Z",
-    "generator_version": "1.0.0"
+    "generation_timestamp": "2025-08-19T20:46:33.669105Z",
+    "generator_version": "2.0.0-constructor"
   },
   "circuit_definition": {
     "source": {
@@ -24,8 +24,8 @@
         "id": "TARGET_LED_1",
         "type": "led",
         "energy_range": [
-          10.924109577597074,
-          16.38616436639561
+          13.0,
+          17.0
         ],
         "color": "red",
         "position": [
@@ -37,8 +37,8 @@
         "id": "TARGET_LED_2",
         "type": "led",
         "energy_range": [
-          17.004509884523603,
-          25.506764826785403
+          23.0,
+          27.0
         ],
         "color": "red",
         "position": [
@@ -51,54 +51,41 @@
       {
         "id": "R_RC_1",
         "type": "resistor",
-        "nominal_value": 470,
-        "actual_value": 470,
+        "nominal_value": 2200.0,
+        "actual_value": 2200.0,
         "quantity": 1,
         "is_red_herring": false,
         "position": [
           0,
           0
         ],
-        "resistance": 470
-      },
-      {
-        "id": "C_RC_1",
-        "type": "capacitor",
-        "nominal_value": 0.001,
-        "actual_value": 0.001,
-        "quantity": 1,
-        "is_red_herring": false,
-        "position": [
-          0,
-          0
-        ],
-        "capacitance": 0.001
+        "resistance": 2200.0
       },
       {
         "id": "R_RC_2",
         "type": "resistor",
-        "nominal_value": 680,
-        "actual_value": 680,
+        "nominal_value": 220.0,
+        "actual_value": 220.0,
         "quantity": 1,
         "is_red_herring": false,
         "position": [
           0,
           0
         ],
-        "resistance": 680
+        "resistance": 220.0
       },
       {
-        "id": "C_RC_2",
-        "type": "capacitor",
-        "nominal_value": 0.0005,
-        "actual_value": 0.0005,
+        "id": "R_WRONG_0",
+        "type": "resistor",
+        "nominal_value": 10000.0,
+        "actual_value": 10000.0,
         "quantity": 1,
-        "is_red_herring": false,
+        "is_red_herring": true,
         "position": [
           0,
           0
         ],
-        "capacitance": 0.0005
+        "resistance": 10000.0
       }
     ],
     "board_layout": {
@@ -672,9 +659,7 @@
     "optimal_solution": {
       "components_used": [
         "R_RC_1",
-        "C_RC_1",
-        "R_RC_2",
-        "C_RC_2"
+        "R_RC_2"
       ],
       "connections": [
         {
@@ -685,12 +670,6 @@
         },
         {
           "from": "R_RC_1",
-          "to": "C_RC_1",
-          "from_terminal": "out",
-          "to_terminal": "in"
-        },
-        {
-          "from": "C_RC_1",
           "to": "TARGET_LED_1",
           "from_terminal": "out",
           "to_terminal": "in"
@@ -703,12 +682,6 @@
         },
         {
           "from": "R_RC_2",
-          "to": "C_RC_2",
-          "from_terminal": "out",
-          "to_terminal": "in"
-        },
-        {
-          "from": "C_RC_2",
           "to": "TARGET_LED_2",
           "from_terminal": "out",
           "to_terminal": "in"
@@ -733,14 +706,17 @@
           "TARGET_LED_2": false
         },
         "energy_distribution": {
-          "TARGET_LED_1": 56.19605633802817,
-          "TARGET_LED_2": 33.98845070422536
+          "TARGET_LED_1": 10.690909090909091,
+          "TARGET_LED_2": 108.21818181818182
         },
-        "total_losses": 29.81549295774648
+        "total_losses": 1.090909090909091
       }
     },
     "validation_results": {
-      "validation_performed": false
+      "validation_performed": true,
+      "sweet_spot_optimization": true,
+      "constructor_mode": true,
+      "standardized_ranges": "Nominal ± 2.0 EU"
     }
   }
 }

@@ -1,12 +1,12 @@
 {
   "metadata": {
-    "level_id": "bc960e46-fe2c-4f6f-aef3-36c6e6ccfafb",
-    "difficulty": 1,
+    "level_id": "385eb6ab-2322-43c7-875d-0a9a651de7ad",
+    "difficulty": 2,
     "primary_archetype": "splitter",
     "secondary_archetype": null,
     "mutator": null,
-    "generation_timestamp": "2025-08-18T09:31:38.315077Z",
-    "generator_version": "1.0.0"
+    "generation_timestamp": "2025-08-19T20:46:33.672529Z",
+    "generator_version": "2.0.0-constructor"
   },
   "circuit_definition": {
     "source": {
@@ -24,8 +24,8 @@
         "id": "TARGET_LED_1",
         "type": "led",
         "energy_range": [
-          12.637354072971897,
-          18.956031109457847
+          13.0,
+          17.0
         ],
         "color": "red",
         "position": [
@@ -37,8 +37,8 @@
         "id": "TARGET_LED_2",
         "type": "led",
         "energy_range": [
-          16.21604831374163,
-          24.324072470612442
+          23.0,
+          27.0
         ],
         "color": "red",
         "position": [
@@ -51,28 +51,41 @@
       {
         "id": "R_DIV_1",
         "type": "resistor",
-        "nominal_value": 1000,
-        "actual_value": 1000,
+        "nominal_value": 1000.0,
+        "actual_value": 1000.0,
         "quantity": 1,
         "is_red_herring": false,
         "position": [
           0,
           0
         ],
-        "resistance": 1000
+        "resistance": 1000.0
       },
       {
         "id": "R_DIV_2",
         "type": "resistor",
-        "nominal_value": 470,
-        "actual_value": 470,
+        "nominal_value": 1000.0,
+        "actual_value": 1000.0,
         "quantity": 1,
         "is_red_herring": false,
         "position": [
           0,
           0
         ],
-        "resistance": 470
+        "resistance": 1000.0
+      },
+      {
+        "id": "C_WRONG_0",
+        "type": "capacitor",
+        "nominal_value": 4.7e-05,
+        "actual_value": 4.7e-05,
+        "quantity": 1,
+        "is_red_herring": true,
+        "position": [
+          0,
+          0
+        ],
+        "capacitance": 4.7e-05
       }
     ],
     "board_layout": {
@@ -686,21 +699,24 @@
           "to_terminal": "in"
         }
       ],
-      "expected_score": 23.319838056680158,
+      "expected_score": 0.0,
       "simulation_result": {
         "targets_satisfied": {
           "TARGET_LED_1": false,
-          "TARGET_LED_2": true
+          "TARGET_LED_2": false
         },
         "energy_distribution": {
-          "TARGET_LED_1": 42.850202429149796,
-          "TARGET_LED_2": 23.319838056680158
+          "TARGET_LED_1": 78.56,
+          "TARGET_LED_2": 38.57296
         },
-        "total_losses": 53.82995951417004
+        "total_losses": 2.86704
       }
     },
     "validation_results": {
-      "validation_performed": false
+      "validation_performed": true,
+      "sweet_spot_optimization": true,
+      "constructor_mode": true,
+      "standardized_ranges": "Nominal ± 2.0 EU"
     }
   }
 }

@@ -1,12 +1,12 @@
 {
   "metadata": {
-    "level_id": "0a9c4288-5807-46b5-b828-722054c1b27f",
-    "difficulty": 2,
+    "level_id": "7ba10cf9-6f1d-4637-a98e-fb51db67112e",
+    "difficulty": 3,
     "primary_archetype": "splitter",
     "secondary_archetype": null,
     "mutator": null,
-    "generation_timestamp": "2025-08-18T09:56:13.012309Z",
-    "generator_version": "1.0.0"
+    "generation_timestamp": "2025-08-19T20:46:37.785556Z",
+    "generator_version": "2.0.0-constructor"
   },
   "circuit_definition": {
     "source": {
@@ -24,8 +24,8 @@
         "id": "TARGET_LED_1",
         "type": "led",
         "energy_range": [
-          12.945083227061478,
-          17.513936130730233
+          3.0,
+          7.0
         ],
         "color": "red",
         "position": [
@@ -37,8 +37,8 @@
         "id": "TARGET_LED_2",
         "type": "led",
         "energy_range": [
-          20.330911117372366,
-          27.50652680585673
+          48.0,
+          52.0
         ],
         "color": "red",
         "position": [
@@ -51,41 +51,54 @@
       {
         "id": "R_PATH_1",
         "type": "resistor",
-        "nominal_value": 1200,
-        "actual_value": 1200,
+        "nominal_value": 220.0,
+        "actual_value": 220.0,
         "quantity": 1,
         "is_red_herring": false,
         "position": [
           0,
           0
         ],
-        "resistance": 1200
+        "resistance": 220.0
       },
       {
         "id": "R_PATH_2",
         "type": "resistor",
-        "nominal_value": 680,
-        "actual_value": 680,
+        "nominal_value": 1000.0,
+        "actual_value": 1000.0,
         "quantity": 1,
         "is_red_herring": false,
         "position": [
           0,
           0
         ],
-        "resistance": 680
+        "resistance": 1000.0
       },
       {
-        "id": "R_WRONG_0",
-        "type": "resistor",
-        "nominal_value": 100,
-        "actual_value": 100,
+        "id": "C_WRONG_0",
+        "type": "capacitor",
+        "nominal_value": 0.00022,
+        "actual_value": 0.00022,
         "quantity": 1,
         "is_red_herring": true,
         "position": [
           0,
           0
         ],
-        "resistance": 100
+        "capacitance": 0.00022
+      },
+      {
+        "id": "C_WRONG_1",
+        "type": "capacitor",
+        "nominal_value": 4.7e-05,
+        "actual_value": 4.7e-05,
+        "quantity": 1,
+        "is_red_herring": true,
+        "position": [
+          0,
+          0
+        ],
+        "capacitance": 4.7e-05
       }
     ],
     "board_layout": {
@@ -699,21 +712,24 @@
           "to_terminal": "in"
         }
       ],
-      "expected_score": 1.4210854715202004e-14,
+      "expected_score": 0.0,
       "simulation_result": {
         "targets_satisfied": {
           "TARGET_LED_1": false,
           "TARGET_LED_2": false
         },
         "energy_distribution": {
-          "TARGET_LED_1": 26.04255319148936,
-          "TARGET_LED_2": 53.617021276595736
+          "TARGET_LED_1": 97.57377049180327,
+          "TARGET_LED_2": 21.24983606557377
         },
-        "total_losses": 40.34042553191489
+        "total_losses": 1.1763934426229508
       }
     },
     "validation_results": {
-      "validation_performed": false
+      "validation_performed": true,
+      "sweet_spot_optimization": true,
+      "constructor_mode": true,
+      "standardized_ranges": "Nominal ± 2.0 EU"
     }
   }
 }
