@@ -65,6 +65,15 @@
 - **Consistency**: All icons follow the same hover and color pattern
 - **No customization**: Do not create custom background styles for standard navigation icons
 
+## Spacing Standards
+
+### UI Element Margins
+- **Standard margin from screen edges for UI elements**: `20px`
+- **Usage**: ComponentPalette, buttons, panels, text elements, interactive components
+- **Exceptions**: Backgrounds, patterns, game fields (dots) remain edge-to-edge
+- **Consistency**: This applies to all UI components that need spacing from screen edges
+- **Examples**: LevelsScreen grid padding (20px), ComponentPalette positioning (20px)
+
 ## Design Philosophy
 
 This design system prioritizes:

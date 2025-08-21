@@ -2,8 +2,7 @@ import React from 'react'
 import { Box, useTheme } from '@mui/material'
 import { 
   PlayArrow as PlayIcon, 
-  Refresh as RefreshIcon, 
-  Lightbulb as HintIcon 
+  Refresh as RefreshIcon
 } from '@mui/icons-material'
 import { motion } from 'framer-motion'
 import { TouchButton } from '../../../ui'
@@ -13,7 +12,6 @@ interface GameControlsProps {
   gameStatus: 'loading' | 'playing' | 'complete' | 'failed'
   onSimulate: () => void
   onReset: () => void
-  onHint: () => void
   canSimulate: boolean
   // Новые пропы для Two-Button System
   canFinishLevel: boolean
@@ -27,7 +25,6 @@ export const GameControls: React.FC<GameControlsProps> = ({
   gameStatus,
   onSimulate,
   onReset,
-  onHint,
   canSimulate,
   canFinishLevel,
   onFinishLevel,
@@ -170,27 +167,6 @@ export const GameControls: React.FC<GameControlsProps> = ({
               }}
             >
               <RefreshIcon sx={{ fontSize: '20px' }} />
-            </TouchButton>
-          </motion.div>
-
-          <motion.div
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-          >
-            <TouchButton
-              variant="primary"
-              size="small"
-              onClick={onHint}
-              disabled={gameStatus === 'loading' || gameStatus === 'complete'}
-              sx={{
-                minWidth: 44,
-                width: 44,
-                height: 44,
-                padding: 0,
-                borderRadius: '50%',
-              }}
-            >
-              <HintIcon sx={{ fontSize: '20px' }} />
             </TouchButton>
           </motion.div>
         </Box>

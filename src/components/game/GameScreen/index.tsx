@@ -1,10 +1,9 @@
 import React, { useCallback } from 'react'
-import { Box, useTheme } from '@mui/material'
+import { Box, Typography, useTheme } from '@mui/material'
 import type { Level } from '../../../types'
 import { useGameEngine } from '../../../hooks/useGameEngine.js'
 import { TopGameBar } from './GameUI/TopGameBar'
 import { ComponentPalette } from './GameUI/ComponentPalette'
-import { GameControls } from './GameUI/GameControls'
 import { LevelCompleteModal } from './UI/LevelCompleteModal'
 import { DebugPanel } from './UI/DebugPanel'
 import { ConnectionIndicatorsLayer } from './GameCanvas/ConnectionIndicator'
@@ -113,6 +112,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         bestScore={gameState.bestScore}
         gameStatus={gameState.gameStatus}
         onBackClick={onBackToMain}
+        onReset={handleReset}
       />
 
       {/* Main Game Area */}
@@ -176,28 +176,42 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           )}
         </Box>
 
-        {/* Component Palette - Статичный UI */}
+        {/* Component Palette - Overlay поверх игрового поля с встроенными controls */}
         <ComponentPalette
           level={level}
           placedComponents={gameState.placedComponents}
           selectedComponent={null}
           draggedComponent={null}
           onComponentSelect={handleComponentFromPalette}
-        />
-
-        {/* Game Controls - Статичный UI */}
-        <GameControls
           gameStatus={gameState.gameStatus}
           onSimulate={handleSimulate}
-          onReset={handleReset}
-          onHint={() => {}}
           canSimulate={gameState.placedComponents.length > 0}
           canFinishLevel={gameState.canFinishLevel}
           onFinishLevel={actions.finishLevel}
           currentScore={gameState.currentScore}
           bestScore={gameState.bestScore}
           attemptCount={gameState.attemptCount}
+          energyUsed={gameState.energyUsed}
         />
+
+        {/* Level ID - At the very bottom with 20px margin from screen edge */}
+        <Typography
+          sx={{
+            position: 'absolute',
+            bottom: 20, // 20px from bottom edge of screen
+            left: 20,
+            right: 20,
+            textAlign: 'center',
+            fontFamily: 'Montserrat, sans-serif',
+            fontWeight: 400, // Regular
+            fontSize: '12pt',
+            textTransform: 'uppercase',
+            color: '#818181',
+            zIndex: theme.electronicZIndex.ui - 2, // Under ComponentPalette
+          }}
+        >
+          {level?.metadata.level_id || 'Unknown Level'}
+        </Typography>
       </Box>
 
       {/* Success Modal */}

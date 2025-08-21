@@ -1,6 +1,6 @@
 import React from 'react'
 import { Box, Typography, IconButton, useTheme } from '@mui/material'
-import { ArrowBack as ArrowBackIcon, Bolt as BoltIcon } from '@mui/icons-material'
+import { ArrowBack as ArrowBackIcon, RestartAltRounded as RestartAltRoundedIcon } from '@mui/icons-material'
 import { motion } from 'framer-motion'
 import type { Level } from '../../../../types'
 
@@ -11,6 +11,7 @@ interface TopGameBarProps {
   bestScore: number
   gameStatus: 'loading' | 'playing' | 'complete' | 'failed'
   onBackClick: () => void
+  onReset: () => void
 }
 
 export const TopGameBar: React.FC<TopGameBarProps> = ({
@@ -20,6 +21,7 @@ export const TopGameBar: React.FC<TopGameBarProps> = ({
   bestScore,
   gameStatus,
   onBackClick,
+  onReset,
 }) => {
   const theme = useTheme()
 
@@ -51,130 +53,79 @@ export const TopGameBar: React.FC<TopGameBarProps> = ({
           <ArrowBackIcon fontSize="large" />
         </IconButton>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', ml: 1.5 }}>
-          <Typography
-            variant="componentLabel"
-            sx={{
-              fontSize: '14px',
-              fontWeight: 600,
-              color: theme.palette.text.primary,
-              lineHeight: 1,
-            }}
-          >
-            {level ? `lvl.${String(level.registryOrder || 1).padStart(4, '0')}` : 'lvl.0001'}
-          </Typography>
-          <Typography
-            variant="componentValue"
-            sx={{
-              fontSize: '9px',
-              color: theme.palette.text.secondary,
-              opacity: 0.7,
-              fontFamily: 'monospace',
-              letterSpacing: '-0.5px',
-              wordBreak: 'break-all',
-              maxWidth: '140px',
-              lineHeight: 1,
-              mt: 0.25,
-            }}
-          >
-            {level?.metadata.level_id || 'Unknown Level'}
-          </Typography>
+        <Box sx={{ ml: 1.5 }}>
+          <Box>
+            <Typography
+              variant="componentLabel"
+              sx={{
+                fontSize: '18px',
+                fontWeight: 700,
+                color: '#D84205', // ignit smolder color
+                lineHeight: 1,
+              }}
+            >
+              {level ? `lvl.${String(level.registryOrder || 1).padStart(4, '0')}` : 'lvl.0001'}
+            </Typography>
+            <Typography
+              sx={{
+                fontSize: '12px',
+                fontWeight: 500, // Medium
+                color: '#E5DFD1', // creamy white
+                lineHeight: 1,
+                fontFamily: 'Montserrat, sans-serif',
+              }}
+            >
+              Best Score: <Box component="span" sx={{ fontWeight: 600 }}>{(bestScore || 0).toFixed(1)}</Box>
+            </Typography>
+          </Box>
         </Box>
       </Box>
 
 
-      {/* Right side - Energy and score info */}
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'flex-end',
-          gap: 1.5,
-        }}
-      >
-        <Box sx={{ textAlign: 'right' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.5 }}>
-            <BoltIcon
-              sx={{
-                fontSize: '16px',
-                color: theme.palette.simulation.energyFlow,
-              }}
-            />
-            <Typography
-              variant="energyValue"
-              sx={{
-                fontSize: '14px',
-                fontWeight: 700,
-                color: theme.palette.simulation.energyFlow,
-              }}
-            >
-              {(energyUsed || 0).toFixed(1)} EU
-            </Typography>
-          </Box>
-          <Typography
-            variant="componentValue"
-            sx={{
-              fontSize: '10px',
-              color: theme.palette.text.secondary,
-            }}
-          >
-            Used
-          </Typography>
-        </Box>
-
+      {/* Right side - Current score and restart button */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        {/* Current Score - symmetrical to level info */}
         <Box sx={{ textAlign: 'right' }}>
           <motion.div
             animate={gameStatus === 'complete' ? { scale: [1, 1.2, 1] } : {}}
             transition={{ duration: 0.5 }}
           >
             <Typography
-              variant="energyValue"
               sx={{
-                fontSize: '16px',
+                fontSize: '18px',
                 fontWeight: 700,
-                color: gameStatus === 'complete' 
-                  ? theme.palette.simulation.success
-                  : theme.palette.primary.main,
+                color: '#D84205', // ignit smolder color to match level number
+                lineHeight: 1,
               }}
             >
               {(score || 0).toFixed(1)}
             </Typography>
           </motion.div>
           <Typography
-            variant="componentValue"
             sx={{
-              fontSize: '10px',
-              color: theme.palette.text.secondary,
+              fontSize: '12px',
+              fontWeight: 500, // Medium
+              color: '#E5DFD1', // creamy white
+              lineHeight: 1,
+              fontFamily: 'Montserrat, sans-serif',
             }}
           >
-            Current
+            Current Score
           </Typography>
         </Box>
 
-        {/* Best Score - показывается всегда */}
-        <Box sx={{ textAlign: 'right' }}>
-          <Typography
-            variant="energyValue"
-            sx={{
-              fontSize: '16px',
-              fontWeight: 700,
-              color: (bestScore || 0) > (score || 0) 
-                ? theme.palette.simulation.success 
-                : theme.palette.primary.main,
-            }}
-          >
-            {(bestScore || 0).toFixed(1)}
-          </Typography>
-          <Typography
-            variant="componentValue"
-            sx={{
-              fontSize: '10px',
-              color: theme.palette.text.secondary,
-            }}
-          >
-            Best
-          </Typography>
-        </Box>
+        {/* Restart button in far right */}
+        <IconButton
+          onClick={onReset}
+          sx={{
+            color: '#E5DFD1',
+            '&:hover': {
+              backgroundColor: 'rgba(229, 223, 209, 0.1)',
+            },
+          }}
+        >
+          <RestartAltRoundedIcon fontSize="large" />
+        </IconButton>
       </Box>
     </Box>
   )

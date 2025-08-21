@@ -168,6 +168,7 @@ export class GameEngine {
     console.log('🔥 Created larger glow effect: 200x80px, z-index 1')
     return glow
   }
+
   
   getComponentSVG(componentData) {
     console.log(`🔧 GameEngine: getComponentSVG called for type: ${componentData.type}`)

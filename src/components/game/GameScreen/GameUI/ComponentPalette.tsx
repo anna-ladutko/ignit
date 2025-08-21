@@ -1,10 +1,16 @@
 import React, { useMemo } from 'react'
 import { Box, Typography, useTheme } from '@mui/material'
 import { motion } from 'framer-motion'
+import { 
+  PlayArrow as PlayIcon, 
+  Bolt as BoltIcon
+} from '@mui/icons-material'
 import type { Level } from '../../../../types'
 import type { PlacedComponent } from '../../../../types/gameScreen'
 import { ComponentButton } from '../../../electronic'
+import { TouchButton } from '../../../ui'
 import { ComponentType } from '../../../../types'
+import { BORDER_RADIUS } from '../../../../constants/design'
 
 interface ComponentPaletteProps {
   level: Level | null
@@ -16,6 +22,16 @@ interface ComponentPaletteProps {
     componentId?: string // Add componentId to track specific component
   } | null
   onComponentSelect: (componentId: string) => void // Change to componentId instead of type
+  // Game controls props
+  gameStatus: 'loading' | 'playing' | 'complete' | 'failed'
+  onSimulate: () => void
+  canSimulate: boolean
+  canFinishLevel: boolean
+  onFinishLevel: () => void
+  currentScore: number
+  bestScore: number
+  attemptCount: number
+  energyUsed: number
 }
 
 export const ComponentPalette: React.FC<ComponentPaletteProps> = ({
@@ -24,6 +40,15 @@ export const ComponentPalette: React.FC<ComponentPaletteProps> = ({
   selectedComponent,
   draggedComponent,
   onComponentSelect,
+  gameStatus,
+  onSimulate,
+  canSimulate,
+  canFinishLevel,
+  onFinishLevel,
+  currentScore,
+  bestScore,
+  attemptCount,
+  energyUsed,
 }) => {
   const theme = useTheme()
 
@@ -71,17 +96,67 @@ export const ComponentPalette: React.FC<ComponentPaletteProps> = ({
   console.log('Filtered available components:', availableComponents)
   console.log('Placed components:', placedComponents)
 
+  // Game controls logic (copied from GameControls)
+  const getSimulateButtonProps = () => {
+    if (gameStatus === 'loading') {
+      return {
+        variant: 'primary' as const,
+        children: 'Loading...',
+        disabled: true,
+      }
+    }
+    
+    if (attemptCount > 0) {
+      return {
+        variant: currentScore > 50 ? 'accent' as const : 'primary' as const,
+        children: 'Simulate Again',
+        disabled: !canSimulate,
+      }
+    }
+    
+    return {
+      variant: 'primary' as const,
+      children: 'Simulate',
+      disabled: !canSimulate,
+    }
+  }
+
+  const simulateProps = getSimulateButtonProps()
+
   return (
     <Box
       sx={{
-        backgroundColor: theme.palette.circuit.boardBackground,
-        p: theme.spacing(1),
-        maxHeight: '180px',
+        // Overlay positioning above Level ID with proper spacing
+        position: 'absolute',
+        bottom: 60, // 20px (Level ID margin) + ~20px (Level ID height) + 20px (distance) = 60px
+        left: 20,
+        right: 20,
+        zIndex: theme.electronicZIndex.ui - 1, // Below game controls but above canvas
+        
+        // Creamy white with 0.2 opacity
+        backgroundColor: 'rgba(229, 223, 209, 0.2)',
+        backdropFilter: 'blur(8px)', // Add subtle blur for better overlay effect
+        
+        // Standard border radius
+        borderRadius: `${BORDER_RADIUS.PANEL} !important`,
+        
+        // Fixed height instead of aspect ratio to prevent overlap
+        height: '140px', // Fixed height
+        maxHeight: '140px', // Prevent growth
+        
+        p: theme.spacing(2),
         overflowY: 'auto',
+        
+        // Box shadow for overlay effect
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+        
+        // Flex layout for components and controls
+        display: 'flex',
+        gap: theme.spacing(2),
       }}
     >
-      {/* Available Components Section */}
-      <Box sx={{ mb: 1 }}>
+      {/* Available Components Section - Left side */}
+      <Box sx={{ flex: 1 }}>
         <Typography
           variant="componentLabel"
           sx={{
@@ -153,6 +228,76 @@ export const ComponentPalette: React.FC<ComponentPaletteProps> = ({
             })
           )}
         </Box>
+      </Box>
+
+      {/* Game Controls Section - Right side */}
+      <Box sx={{ 
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 0.5,
+        minWidth: '120px', // Increased width for energy display
+        alignItems: 'stretch',
+      }}>
+        {/* Energy Used Display */}
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          gap: 0.5,
+          mb: 0.5,
+        }}>
+          <BoltIcon
+            sx={{
+              fontSize: '14px',
+              color: theme.palette.simulation.energyFlow,
+            }}
+          />
+          <Typography
+            variant="energyValue"
+            sx={{
+              fontSize: '12px',
+              fontWeight: 700,
+              color: theme.palette.simulation.energyFlow,
+            }}
+          >
+            {(energyUsed || 0).toFixed(1)} EU
+          </Typography>
+        </Box>
+        {/* Main Simulate Button */}
+        <TouchButton
+          variant={simulateProps.variant}
+          size="small"
+          disabled={simulateProps.disabled}
+          onClick={onSimulate}
+          startIcon={<PlayIcon sx={{ fontSize: '14px' }} />}
+          sx={{
+            minWidth: 80,
+            height: 32,
+            fontSize: '10px',
+            fontWeight: 600,
+            px: 1,
+          }}
+        >
+          {simulateProps.children}
+        </TouchButton>
+
+        {/* Finish Level Button */}
+        <TouchButton
+          variant={canFinishLevel ? "accent" : "primary"}
+          size="small"
+          disabled={!canFinishLevel}
+          onClick={onFinishLevel}
+          sx={{
+            minWidth: 80,
+            height: 32,
+            fontSize: '10px',
+            fontWeight: 600,
+            px: 1,
+          }}
+        >
+          Finish Level
+        </TouchButton>
+
       </Box>
     </Box>
   )
