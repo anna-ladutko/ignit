@@ -189,17 +189,15 @@ export const ComponentsLayer: React.FC<ComponentsLayerProps> = ({
 
             {/* Connection points removed for cleaner interface */}
 
-            {/* Component value label */}
-            {(component.properties.resistance || component.properties.capacitance || component.properties.inductance) && (
+            {/* Component value label - show for all components with values */}
+            {(component.properties.resistance || component.properties.capacitance || component.properties.inductance || component.properties.voltage || component.properties.energyRange) && (
               <Box
                 sx={{
                   position: 'absolute',
                   bottom: -20,
                   left: '50%',
-                  transform: 'translateX(-50%)',
-                  backgroundColor: theme.palette.background.paper,
-                  border: `1px solid ${theme.palette.circuit.grid}`,
-                  borderRadius: BORDER_RADIUS.SMALL, // 5px
+                  transform: 'translateX(-50%) rotate(0deg)', // Always keep badge at bottom, independent of component rotation
+                  backgroundColor: '#202221', // Coal color
                   px: 0.5,
                   py: 0.25,
                   minWidth: 'max-content',
@@ -210,7 +208,7 @@ export const ComponentsLayer: React.FC<ComponentsLayerProps> = ({
                   sx={{
                     fontSize: '8px',
                     fontWeight: 600,
-                    color: theme.palette.text.primary,
+                    color: '#E5DFD1', // Creamy white
                     textAlign: 'center',
                     lineHeight: 1,
                   }}
@@ -218,6 +216,8 @@ export const ComponentsLayer: React.FC<ComponentsLayerProps> = ({
                   {component.properties.resistance && `${component.properties.resistance}Ω`}
                   {component.properties.capacitance && `${component.properties.capacitance}μF`}
                   {component.properties.inductance && `${component.properties.inductance}mH`}
+                  {component.properties.voltage && `${component.properties.voltage}V`}
+                  {component.properties.energyRange && `${component.properties.energyRange[0]}-${component.properties.energyRange[1]} EU`}
                 </Box>
               </Box>
             )}
@@ -229,10 +229,8 @@ export const ComponentsLayer: React.FC<ComponentsLayerProps> = ({
                   position: 'absolute',
                   bottom: -20,
                   left: '50%',
-                  transform: 'translateX(-50%)',
-                  backgroundColor: theme.palette.background.paper,
-                  border: `1px solid ${theme.palette.circuit.grid}`,
-                  borderRadius: BORDER_RADIUS.SMALL, // 5px
+                  transform: 'translateX(-50%) rotate(0deg)', // Always keep badge at bottom, independent of component rotation
+                  backgroundColor: '#202221', // Coal color
                   px: 0.5,
                   py: 0.25,
                   minWidth: 'max-content',
@@ -243,7 +241,7 @@ export const ComponentsLayer: React.FC<ComponentsLayerProps> = ({
                   sx={{
                     fontSize: '8px',
                     fontWeight: 600,
-                    color: theme.palette.primary.main,
+                    color: '#E5DFD1', // Creamy white
                     textAlign: 'center',
                     lineHeight: 1,
                   }}
@@ -260,10 +258,8 @@ export const ComponentsLayer: React.FC<ComponentsLayerProps> = ({
                   position: 'absolute',
                   bottom: -20,
                   left: '50%',
-                  transform: 'translateX(-50%)',
-                  backgroundColor: theme.palette.background.paper,
-                  border: `1px solid ${theme.palette.circuit.grid}`,
-                  borderRadius: BORDER_RADIUS.SMALL, // 5px
+                  transform: 'translateX(-50%) rotate(0deg)', // Always keep badge at bottom, independent of component rotation
+                  backgroundColor: '#202221', // Coal color
                   px: 0.5,
                   py: 0.25,
                   minWidth: 'max-content',
@@ -274,7 +270,7 @@ export const ComponentsLayer: React.FC<ComponentsLayerProps> = ({
                   sx={{
                     fontSize: '8px',
                     fontWeight: 600,
-                    color: theme.palette.simulation.energyFlow,
+                    color: '#E5DFD1', // Creamy white
                     textAlign: 'center',
                     lineHeight: 1,
                   }}

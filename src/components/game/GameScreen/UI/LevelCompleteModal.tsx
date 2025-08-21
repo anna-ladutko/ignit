@@ -139,7 +139,7 @@ export const LevelCompleteModal: React.FC<LevelCompleteModalProps> = ({
             Next Level
           </Button>
 
-          {/* To Main screen текст */}
+          {/* To levels list текст */}
           <Typography
             variant="componentValue"
             onClick={onMainScreen}
@@ -153,7 +153,7 @@ export const LevelCompleteModal: React.FC<LevelCompleteModalProps> = ({
               transition: 'color 0.2s ease',
             }}
           >
-            To Main screen
+            To levels list
           </Typography>
         </motion.div>
       </Box>

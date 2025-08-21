@@ -106,6 +106,10 @@ export const useGameEngine = (level) => {
         }
       })
       
+      // Expose GameEngine globally for debugging
+      window.gameEngine = gameEngineRef.current
+      console.log('🔧 DEBUG: GameEngine exposed as window.gameEngine')
+      
       setGameEngineReady(true)
       
     } catch (error) {
@@ -517,41 +521,16 @@ export const useGameEngine = (level) => {
     console.log('🐛 DEBUG: window.debugEfficiency заполнен (новая логика):', window.debugEfficiency)
   }, [level])
   
-  // Обновление состояний компонентов после симуляции
+  // Обновление состояний компонентов после симуляции - упрощенная версия
   const updateComponentStatesAfterSimulation = useCallback((simulationResult) => {
     if (!gameEngineRef.current) return
     
-    console.log('🎨 STATES: Обновление состояний компонентов после симуляции...')
+    console.log('🌉 BRIDGE: Passing simulation results to GameEngine...')
     
-    const gameEngine = gameEngineRef.current
+    // Simple pass-through to GameEngine - no React processing
+    gameEngineRef.current.updateFromSimulation(simulationResult)
     
-    // Упрощенная логика: только компоненты с энергией > 0 считаются подключенными
-    const connectedComponentIds = new Set()
-    
-    if (simulationResult.energyDistribution) {
-      Object.keys(simulationResult.energyDistribution).forEach(componentId => {
-        if (simulationResult.energyDistribution[componentId] > 0) {
-          connectedComponentIds.add(componentId)
-        }
-      })
-    }
-    
-    // Обновить состояние каждого компонента в GameEngine
-    let updatedCount = 0
-    for (const [componentId, component] of gameEngine.components) {
-      const isConnected = connectedComponentIds.has(componentId)
-      
-      // Обновить данные компонента
-      component.data.isConnected = isConnected
-      
-      // Обновить визуальное состояние через GameEngine
-      if (gameEngine.updateComponentState) {
-        gameEngine.updateComponentState(componentId, null) // Автоматическое определение
-        updatedCount++
-      }
-    }
-    
-    console.log(`🎨 STATES: Обновлено состояний: ${updatedCount}, подключенных компонентов: ${connectedComponentIds.size}`)
+    console.log('🌉 BRIDGE: Component states updated by GameEngine')
   }, [])
   
   // === ИГРОВЫЕ ДЕЙСТВИЯ (вызываются из React UI) ===

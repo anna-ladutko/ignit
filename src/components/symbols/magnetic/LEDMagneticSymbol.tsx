@@ -8,6 +8,8 @@ export const LEDMagneticSymbol: React.FC<SvgIconProps> = (props) => (
       <circle cx="10" cy="20" r="2" fill="currentColor"/>
       <circle cx="90" cy="20" r="2" fill="currentColor"/>
       <path d="M38.5 21C39.0523 21 39.5 20.5523 39.5 20C39.5 19.4477 39.0523 19 38.5 19V20V21ZM59 19C58.4477 19 58 19.4477 58 20C58 20.5523 58.4477 21 59 21V20V19ZM10 20V21H38.5V20V19H10V20ZM59 20V21H90V20V19H59V20Z" fill="currentColor"/>
+      {/* Coal-colored inner fill for LED triangle - moved before stroke for visibility */}
+      <path d="M40 11L60 20L40 30Z" fill="#202221"/>
       <path d="M40 11V29.5" stroke="currentColor" strokeWidth="4" strokeLinecap="round" fill="none"/>
       <path d="M40 11L60 20L40 30" stroke="currentColor" strokeWidth="4" strokeLinecap="round" fill="none"/>
       <path d="M60 11V29.5" stroke="currentColor" strokeWidth="4" strokeLinecap="round" fill="none"/>

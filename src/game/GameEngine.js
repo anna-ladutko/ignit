@@ -110,8 +110,63 @@ export class GameEngine {
     if (svg) {
       svg.style.pointerEvents = 'none' // События проходят к контейнеру
     }
+
+    // Add component value badge
+    if (componentData.properties) {
+      const badge = this.createComponentBadge(componentData.properties, componentData.rotation || 0)
+      if (badge) {
+        element.appendChild(badge)
+      }
+    }
     
     return element
+  }
+
+  createComponentBadge(properties, componentRotation = 0) {
+    let text = ''
+    if (properties.resistance) text = `${properties.resistance}Ω`
+    if (properties.capacitance) text = `${properties.capacitance}μF` 
+    if (properties.voltage) text = `${properties.voltage}V`
+    if (properties.energyRange) text = `${properties.energyRange[0]}-${properties.energyRange[1]} EU`
+    
+    if (!text) return null
+    
+    const badge = document.createElement('div')
+    badge.style.position = 'absolute'
+    badge.style.bottom = '-20px'
+    badge.style.left = '50%'
+    badge.style.transform = `translateX(-50%) rotate(-${componentRotation}deg)`
+    badge.style.backgroundColor = '#202221'
+    badge.style.color = '#E5DFD1'
+    badge.style.fontSize = '12px'
+    badge.style.fontWeight = '600'
+    badge.style.padding = '2px 4px'
+    badge.style.maxWidth = '80px'
+    badge.style.textAlign = 'center'
+    badge.style.pointerEvents = 'none'
+    badge.style.whiteSpace = 'nowrap'
+    badge.style.overflow = 'hidden'
+    badge.style.textOverflow = 'ellipsis'
+    badge.textContent = text
+    return badge
+  }
+
+  createGlowEffect() {
+    const glow = document.createElement('div')
+    glow.className = 'component-glow'
+    glow.style.position = 'absolute'
+    glow.style.width = '200px'    // Increased x2
+    glow.style.height = '80px'    // Increased x2
+    glow.style.top = '-20px'      // Center the larger glow
+    glow.style.left = '-50px'     // Center the larger glow
+    glow.style.backgroundImage = 'url(/gameplay_glow.png)'
+    glow.style.backgroundSize = 'contain'
+    glow.style.backgroundRepeat = 'no-repeat'
+    glow.style.backgroundPosition = 'center'
+    glow.style.zIndex = '1'       // Behind LED (LED is z-index 10)
+    glow.style.pointerEvents = 'none'
+    console.log('🔥 Created larger glow effect: 200x80px, z-index 1')
+    return glow
   }
   
   getComponentSVG(componentData) {
@@ -165,7 +220,6 @@ export class GameEngine {
     
     // Определить состояние компонента
     const isSource = componentData.type === 'voltage_source'
-    const isTarget = componentData.type === 'led' && componentData.isPreinstalled
     const isSelected = false // Будет обновляться через setComponentState
     const isConnected = componentData.isConnected || false
     
@@ -174,8 +228,8 @@ export class GameEngine {
     let componentState = 'disconnected' // fallback
     
     if (ComponentState) {
-      if (isSource || isTarget) {
-        // SOURCE и TARGETS всегда золотые (#FFBE4D)
+      if (isSource) {
+        // Только источники напряжения всегда золотые
         componentState = ComponentState.SOURCE
       } else if (isConnected) {
         componentState = ComponentState.CONNECTED  
@@ -424,24 +478,55 @@ export class GameEngine {
     return typeMap[type] || type
   }
   
+  // Helper function to check if LED is overloaded
+  isLEDOverloaded(component, energyReceived = null) {
+    if (component.data.type !== 'led') return false
+    
+    // If no energy data provided, use placeholder logic
+    if (energyReceived === null) {
+      // Placeholder: assume overloaded if component has specific marker
+      return component.data.isOverloaded || false
+    }
+    
+    // If energy data is provided, check against sweet spot
+    const energyRange = component.data.properties?.energyRange
+    if (energyRange && energyRange.length >= 2) {
+      const sweetSpotMax = energyRange[1]
+      return energyReceived > sweetSpotMax * 1.5 // 50% over sweet spot = overloaded
+    }
+    
+    return false
+  }
+
   // Новый метод для обновления состояния компонента
-  updateComponentState(componentId, forceState = null) {
+  updateComponentState(componentId, forceState = null, energyData = null) {
     const component = this.components.get(componentId)
     if (!component) return
     
     // Определить состояние
     const isSource = component.data.type === 'voltage_source'
-    const isTarget = component.data.type === 'led' && component.data.isPreinstalled
     const isConnected = component.data.isConnected || false
+    const isOverloaded = this.isLEDOverloaded(component, energyData?.energyReceived)
     
     let state = 'disconnected'
     if (forceState) {
       state = forceState
-    } else if (isSource || isTarget) {
-      // SOURCE и TARGETS всегда золотые
+    } else if (isOverloaded) {
+      state = 'overloaded'
+    } else if (isSource) {
+      // Только источники напряжения всегда золотые
       state = 'source'
     } else if (isConnected) {
       state = 'connected'
+    }
+
+    console.log(`🎨 GameEngine: Component ${componentId} (${component.data.type}) state logic:`)
+    console.log(`   isSource: ${isSource}, isConnected: ${isConnected}, isOverloaded: ${isOverloaded}`)
+    console.log(`   Final state: ${state}`)
+    
+    // CRITICAL DEBUG: Check if this is a resistor that should be orange
+    if (component.data.type === 'resistor' && isConnected) {
+      console.log(`🔍 RESISTOR DEBUG: ${componentId} should become ORANGE (#D84205)`)
     }
     
     // Получить ComponentState enum
@@ -453,16 +538,69 @@ export class GameEngine {
         case 'selected': componentState = ComponentState.SELECTED; break
         case 'connected': componentState = ComponentState.CONNECTED; break
         case 'source': componentState = ComponentState.SOURCE; break
+        case 'overloaded': componentState = ComponentState.OVERLOADED; break
         default: componentState = ComponentState.DISCONNECTED; break
       }
+    }
+    
+    // Remove existing glow if present
+    const existingGlow = component.element.querySelector('.component-glow')
+    if (existingGlow) {
+      component.element.removeChild(existingGlow)
+    }
+    
+    // Add glow effect for overloaded LEDs
+    if (state === 'overloaded' && component.data.type === 'led') {
+      const glow = this.createGlowEffect()
+      component.element.appendChild(glow) // Place glow AFTER SVG content so it appears behind
     }
     
     // Обновить SVG с новым состоянием
     const { getComponentSVGForGameEngine } = window.SVGConverter || {}
     if (getComponentSVGForGameEngine) {
       const componentType = this.mapComponentType(component.data.type)
+      
+      // CRITICAL DEBUG: Log SVG generation for resistors
+      if (component.data.type === 'resistor') {
+        console.log(`🔍 SVG DEBUG: Generating SVG for resistor ${componentId}`)
+        console.log(`   componentType: ${componentType}`)
+        console.log(`   componentState: ${componentState}`)
+      }
+      
       const newSVG = getComponentSVGForGameEngine(componentType, componentState, false)
+      
+      // CRITICAL DEBUG: Check generated SVG color
+      if (component.data.type === 'resistor' && isConnected) {
+        console.log(`🔍 SVG RESULT: Generated SVG contains:`, newSVG.includes('#D84205') ? 'ORANGE COLOR ✅' : 'NO ORANGE COLOR ❌')
+        if (!newSVG.includes('#D84205')) {
+          console.log(`🔍 SVG CONTENT:`, newSVG.substring(0, 200) + '...')
+        }
+      }
+      
+      // COAL FILL DEBUG: Check for coal fill in components that should have it
+      if (component.data.type === 'led' || component.data.type === 'capacitor' || component.data.type === 'voltage_source' || component.data.type === 'resistor') {
+        const hasCoalFill = newSVG.includes('#202221')
+        console.log(`🪨 COAL FILL: ${component.data.type} ${componentId} - coal fill ${hasCoalFill ? '✅ PRESENT' : '❌ MISSING'}`)
+        if (!hasCoalFill) {
+          console.log(`🪨 COAL DEBUG: SVG content:`, newSVG.substring(0, 300) + '...')
+        }
+      }
+      
       component.element.innerHTML = newSVG
+      
+      // Re-add glow effect if this was an overloaded LED
+      if (state === 'overloaded' && component.data.type === 'led') {
+        const glow = this.createGlowEffect()
+        component.element.appendChild(glow) // Place glow AFTER SVG content so it appears behind
+      }
+      
+      // Re-add component badge after innerHTML replacement
+      if (component.data.properties) {
+        const badge = this.createComponentBadge(component.data.properties, component.rotation || 0)
+        if (badge) {
+          component.element.appendChild(badge)
+        }
+      }
       
       // Убедиться что SVG пропускает события
       const svg = component.element.querySelector('svg')
@@ -494,6 +632,227 @@ export class GameEngine {
     this.components.clear()
   }
   
+  // Method to update component energy state (called by simulation)
+  updateComponentEnergyState(componentId, energyData) {
+    this.updateComponentState(componentId, null, energyData)
+  }
+
+  // Method to mark a component as overloaded (for testing)
+  setComponentOverloaded(componentId, isOverloaded = true) {
+    const component = this.components.get(componentId)
+    if (component) {
+      const oldState = component.data.isOverloaded
+      component.data.isOverloaded = isOverloaded
+      this.updateComponentState(componentId)
+      console.log(`🔥 GameEngine: Set ${componentId} (${component.data.type}) overloaded: ${oldState} → ${isOverloaded}`)
+    } else {
+      console.warn(`⚠️ GameEngine: Component ${componentId} not found for overload update`)
+    }
+  }
+
+  // Method to update component connection status (called by simulation)
+  setComponentConnected(componentId, isConnected = true) {
+    const component = this.components.get(componentId)
+    if (component) {
+      const oldState = component.data.isConnected
+      component.data.isConnected = isConnected
+      this.updateComponentState(componentId)
+      console.log(`🔌 GameEngine: Set ${componentId} (${component.data.type}) connected: ${oldState} → ${isConnected}`)
+    } else {
+      console.warn(`⚠️ GameEngine: Component ${componentId} not found for connection update`)
+    }
+  }
+
+  // Method to update multiple component states at once (for performance)
+  updateComponentStates(componentStates) {
+    for (const [componentId, state] of Object.entries(componentStates)) {
+      const component = this.components.get(componentId)
+      if (component) {
+        if (state.isConnected !== undefined) {
+          component.data.isConnected = state.isConnected
+        }
+        if (state.isOverloaded !== undefined) {
+          component.data.isOverloaded = state.isOverloaded  
+        }
+        this.updateComponentState(componentId, null, state.energyData)
+      }
+    }
+  }
+
+  // === SIMULATION INTEGRATION ===
+  
+  // Main method to update components from simulation results
+  updateFromSimulation(simulationResult) {
+    if (!simulationResult) return
+    
+    console.log('🎯 GameEngine: updateFromSimulation called with:', simulationResult)
+    console.log('🎯 GameEngine: energyDistribution:', simulationResult.energyDistribution)
+    
+    // Create mapping from CircuitSimulator IDs to GameEngine IDs
+    const simulatorToGameEngineIds = new Map()
+    
+    for (const [gameEngineId, component] of this.components) {
+      // Get the CircuitSimulator ID for this component
+      let simulatorId
+      
+      if (component.data.isPreinstalled) {
+        // For preinstalled components (SOURCE, TARGET_LED_*), use originalComponentId directly
+        simulatorId = component.data.originalComponentId || gameEngineId
+      } else {
+        // For user components, use originalComponentId (e.g., "R_DIV_1")
+        simulatorId = component.data.originalComponentId || gameEngineId
+      }
+      
+      simulatorToGameEngineIds.set(simulatorId, gameEngineId)
+      console.log(`🎯 ID_MAPPING: "${simulatorId}" → "${gameEngineId}" (${component.data.type})`)
+    }
+    
+    console.log('🎯 GameEngine: Complete ID mapping:', simulatorToGameEngineIds)
+    
+    // Find components with energy > 0 and determine overload status
+    const connectedComponentIds = new Set()
+    const overloadedComponentIds = new Set()
+    
+    if (simulationResult.energyDistribution) {
+      Object.entries(simulationResult.energyDistribution).forEach(([simulatorId, energy]) => {
+        console.log(`🎯 ENERGY: CircuitSimulator ID "${simulatorId}" has energy: ${energy}`)
+        
+        if (energy > 0) {
+          // Find corresponding GameEngine ID
+          const gameEngineId = simulatorToGameEngineIds.get(simulatorId)
+          if (gameEngineId) {
+            connectedComponentIds.add(gameEngineId)
+            console.log(`🎯 CONNECTED: GameEngine ID "${gameEngineId}" marked as connected`)
+            
+            // Check for LED overload
+            const component = this.components.get(gameEngineId)
+            if (component && component.data.type === 'led') {
+              const energyRange = component.data.properties?.energyRange
+              if (energyRange && energyRange.length >= 2) {
+                const sweetSpotMax = energyRange[1]
+                if (energy > sweetSpotMax * 1.5) {
+                  overloadedComponentIds.add(gameEngineId)
+                  console.log(`🔥 OVERLOADED: LED "${gameEngineId}" energy ${energy} > ${sweetSpotMax * 1.5}`)
+                }
+              }
+            }
+          } else {
+            console.warn(`❌ No GameEngine ID found for CircuitSimulator ID "${simulatorId}"`)
+          }
+        }
+      })
+    }
+    
+    console.log(`🎯 GameEngine: Connected components: [${Array.from(connectedComponentIds).join(', ')}]`)
+    console.log(`🎯 GameEngine: Overloaded components: [${Array.from(overloadedComponentIds).join(', ')}]`)
+    
+    // Update each component state
+    let updatedCount = 0
+    for (const [gameEngineId, component] of this.components) {
+      const isConnected = connectedComponentIds.has(gameEngineId)
+      const isOverloaded = overloadedComponentIds.has(gameEngineId)
+      
+      // Update component data
+      const oldConnected = component.data.isConnected
+      const oldOverloaded = component.data.isOverloaded
+      
+      component.data.isConnected = isConnected
+      component.data.isOverloaded = isOverloaded
+      
+      console.log(`🎯 UPDATE: ${gameEngineId} (${component.data.type}) connected: ${oldConnected} → ${isConnected}, overloaded: ${oldOverloaded} → ${isOverloaded}`)
+      
+      // Update visual state
+      this.updateComponentState(gameEngineId, null) // Auto-determine state
+      updatedCount++
+    }
+    
+    console.log(`🎯 GameEngine: Updated ${updatedCount} component states, ${connectedComponentIds.size} connected, ${overloadedComponentIds.size} overloaded`)
+  }
+
+  // === DEBUG METHODS ===
+  
+  // List all components with their current states
+  debugListComponents() {
+    console.log('🔍 GameEngine: Current components:')
+    for (const [id, component] of this.components) {
+      console.log(`  ${id}: ${component.data.type} - connected: ${component.data.isConnected || false}, overloaded: ${component.data.isOverloaded || false}`)
+    }
+  }
+
+  // Test all resistors by marking them as connected
+  debugTestResistors() {
+    console.log('🧪 Testing all resistors - marking as connected')
+    for (const [id, component] of this.components) {
+      if (component.data.type === 'resistor' || component.data.type?.includes('R_')) {
+        this.setComponentConnected(id, true)
+      }
+    }
+  }
+
+  // Test all LEDs by marking them as overloaded  
+  debugTestLEDOverload() {
+    console.log('🧪 Testing all LEDs - marking as overloaded')
+    for (const [id, component] of this.components) {
+      if (component.data.type === 'led' || component.data.type?.includes('LED')) {
+        this.setComponentOverloaded(id, true)
+      }
+    }
+  }
+
+  // Reset all components to disconnected state
+  debugResetAllComponents() {
+    console.log('🔄 Resetting all components to disconnected state')
+    for (const [id, component] of this.components) {
+      component.data.isConnected = false
+      component.data.isOverloaded = false
+      this.updateComponentState(id)
+    }
+  }
+
+  // Test the new simulation integration
+  debugTestSimulationIntegration() {
+    console.log('🧪 Testing simulation integration with mock data')
+    
+    const mockSimulationResult = {
+      energyDistribution: {
+        'R_DIV_1': 45,  // Connected resistor
+        'TARGET_LED_1': 65,  // Overloaded LED (if sweet spot is < 43)
+        'TARGET_LED_2': 15,  // Connected LED
+        'SOURCE': 120   // Source always has energy
+      }
+    }
+    
+    console.log('🧪 Mock simulation result:', mockSimulationResult)
+    this.updateFromSimulation(mockSimulationResult)
+  }
+
+  // Show energy distribution mapping
+  debugShowEnergyMapping(simulationResult) {
+    if (!simulationResult?.energyDistribution) {
+      console.log('🔍 No energy distribution data')
+      return
+    }
+    
+    console.log('🔍 Energy Distribution Analysis:')
+    Object.entries(simulationResult.energyDistribution).forEach(([simulatorId, energy]) => {
+      // Find matching GameEngine component
+      let matchingComponent = null
+      for (const [gameEngineId, component] of this.components) {
+        const originalId = component.data.originalComponentId || gameEngineId
+        if (originalId === simulatorId) {
+          matchingComponent = { gameEngineId, type: component.data.type }
+          break
+        }
+      }
+      
+      if (matchingComponent) {
+        console.log(`  ✅ ${simulatorId} (${matchingComponent.type}) → ${matchingComponent.gameEngineId}: ${energy} energy`)
+      } else {
+        console.log(`  ❌ ${simulatorId}: ${energy} energy (NO MATCHING GAMEENGINE COMPONENT)`)
+      }
+    })
+  }
+
   destroy() {
     this.clearComponents()
     // Remove event listeners

@@ -20,6 +20,8 @@ const MAGNETIC_SVG_TEMPLATES = {
       <path d="M90 22C91.1046 22 92 21.1046 92 20C92 18.8954 91.1046 18 90 18C88.8954 18 88 18.8954 88 20C88 21.1046 88.8954 22 90 22Z" fill="currentColor"/>
       <path d="M10 20H25" stroke="currentColor" stroke-width="2"/>
       <path d="M76 20H90.5" stroke="currentColor" stroke-width="2"/>
+      <!-- Coal-colored inner fill for resistor rectangle -->
+      <rect x="30" y="17" width="40" height="6" fill="#202221"/>
       <rect x="26" y="13" width="48" height="14" stroke="currentColor" stroke-width="4" stroke-linejoin="round" fill="none"/>
     </g>
   </svg>`,
@@ -30,6 +32,9 @@ const MAGNETIC_SVG_TEMPLATES = {
       <circle cx="10" cy="20" r="2" fill="currentColor"/>
       <circle cx="90" cy="20" r="2" fill="currentColor"/>
       <path d="M45 21C45.5523 21 46 20.5523 46 20C46 19.4477 45.5523 19 45 19V20V21ZM53 19C52.4477 19 52 19.4477 52 20C52 20.5523 52.4477 21 53 21V20V19ZM10.5 20V21H45V20V19H10.5V20ZM53 20V21H90V20V19H53V20Z" fill="currentColor"/>
+      <!-- Coal-colored inner fill for capacitor plates -->
+      <rect x="44" y="11" width="4" height="18.5" fill="#202221"/>
+      <rect x="52" y="11" width="4" height="18.5" fill="#202221"/>
       <path d="M46 11V29.5" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
       <path d="M54 11V29.5" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
     </g>
@@ -54,6 +59,8 @@ const MAGNETIC_SVG_TEMPLATES = {
       <circle cx="10" cy="20" r="2" fill="currentColor"/>
       <circle cx="90" cy="20" r="2" fill="currentColor"/>
       <path d="M38.5 21C39.0523 21 39.5 20.5523 39.5 20C39.5 19.4477 39.0523 19 38.5 19V20V21ZM59 19C58.4477 19 58 19.4477 58 20C58 20.5523 58.4477 21 59 21V20V19ZM10 20V21H38.5V20V19H10V20ZM59 20V21H90V20V19H59V20Z" fill="currentColor"/>
+      <!-- Coal-colored inner fill for LED triangle -->
+      <path d="M40 11L60 20L40 30Z" fill="#202221"/>
       <path d="M40 11V29.5" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
       <path d="M40 11L60 20L40 30" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
       <path d="M60 11V29.5" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
@@ -67,6 +74,8 @@ const MAGNETIC_SVG_TEMPLATES = {
       <!-- Обновленный дизайн источника напряжения v03 -->
       <circle cx="10" cy="20" r="2" fill="currentColor"/>
       <circle cx="90" cy="20" r="2" fill="currentColor"/>
+      <!-- Coal-colored inner fill for voltage source circle - before icons -->
+      <circle cx="50" cy="20" r="15" fill="#202221"/>
       <path d="M9 20H34.5M64 20H89M58 17V23M42.5 17V23M39.5 20H45.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
       <circle cx="50" cy="20" r="15" stroke="currentColor" stroke-width="4" fill="none"/>
     </g>

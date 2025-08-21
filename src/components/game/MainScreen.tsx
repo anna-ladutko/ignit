@@ -138,11 +138,8 @@ export const MainScreen: React.FC<MainScreenProps> = ({
 
 
         {/* Play Button */}
-        <motion.div
-          initial={{ y: 30, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.6, ease: 'easeOut' }}
-          style={{ width: '100%', maxWidth: '280px' }}
+        <Box
+          sx={{ width: '100%', maxWidth: '280px' }}
         >
           <TouchButton
             variant="primary"
@@ -178,15 +175,12 @@ export const MainScreen: React.FC<MainScreenProps> = ({
           >
             {onPlayClick ? 'Play' : 'Coming Soon'}
           </TouchButton>
-        </motion.div>
+        </Box>
 
         {/* Levels Button */}
         {onLevelsClick && (
-          <motion.div
-            initial={{ y: 30, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.8, ease: 'easeOut' }}
-            style={{ width: '100%', maxWidth: '280px' }}
+          <Box
+            sx={{ width: '100%', maxWidth: '280px' }}
           >
             <TouchButton
               variant="secondary"
@@ -195,8 +189,8 @@ export const MainScreen: React.FC<MainScreenProps> = ({
               onClick={onLevelsClick}
               sx={{
                 py: theme.spacing(1.5),
-                fontSize: '18px',
-                fontWeight: 600,
+                fontSize: '20px',
+                fontWeight: 700,
                 letterSpacing: '0.05em',
                 textTransform: 'uppercase',
                 mt: 2,
@@ -204,7 +198,7 @@ export const MainScreen: React.FC<MainScreenProps> = ({
             >
               Levels
             </TouchButton>
-          </motion.div>
+          </Box>
         )}
 
         {/* Status Message */}

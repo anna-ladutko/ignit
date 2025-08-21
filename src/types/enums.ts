@@ -14,7 +14,8 @@ export const ComponentState = {
   DISCONNECTED: 'disconnected',
   SELECTED: 'selected', 
   CONNECTED: 'connected',
-  SOURCE: 'source'
+  SOURCE: 'source',
+  OVERLOADED: 'overloaded'
 } as const
 
 export type ComponentState = typeof ComponentState[keyof typeof ComponentState]

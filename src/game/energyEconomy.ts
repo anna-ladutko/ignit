@@ -196,6 +196,14 @@ export class EnergyCalculator {
         const pathResult = this.calculatePathEnergyWithBudget(path, pathEnergyBudget)
         totalEnergyUsed += pathResult.energyUsed
         
+        // Add intermediate component energies to energyDistribution
+        for (const [componentId, energy] of Object.entries(pathResult.componentEnergyMap)) {
+          if (energy > 0) {
+            energyDistribution[componentId] = (energyDistribution[componentId] || 0) + energy
+            console.log(`🔋 INTERMEDIATE COMPONENT: ${componentId} processed ${energy.toFixed(1)} EU (total: ${energyDistribution[componentId].toFixed(1)} EU)`)
+          }
+        }
+        
         const targetId = path[path.length - 1]
         const target = this.components.get(targetId) as GameLED
         
@@ -379,16 +387,17 @@ export class EnergyCalculator {
     return energyDistribution
   }
   
-  private calculatePathEnergyWithBudget(path: string[], energyBudget: number): { energyUsed: number; energyDelivered: number } {
+  private calculatePathEnergyWithBudget(path: string[], energyBudget: number): { energyUsed: number; energyDelivered: number; componentEnergyMap: Record<string, number> } {
     console.log(`💰 PATH ENERGY: Расчет для пути [${path.join(' -> ')}] с бюджетом ${energyBudget.toFixed(1)} EU`)
     
     if (path.length < 2) {
       console.log(`💰 PATH ENERGY: Путь слишком короткий`)
-      return { energyUsed: 0, energyDelivered: 0 }
+      return { energyUsed: 0, energyDelivered: 0, componentEnergyMap: {} }
     }
 
     let energyFlow = energyBudget
     let totalLoss = 0
+    const componentEnergyMap: Record<string, number> = {}
 
     // Рассчитываем потери через каждый компонент в пути
     for (let i = 1; i < path.length - 1; i++) {
@@ -402,6 +411,11 @@ export class EnergyCalculator {
 
       const loss = this.calculateComponentLoss(component, energyFlow)
       console.log(`💰 PATH ENERGY: Потери через ${componentId}: ${loss.toFixed(1)} EU`)
+      
+      // Record that this component processed energy (loss represents energy processing)
+      componentEnergyMap[componentId] = loss
+      console.log(`💰 COMPONENT ENERGY: ${componentId} processed ${loss.toFixed(1)} EU`)
+      
       totalLoss += loss
       energyFlow -= loss
       console.log(`💰 PATH ENERGY: Остаток после ${componentId}: ${energyFlow.toFixed(1)} EU`)
@@ -411,7 +425,7 @@ export class EnergyCalculator {
     const energyUsed = totalLoss
     
     console.log(`💰 PATH ENERGY: Итого - потеряно: ${energyUsed.toFixed(1)} EU, доставлено: ${energyDelivered.toFixed(1)} EU`)
-    return { energyUsed, energyDelivered }
+    return { energyUsed, energyDelivered, componentEnergyMap }
   }
 
   // УСТАРЕВШИЙ МЕТОД - заменен на calculatePathEnergyWithBudget
@@ -460,7 +474,7 @@ export class EnergyCalculator {
 
   private calculateComponentLoss(component: GameComponent, energyIn: number): number {
     switch (component.type) {
-      case ComponentType.RESISTOR:
+      case ComponentType.RESISTOR: {
         const resistor = component as GameResistor
         // Game-balanced percentage-based losses instead of I²R formula
         // Higher resistance = higher percentage loss
@@ -482,6 +496,7 @@ export class EnergyCalculator {
         const loss = energyIn * lossPercentage
         console.log(`⚡ RESISTOR: ${resistor.id} (${resistance}Ω) → ${(lossPercentage*100).toFixed(0)}% loss = ${loss.toFixed(1)} EU from ${energyIn.toFixed(1)} EU`)
         return loss
+      }
 
       case ComponentType.CAPACITOR:
         // Capacitors have minimal loss in our simplified model
@@ -491,9 +506,10 @@ export class EnergyCalculator {
         // Inductors have minimal loss in our simplified model
         return energyIn * 0.01
 
-      case ComponentType.SWITCH:
+      case ComponentType.SWITCH: {
         const switchComp = component as GameSwitch
         return switchComp.conducts() ? 0 : energyIn // All energy lost if switch is open
+      }
 
       default:
         return 0
