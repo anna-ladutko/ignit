@@ -163,9 +163,44 @@ export class GameEngine {
     glow.style.backgroundSize = 'contain'
     glow.style.backgroundRepeat = 'no-repeat'
     glow.style.backgroundPosition = 'center'
-    glow.style.zIndex = '1'       // Behind LED (LED is z-index 10)
+    glow.style.zIndex = '-1'      // Behind LED and background
     glow.style.pointerEvents = 'none'
     console.log('🔥 Created larger glow effect: 200x80px, z-index 1')
+    return glow
+  }
+
+  createPulsingGlowEffect() {
+    const glow = document.createElement('div')
+    glow.className = 'component-glow pulsing'
+    glow.style.position = 'absolute'
+    glow.style.width = '200px'    // Increased x2
+    glow.style.height = '80px'    // Increased x2
+    glow.style.top = '-20px'      // Center the larger glow
+    glow.style.left = '-50px'     // Center the larger glow
+    glow.style.backgroundImage = 'url(/gameplay_glow.png)'
+    glow.style.backgroundSize = 'contain'
+    glow.style.backgroundRepeat = 'no-repeat'
+    glow.style.backgroundPosition = 'center'
+    glow.style.zIndex = '-1'      // Behind LED and background
+    glow.style.pointerEvents = 'none'
+    
+    // Add pulsing animation: opacity 1.0 to 0.5
+    glow.style.animation = 'pulseGlow 1.5s ease-in-out infinite alternate'
+    
+    // Inject CSS animation if not already present
+    if (!document.querySelector('#glow-animation-styles')) {
+      const styleSheet = document.createElement('style')
+      styleSheet.id = 'glow-animation-styles'
+      styleSheet.textContent = `
+        @keyframes pulseGlow {
+          0% { opacity: 1.0; }
+          100% { opacity: 0.5; }
+        }
+      `
+      document.head.appendChild(styleSheet)
+    }
+    
+    console.log('🔥✨ Created pulsing glow effect: 200x80px with opacity animation 1.0-0.5')
     return glow
   }
 
@@ -550,11 +585,7 @@ export class GameEngine {
       component.element.removeChild(existingGlow)
     }
     
-    // Add glow effect for overloaded LEDs
-    if (state === 'overloaded' && component.data.type === 'led') {
-      const glow = this.createGlowEffect()
-      component.element.appendChild(glow) // Place glow AFTER SVG content so it appears behind
-    }
+    // Add glow effect for overloaded LEDs - будет добавлен после innerHTML
     
     // Обновить SVG с новым состоянием
     const { getComponentSVGForGameEngine } = window.SVGConverter || {}
@@ -591,8 +622,14 @@ export class GameEngine {
       
       // Re-add glow effect if this was an overloaded LED
       if (state === 'overloaded' && component.data.type === 'led') {
-        const glow = this.createGlowEffect()
-        component.element.appendChild(glow) // Place glow AFTER SVG content so it appears behind
+        const glow = this.createPulsingGlowEffect() // Test pulsing animation
+        // ВАЖНО: После innerHTML нужно найти НОВЫЙ SVG и вставить glow ПЕРЕД ним
+        const newSvg = component.element.querySelector('svg')
+        if (newSvg) {
+          component.element.insertBefore(glow, newSvg)
+        } else {
+          component.element.appendChild(glow)
+        }
       }
       
       // Re-add component badge after innerHTML replacement
